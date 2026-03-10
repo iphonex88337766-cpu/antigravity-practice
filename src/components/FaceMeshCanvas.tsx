@@ -31,7 +31,7 @@ function drawIrregularDot(
   y: number,
   radius: number
 ) {
-  const vertices = 3 + Math.floor(Math.random() * 2); // 3 or 4
+  const vertices = 3 + Math.floor(Math.random() * 2);
   ctx.beginPath();
   for (let i = 0; i < vertices; i++) {
     const angle = (Math.PI * 2 * i) / vertices + (Math.random() - 0.5) * 0.6;
@@ -63,6 +63,10 @@ const FaceMeshCanvas = memo(function FaceMeshCanvas({
 
     if (!landmarks || landmarks.length === 0) return;
 
+    // Mirror X coordinates to match the CSS-mirrored video feed.
+    // MediaPipe returns landmarks in unmirrored space, but our video
+    // is displayed with scaleX(-1), so we flip x: (1 - x).
+
     // Draw tessellation lines
     ctx.strokeStyle = BIO_PHOSPHOR_DIM;
     ctx.lineWidth = 0.5;
@@ -75,8 +79,8 @@ const FaceMeshCanvas = memo(function FaceMeshCanvas({
         if (!p1 || !p2) continue;
 
         ctx.beginPath();
-        ctx.moveTo(p1.x * width, p1.y * height);
-        ctx.lineTo(p2.x * width, p2.y * height);
+        ctx.moveTo((1 - p1.x) * width, p1.y * height);
+        ctx.lineTo((1 - p2.x) * width, p2.y * height);
         ctx.stroke();
       }
     }
@@ -84,7 +88,7 @@ const FaceMeshCanvas = memo(function FaceMeshCanvas({
     // Draw landmark dots as irregular polygons
     ctx.fillStyle = BIO_PHOSPHOR;
     for (const point of landmarks) {
-      drawIrregularDot(ctx, point.x * width, point.y * height, 1.2);
+      drawIrregularDot(ctx, (1 - point.x) * width, point.y * height, 1.2);
     }
   }, [landmarks, width, height]);
 
@@ -93,7 +97,7 @@ const FaceMeshCanvas = memo(function FaceMeshCanvas({
       ref={canvasRef}
       width={width}
       height={height}
-      className={`absolute inset-0 ${hasDetected ? "animate-heartbeat" : ""}`}
+      className={`absolute inset-0 w-full h-full ${hasDetected ? "animate-heartbeat" : ""}`}
       style={{ pointerEvents: "none" }}
     />
   );
