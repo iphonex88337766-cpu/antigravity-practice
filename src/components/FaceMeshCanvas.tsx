@@ -69,14 +69,9 @@ const FaceMeshCanvas = memo(function FaceMeshCanvas({
 
     const connections = FaceLandmarker.FACE_LANDMARKS_TESSELATION;
     if (connections) {
-      for (let i = 0; i < connections.length; i += 2) {
-        const start = connections[i];
-        const end = connections[i + 1];
-        if (!start || !end) continue;
-        const startIdx = start.start ?? (start as any);
-        const endIdx = end.end ?? (end as any);
-        const p1 = landmarks[startIdx];
-        const p2 = landmarks[endIdx];
+      for (const conn of connections) {
+        const p1 = landmarks[(conn as any).start];
+        const p2 = landmarks[(conn as any).end];
         if (!p1 || !p2) continue;
 
         ctx.beginPath();
