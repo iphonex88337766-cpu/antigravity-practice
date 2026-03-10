@@ -19,7 +19,9 @@ const Index = () => {
 
   const [landmarks, setLandmarks] = useState<NormalizedLandmark[] | null>(null);
   const [hasEverDetected, setHasEverDetected] = useState(false);
-  const [videoDimensions, setVideoDimensions] = useState({ width: 1280, height: 720 });
+  // displaySize tracks the container's actual rendered pixel dimensions
+  const [displaySize, setDisplaySize] = useState({ width: 1280, height: 720 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
 
   // Start webcam once model is ready
@@ -29,16 +31,24 @@ const Index = () => {
     }
   }, [modelState, startWebcam]);
 
-  // Update video dimensions when metadata loads
-  const handleVideoMetadata = useCallback(() => {
-    const video = videoRef.current;
-    if (video) {
-      setVideoDimensions({
-        width: video.videoWidth,
-        height: video.videoHeight,
-      });
-    }
-  }, [videoRef]);
+  // Track the container's displayed size with ResizeObserver
+  // so the canvas always matches the video's on-screen dimensions.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setDisplaySize({ width: Math.round(width), height: Math.round(height) });
+        }
+      }
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Main detection loop — 60fps via requestAnimationFrame
   useEffect(() => {
@@ -54,7 +64,6 @@ const Index = () => {
       }
 
       const now = performance.now();
-      // Prevent duplicate timestamps
       if (now <= lastTime) {
         animFrameRef.current = requestAnimationFrame(loop);
         return;
@@ -88,14 +97,17 @@ const Index = () => {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center overflow-hidden bg-background">
-      <div className="relative w-full max-w-[1280px]" style={{ aspectRatio: "16 / 9" }}>
+      <div
+        ref={containerRef}
+        className="relative w-full max-w-[1280px] overflow-hidden"
+        style={{ aspectRatio: "16 / 9" }}
+      >
         {/* Loading state — CALIBRATING */}
         {isLoading && <CalibrationOverlay />}
 
         {/* Webcam feed — mirrored, desaturated */}
         <video
           ref={videoRef}
-          onLoadedMetadata={handleVideoMetadata}
           playsInline
           muted
           className="absolute inset-0 h-full w-full object-cover"
@@ -106,19 +118,15 @@ const Index = () => {
           }}
         />
 
-        {/* Face Mesh overlay — mirrored to match video */}
+        {/* Face Mesh overlay — coordinates are mirrored in drawing logic,
+            canvas sized to match displayed container exactly */}
         {webcamState === "active" && (
-          <div
-            className="absolute inset-0"
-            style={{ transform: "scaleX(-1)" }}
-          >
-            <FaceMeshCanvas
-              landmarks={landmarks}
-              width={videoDimensions.width}
-              height={videoDimensions.height}
-              hasDetected={hasEverDetected && landmarks !== null}
-            />
-          </div>
+          <FaceMeshCanvas
+            landmarks={landmarks}
+            width={displaySize.width}
+            height={displaySize.height}
+            hasDetected={hasEverDetected && landmarks !== null}
+          />
         )}
 
         {/* Status label */}
