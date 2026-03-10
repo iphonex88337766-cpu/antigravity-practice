@@ -67,7 +67,7 @@ const FaceMeshCanvas = memo(function FaceMeshCanvas({
     ctx.strokeStyle = BIO_PHOSPHOR_DIM;
     ctx.lineWidth = 0.5;
 
-    const connections = FACE_LANDMARKS_TESSELATION;
+    const connections = FaceLandmarker.FACE_LANDMARKS_TESSELATION;
     if (connections) {
       for (let i = 0; i < connections.length; i += 2) {
         const start = connections[i];
