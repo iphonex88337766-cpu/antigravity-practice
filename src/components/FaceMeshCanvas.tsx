@@ -9,10 +9,7 @@
  */
 
 import { useEffect, useRef, memo } from "react";
-import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
-import {
-  FACE_LANDMARKS_TESSELATION,
-} from "@mediapipe/tasks-vision";
+import { type NormalizedLandmark, FaceLandmarker } from "@mediapipe/tasks-vision";
 
 interface FaceMeshCanvasProps {
   landmarks: NormalizedLandmark[] | null;
