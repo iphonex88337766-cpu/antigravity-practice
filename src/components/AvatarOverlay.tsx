@@ -8,7 +8,7 @@
 
 import { useMemo, useRef, useEffect } from "react";
 import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
-import babyTigerSrc from "@/assets/baby-tiger.png";
+import babyTigerSrc from "@/assets/baby-tiger-faceless.png";
 
 interface AvatarOverlayProps {
   landmarks: NormalizedLandmark[];
@@ -110,13 +110,7 @@ export default function AvatarOverlay({
 
   return (
     <div style={containerStyle}>
-      <img
-        src={avatarSrc}
-        alt="Avatar"
-        style={{ width: "100%", height: "100%", pointerEvents: "none" }}
-        draggable={false}
-      />
-      {/* Expression overlay — eyes and mouth rendered as SVG on top */}
+      {/* Layer 1: Dynamic expressions rendered BEHIND the base */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -125,67 +119,113 @@ export default function AvatarOverlay({
           width: "100%",
           height: "100%",
           pointerEvents: "none",
+          zIndex: 0,
         }}
       >
-        {/* Left eye */}
+        {/* Left eye — sits inside the left eye socket cutout */}
         <ellipse
           cx="35"
-          cy="53"
-          rx="5.5"
-          ry={Math.max(eyeOpenLeft * 5.5, 0.5)}
-          fill="#1a1a1a"
-          opacity="0.85"
+          cy="50"
+          rx="7"
+          ry={Math.max(eyeOpenLeft * 7, 0.6)}
+          fill="#3a2518"
+        />
+        {/* Left iris */}
+        <ellipse
+          cx="35"
+          cy="50"
+          rx="4.5"
+          ry={Math.max(eyeOpenLeft * 4.5, 0.4)}
+          fill="#6b4423"
+        />
+        {/* Left pupil */}
+        <ellipse
+          cx="35"
+          cy="50"
+          rx="2.5"
+          ry={Math.max(eyeOpenLeft * 2.5, 0.3)}
+          fill="#1a0e08"
         />
         {/* Left eye shine */}
         <ellipse
-          cx="33.5"
-          cy={52 - eyeOpenLeft * 1.2}
-          rx="1.3"
-          ry={Math.max(eyeOpenLeft * 1.3, 0.2)}
+          cx="33"
+          cy={48.5 - eyeOpenLeft * 1}
+          rx="1.2"
+          ry={Math.max(eyeOpenLeft * 1.5, 0.15)}
           fill="white"
-          opacity={eyeOpenLeft > 0.3 ? 0.75 : 0}
+          opacity={eyeOpenLeft > 0.2 ? 0.85 : 0}
         />
 
-        {/* Right eye */}
+        {/* Right eye — sits inside the right eye socket cutout */}
         <ellipse
           cx="65"
-          cy="53"
-          rx="5.5"
-          ry={Math.max(eyeOpenRight * 5.5, 0.5)}
-          fill="#1a1a1a"
-          opacity="0.85"
+          cy="50"
+          rx="7"
+          ry={Math.max(eyeOpenRight * 7, 0.6)}
+          fill="#3a2518"
+        />
+        {/* Right iris */}
+        <ellipse
+          cx="65"
+          cy="50"
+          rx="4.5"
+          ry={Math.max(eyeOpenRight * 4.5, 0.4)}
+          fill="#6b4423"
+        />
+        {/* Right pupil */}
+        <ellipse
+          cx="65"
+          cy="50"
+          rx="2.5"
+          ry={Math.max(eyeOpenRight * 2.5, 0.3)}
+          fill="#1a0e08"
         />
         {/* Right eye shine */}
         <ellipse
-          cx="63.5"
-          cy={52 - eyeOpenRight * 1.2}
-          rx="1.3"
-          ry={Math.max(eyeOpenRight * 1.3, 0.2)}
+          cx="63"
+          cy={48.5 - eyeOpenRight * 1}
+          rx="1.2"
+          ry={Math.max(eyeOpenRight * 1.5, 0.15)}
           fill="white"
-          opacity={eyeOpenRight > 0.3 ? 0.75 : 0}
+          opacity={eyeOpenRight > 0.2 ? 0.85 : 0}
         />
 
-        {/* Mouth */}
+        {/* Mouth — below the nose in the mouth cutout area */}
         <ellipse
           cx="50"
-          cy={72 + mouthOpen * 2.5}
-          rx={4 + smileAmount * 2.5}
-          ry={0.8 + mouthOpen * 4}
+          cy={72 + mouthOpen * 2}
+          rx={3.5 + smileAmount * 2}
+          ry={0.6 + mouthOpen * 3.5}
           fill="#2d1a1a"
-          opacity="0.8"
+          opacity="0.85"
         />
-        {/* Tongue hint when mouth open */}
-        {mouthOpen > 0.3 && (
+        {/* Tongue when mouth open */}
+        {mouthOpen > 0.25 && (
           <ellipse
             cx="50"
-            cy={73.5 + mouthOpen * 2.5}
-            rx={2.5 + smileAmount * 1}
-            ry={mouthOpen * 2}
+            cy={73 + mouthOpen * 2}
+            rx={2 + smileAmount * 0.8}
+            ry={mouthOpen * 1.8}
             fill="#e85d75"
-            opacity="0.65"
+            opacity="0.6"
           />
         )}
       </svg>
+
+      {/* Layer 2: Faceless tiger base rendered ON TOP */}
+      <img
+        src={avatarSrc}
+        alt="Avatar"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+        draggable={false}
+      />
     </div>
   );
 }
