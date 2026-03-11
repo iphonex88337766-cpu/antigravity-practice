@@ -1,9 +1,10 @@
 /**
- * AvatarOverlay — Seamless flower-bloom mouth with layered reveal.
+ * AvatarOverlay — Elastic corner-anchored bloom mouth.
  *
+ * The W-contour corners are FIXED to the upper face.
+ * Only the center of the contour drops with jawOpen, creating
+ * an elastic stretching effect — no gap at the sides ever.
  * When closed: single unclipped image, zero seam.
- * Opening: fangs/tongue appear first, dark cavity fades in gradually.
- * W-contour edges are feathered during transition for soft petal parting.
  */
 
 import { useMemo, useRef } from "react";
@@ -41,20 +42,54 @@ const SZ = 500;
 const MAX_JAW_PX = 40;
 const OPEN_THRESHOLD = 0.012;
 
-const W_CONTOUR: [number, number][] = [
-  [0, 100], [12, 100], [18, 100],
-  [22, 95], [26, 87], [29, 80], [32, 76],
-  [34, 74],
-  [36, 73.5], [39, 73.2], [42, 73], [44, 72.8],
-  [46, 72.5], [48, 72.2],
-  [50, 72],
-  [52, 72.2], [54, 72.5],
-  [56, 72.8], [58, 73], [61, 73.2], [64, 73.5],
-  [66, 74],
-  [68, 76], [71, 80], [74, 87], [78, 95],
-  [82, 100], [88, 100], [100, 100],
+/**
+ * Static W-contour — base positions when mouth is closed.
+ * Format: [x%, y%, elasticity]
+ *   elasticity: 0 = pinned (corners/edges), 1 = full drop (center)
+ *   Values in between create the elastic stretch gradient.
+ */
+const W_BASE: [number, number, number][] = [
+  // Left edge — pinned
+  [0, 100, 0], [12, 100, 0], [18, 100, 0],
+  // Transition into mouth — gradual elasticity
+  [22, 95, 0], [26, 87, 0], [29, 80, 0.02],
+  [32, 76, 0.08],
+  [34, 74, 0.15],    // left corner — nearly pinned
+  [36, 73.5, 0.25],
+  [39, 73.2, 0.4],
+  [42, 73, 0.6],
+  [44, 72.8, 0.75],
+  [46, 72.5, 0.85],
+  [48, 72.2, 0.95],
+  [50, 72, 1.0],     // center — full drop
+  [52, 72.2, 0.95],
+  [54, 72.5, 0.85],
+  [56, 72.8, 0.75],
+  [58, 73, 0.6],
+  [61, 73.2, 0.4],
+  [64, 73.5, 0.25],
+  [66, 74, 0.15],    // right corner — nearly pinned
+  [68, 76, 0.08],
+  [71, 80, 0.02],
+  [74, 87, 0], [78, 95, 0],
+  // Right edge — pinned
+  [82, 100, 0], [88, 100, 0], [100, 100, 0],
 ];
 
+/**
+ * Compute the elastically deformed lower jaw contour.
+ * Each point's Y shifts down by (jawDropPx * elasticity),
+ * converted to % of SZ. Corners stay put, center stretches.
+ */
+function elasticLowerContour(jawDropPx: number): [number, number][] {
+  return W_BASE.map(([x, y, e]) => {
+    if (y >= 100) return [x, y] as [number, number];
+    const dropPct = (jawDropPx * e / SZ) * 100;
+    return [x, Math.min(y + dropPct, 100)] as [number, number];
+  });
+}
+
+/** Upper face always uses the STATIC contour (corners never move) */
 function upperClip(pts: [number, number][]): string {
   const rev = [...pts].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
   return `polygon(0% 0%, 100% 0%, 100% 100%, ${rev}, 0% 100%)`;
@@ -65,30 +100,36 @@ function lowerClip(pts: [number, number][]): string {
   return `polygon(${fwd}, 100% 100%, 0% 100%)`;
 }
 
-const UPPER_CLIP = upperClip(W_CONTOUR);
-const LOWER_CLIP = lowerClip(W_CONTOUR);
+// Static upper clip — corners are always fixed
+const STATIC_CONTOUR: [number, number][] = W_BASE.map(([x, y]) => [x, y]);
+const UPPER_CLIP = upperClip(STATIC_CONTOUR);
 
-/**
- * Mouth interior — layered so fangs/tongue appear BEFORE dark cavity.
- * Dark cavity fades in very gradually (delayed opacity).
- */
-function MouthInterior({ jawDrop }: { jawDrop: number }) {
+/** Mouth interior — fangs first, cavity last */
+function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [number, number][] }) {
   if (jawDrop < 0.5) return null;
 
   const bloom = Math.min(jawDrop / MAX_JAW_PX, 1);
   const contourY = SZ * 0.72;
-  const cavityCY = contourY + jawDrop * 0.35;
 
-  // Cavity: very delayed — only visible after significant opening
-  // Starts at 0 opacity, reaches full only at ~70% open
-  const cavityOpacity = Math.max(0, (bloom - 0.15) * 0.9);
+  // Cavity center follows the elastic center point
+  const centerPt = elasticPts.find(([x]) => x === 50);
+  const cavityCenterY = centerPt ? SZ * (centerPt[1] / 100) : contourY + jawDrop * 0.3;
+  const cavityCY = (contourY + cavityCenterY) / 2;
 
-  // Fangs: appear early (almost immediately)
+  // The visible opening height is the distance between static upper and elastic lower center
+  const openingHeight = cavityCenterY - contourY;
+
+  const cavityOpacity = Math.max(0, (bloom - 0.15) * 0.85);
   const fangOpacity = Math.min(bloom * 3, 0.92);
-  const fangLength = Math.min(jawDrop * 0.5, 15);
-
-  // Tongue: appears early but subtle, grows with opening
+  const fangLength = Math.min(openingHeight * 0.7, 15);
   const tongueOpacity = Math.min(bloom * 2, 0.75);
+
+  // Cavity width follows the elastic spread — narrower than the corner span
+  const leftCorner = elasticPts.find(([x]) => x === 34);
+  const rightCorner = elasticPts.find(([x]) => x === 66);
+  const lcX = leftCorner ? SZ * (leftCorner[0] / 100) : SZ * 0.34;
+  const rcX = rightCorner ? SZ * (rightCorner[0] / 100) : SZ * 0.66;
+  const mouthWidth = (rcX - lcX) * 0.6;
 
   return (
     <svg
@@ -108,37 +149,37 @@ function MouthInterior({ jawDrop }: { jawDrop: number }) {
         <filter id="mSoft">
           <feGaussianBlur stdDeviation="2.5" />
         </filter>
-        <filter id="fangSoft">
+        <filter id="fSoft">
           <feGaussianBlur stdDeviation="0.4" />
         </filter>
       </defs>
 
-      {/* Layer 1 (back): Dark cavity — fades in LAST, very gradually */}
+      {/* Dark cavity — delayed, follows elastic shape */}
       <ellipse
         cx={SZ * 0.5}
         cy={cavityCY}
-        rx={SZ * 0.08 * bloom + jawDrop * 0.2}
-        ry={jawDrop * 0.38}
+        rx={mouthWidth * 0.5}
+        ry={openingHeight * 0.45}
         fill="url(#cavG)"
         opacity={cavityOpacity}
         filter="url(#mSoft)"
       />
 
-      {/* Layer 2 (mid): Tongue — appears early as a hint of pink */}
-      {jawDrop > 1.5 && (
+      {/* Tongue — early hint */}
+      {openingHeight > 2 && (
         <ellipse
           cx={SZ * 0.5}
-          cy={contourY + jawDrop * 0.25}
-          rx={SZ * 0.05 + jawDrop * 0.1}
-          ry={Math.max(jawDrop * 0.15, 1.5)}
+          cy={cavityCY + openingHeight * 0.1}
+          rx={mouthWidth * 0.3}
+          ry={Math.max(openingHeight * 0.25, 1.5)}
           fill="hsl(350, 50%, 58%)"
           opacity={tongueOpacity}
           filter="url(#mSoft)"
         />
       )}
 
-      {/* Layer 3 (front): Fangs — appear FIRST, closest to viewer */}
-      {jawDrop > 0.8 && (
+      {/* Fangs — appear first */}
+      {openingHeight > 1 && (
         <>
           <path
             d={`M ${SZ * 0.43} ${contourY - 0.5}
@@ -146,7 +187,7 @@ function MouthInterior({ jawDrop }: { jawDrop: number }) {
                 L ${SZ * 0.46} ${contourY - 0.5} Z`}
             fill="hsl(40, 15%, 96%)"
             opacity={fangOpacity}
-            filter="url(#fangSoft)"
+            filter="url(#fSoft)"
           />
           <path
             d={`M ${SZ * 0.54} ${contourY - 0.5}
@@ -154,7 +195,7 @@ function MouthInterior({ jawDrop }: { jawDrop: number }) {
                 L ${SZ * 0.57} ${contourY - 0.5} Z`}
             fill="hsl(40, 15%, 96%)"
             opacity={fangOpacity}
-            filter="url(#fangSoft)"
+            filter="url(#fSoft)"
           />
         </>
       )}
@@ -179,8 +220,11 @@ export default function AvatarOverlay({
 
   const isOpen = jawNorm > OPEN_THRESHOLD;
 
-  // Feather amount: strongest during early transition, fades as mouth opens fully
-  const featherPx = isOpen ? Math.max(0, 2 - jawDrop * 0.08) : 0;
+  // Compute elastic contour — corners pinned, center drops
+  const elasticPts = elasticLowerContour(jawDrop);
+  const ELASTIC_LOWER_CLIP = lowerClip(elasticPts);
+
+  const featherPx = isOpen ? Math.max(0, 1.5 - jawDrop * 0.06) : 0;
 
   const containerStyle = useMemo(() => {
     const cx = width / 2;
@@ -219,34 +263,40 @@ export default function AvatarOverlay({
     );
   }
 
-  // Feathered edge filter style for soft petal parting
   const featherFilter = featherPx > 0.1
-    ? `drop-shadow(0 0 ${featherPx}px rgba(0,0,0,0.08))`
+    ? `drop-shadow(0 0 ${featherPx}px rgba(0,0,0,0.06))`
     : "none";
 
   return (
     <div style={containerStyle}>
-      {/* Mouth interior — fangs on top, cavity in back */}
-      <MouthInterior jawDrop={jawDrop} />
+      {/* Mouth interior */}
+      <MouthInterior jawDrop={jawDrop} elasticPts={elasticPts} />
 
-      {/* Lower jaw */}
+      {/* Lower jaw — elastic clip, center drops, corners stay */}
       <div
         style={{
           position: "absolute",
           left: 0, top: 0,
-          width: SZ, height: SZ,
-          clipPath: LOWER_CLIP,
+          width: SZ, height: SZ + MAX_JAW_PX,
+          clipPath: ELASTIC_LOWER_CLIP,
           zIndex: 1,
-          transform: `translateY(${jawDrop}px)`,
           filter: featherFilter,
-          willChange: "transform",
+          willChange: "clip-path",
         }}
       >
+        {/* Image shifted down by jawDrop — but clipped elastically so
+            corners remain attached while center region drops */}
         <img src={avatarSrc} alt="" draggable={false}
-          style={{ width: SZ, height: SZ, display: "block" }} />
+          style={{
+            width: SZ,
+            height: SZ,
+            display: "block",
+            transform: `translateY(${jawDrop}px)`,
+            willChange: "transform",
+          }} />
       </div>
 
-      {/* Upper face — fixed */}
+      {/* Upper face — fixed, static contour */}
       <div
         style={{
           position: "absolute",
