@@ -38,6 +38,9 @@ function lerp(a: number, b: number, t: number) {
 
 const MAX_JAW_PX = 45;
 
+/** Baseline Y% for the W-contour center (philtrum). Offsets are applied dynamically. */
+const BASE_MOUTH_Y = 65.4;
+
 /**
  * Feline upper-lip contour — positioned in the MOUTH zone (~59-62% y),
  * directly under the nose, not on the lower jaw.
@@ -45,10 +48,15 @@ const MAX_JAW_PX = 45;
  * Small, subtle W-shape. Edges at y=100% so sides never split.
  * Format: [x%, y%]
  */
-const W_POINTS: [number, number][] = [
+/**
+ * Base W-contour shape — Y values are relative to BASE_MOUTH_Y.
+ * At runtime, all Y values are shifted so the contour center aligns
+ * with the actual mouth landmark position.
+ * Format: [x%, yOffset from BASE_MOUTH_Y]
+ */
+const W_SHAPE: [number, number][] = [
   [0,   100],
   [10,  100],
-  // rise into left mouth corner
   [15,  100],
   [20,  90],
   [24,  80],
@@ -56,7 +64,6 @@ const W_POINTS: [number, number][] = [
   [30,  69],
   [33,  66.5],
   [35,  65.5],   // left mouth corner
-  // subtle W across muzzle
   [37,  65.8],
   [39,  66.2],
   [41,  66.5],
@@ -64,7 +71,7 @@ const W_POINTS: [number, number][] = [
   [45,  66.4],
   [47,  66],
   [49,  65.6],
-  [50,  65.4],   // philtrum center
+  [50,  65.4],   // philtrum center (= BASE_MOUTH_Y)
   [51,  65.6],
   [53,  66],
   [55,  66.4],
@@ -73,7 +80,6 @@ const W_POINTS: [number, number][] = [
   [61,  66.2],
   [63,  65.8],
   [65,  65.5],   // right mouth corner
-  // descent back to chin
   [67,  66.5],
   [70,  69],
   [73,  73],
@@ -84,20 +90,53 @@ const W_POINTS: [number, number][] = [
   [100, 100],
 ];
 
+/** Shift W_SHAPE Y values by a delta to align with landmark-derived mouth pos */
+function shiftedWPoints(dy: number): [number, number][] {
+  return W_SHAPE.map(([x, y]) => {
+    // Only shift the "mouth zone" points (y < 100), leave edges pinned
+    if (y >= 100) return [x, y] as [number, number];
+    return [x, Math.min(y + dy, 100)] as [number, number];
+  });
+}
+
 /** Upper face clip: everything above the W-contour */
-function upperClipPath(): string {
-  const rev = [...W_POINTS].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
+function upperClipPath(points: [number, number][]): string {
+  const rev = [...points].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
   return `polygon(0% 0%, 100% 0%, 100% 100%, ${rev}, 0% 100%)`;
 }
 
 /** Lower jaw clip: everything below the W-contour */
-function lowerClipPath(): string {
-  const fwd = W_POINTS.map(([x, y]) => `${x}% ${y}%`).join(", ");
+function lowerClipPath(points: [number, number][]): string {
+  const fwd = points.map(([x, y]) => `${x}% ${y}%`).join(", ");
   return `polygon(${fwd}, 100% 100%, 0% 100%)`;
 }
 
-const UPPER_CLIP = upperClipPath();
-const LOWER_CLIP = lowerClipPath();
+/**
+ * Derive mouth center Y% from landmarks.
+ * Uses landmarks 13 (upper lip center) and 14 (lower lip center),
+ * mapped relative to forehead (10) and chin (152) to get face-relative %.
+ */
+function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
+  const upperLip = landmarks[13]; // upper lip top center
+  const lowerLip = landmarks[14]; // lower lip bottom center
+  const forehead = landmarks[10]; // top of face
+  const chin = landmarks[152];    // bottom of face
+
+  if (!upperLip || !lowerLip || !forehead || !chin) return BASE_MOUTH_Y;
+
+  const faceTop = forehead.y;
+  const faceBottom = chin.y;
+  const faceHeight = faceBottom - faceTop;
+  if (faceHeight <= 0) return BASE_MOUTH_Y;
+
+  const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
+  // Convert to percentage of face height, then scale to avatar image %
+  // The avatar face occupies roughly 20%-90% of the image vertically
+  const faceRelative = (mouthCenterY - faceTop) / faceHeight; // 0-1 within face
+  // Map to avatar image space: face spans ~20% to ~85% of image
+  const avatarY = 20 + faceRelative * 65;
+  return avatarY;
+}
 
 export default function AvatarOverlay({
   landmarks,
@@ -108,6 +147,7 @@ export default function AvatarOverlay({
   avatarSrc = babyTigerSrc,
 }: AvatarOverlayProps) {
   const smoothJawRef = useRef(0);
+  const smoothMouthYRef = useRef(BASE_MOUTH_Y);
 
   const jawRaw = useMemo(() => {
     const raw = blendshapes?.["jawOpen"] ?? 0;
@@ -116,6 +156,14 @@ export default function AvatarOverlay({
   }, [blendshapes]);
 
   const jawDrop = jawRaw * MAX_JAW_PX;
+
+  // Derive mouth Y from landmarks, smoothed
+  const mouthYTarget = getMouthYPercent(landmarks);
+  smoothMouthYRef.current = lerp(smoothMouthYRef.current, mouthYTarget, 0.15);
+  const dy = smoothMouthYRef.current - BASE_MOUTH_Y;
+  const wPoints = shiftedWPoints(dy);
+  const UPPER_CLIP = upperClipPath(wPoints);
+  const LOWER_CLIP = lowerClipPath(wPoints);
 
   const containerStyle = useMemo(() => {
     const sz = Math.min(width, height) * 0.8;
@@ -143,11 +191,13 @@ export default function AvatarOverlay({
 
   const size = Math.min(width, height) * 0.8;
 
-  // Mouth reference positions for the cavity slit
-  const lcx = size * 0.35;      // left corner x
-  const rcx = size * 0.65;      // right corner x
-  const cornerY = size * 0.655; // corner y
-  const lobeY = size * 0.667;   // lobe deepest y
+  // Mouth reference positions derived from landmark-aligned W
+  const cornerYPct = wPoints.find(([x]) => x === 35)?.[1] ?? 65.5;
+  const lobeYPct = wPoints.find(([x]) => x === 43)?.[1] ?? 66.7;
+  const lcx = size * 0.35;
+  const rcx = size * 0.65;
+  const cornerY = size * (cornerYPct / 100);
+  const lobeY = size * (lobeYPct / 100);
   const cx = size * 0.5;
 
   return (
