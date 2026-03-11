@@ -1,26 +1,26 @@
 /**
  * AvatarOverlay
  * 
- * Renders a character image centered on the nose tip (landmark 1),
- * scaled by face size, and rotated using the facial transformation matrix.
- * Ready for asset-swapping — just change the image import.
+ * Renders a character image centered in its container,
+ * rotated using the facial transformation matrix,
+ * with expression overlays (eyes, mouth) driven by blendshapes.
  */
 
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
 import babyTigerSrc from "@/assets/baby-tiger.png";
 
 interface AvatarOverlayProps {
   landmarks: NormalizedLandmark[];
   transformationMatrix: { rows: number; columns: number; data: number[] } | null;
+  blendshapes?: Record<string, number> | null;
   width: number;
   height: number;
   avatarSrc?: string;
 }
 
-/** Extract yaw, pitch, roll from a 4×4 column-major matrix */
+/** Extract yaw, pitch, roll from a 4×4 row-major matrix */
 function matrixToEuler(data: number[]): { pitch: number; yaw: number; roll: number } {
-  // MediaPipe returns a 4x4 matrix in row-major order
   const r00 = data[0], r01 = data[1], r02 = data[2];
   const r10 = data[4], r11 = data[5], r12 = data[6];
   const r20 = data[8], r21 = data[9], r22 = data[10];
@@ -32,20 +32,57 @@ function matrixToEuler(data: number[]): { pitch: number; yaw: number; roll: numb
   return { pitch, yaw, roll };
 }
 
+/** Linear interpolation */
+function lerp(current: number, target: number, factor: number): number {
+  return current + (target - current) * factor;
+}
+
+/** Smoothed blendshape values stored between renders */
+interface SmoothedExpressions {
+  eyeBlinkLeft: number;
+  eyeBlinkRight: number;
+  jawOpen: number;
+  mouthSmileLeft: number;
+  mouthSmileRight: number;
+}
+
 export default function AvatarOverlay({
   landmarks,
   transformationMatrix,
+  blendshapes,
   width,
   height,
   avatarSrc = babyTigerSrc,
 }: AvatarOverlayProps) {
-  const style = useMemo(() => {
-    // Fixed size — fills container, no landmark-based positioning
+  const smoothedRef = useRef<SmoothedExpressions>({
+    eyeBlinkLeft: 0,
+    eyeBlinkRight: 0,
+    jawOpen: 0,
+    mouthSmileLeft: 0,
+    mouthSmileRight: 0,
+  });
+
+  // Smooth the blendshape values with lerp
+  const expressions = useMemo(() => {
+    const s = smoothedRef.current;
+    const LERP_FACTOR = 0.3; // Smooth but responsive
+
+    if (!blendshapes) return s;
+
+    s.eyeBlinkLeft = lerp(s.eyeBlinkLeft, blendshapes["eyeBlinkLeft"] ?? 0, LERP_FACTOR);
+    s.eyeBlinkRight = lerp(s.eyeBlinkRight, blendshapes["eyeBlinkRight"] ?? 0, LERP_FACTOR);
+    s.jawOpen = lerp(s.jawOpen, blendshapes["jawOpen"] ?? 0, LERP_FACTOR);
+    s.mouthSmileLeft = lerp(s.mouthSmileLeft, blendshapes["mouthSmileLeft"] ?? 0, LERP_FACTOR);
+    s.mouthSmileRight = lerp(s.mouthSmileRight, blendshapes["mouthSmileRight"] ?? 0, LERP_FACTOR);
+
+    return { ...s };
+  }, [blendshapes]);
+
+  const containerStyle = useMemo(() => {
     const size = Math.min(width, height) * 0.8;
     const cx = width / 2;
     const cy = height / 2;
 
-    // Rotation from transformation matrix only
     let rotate = "none";
     if (transformationMatrix && transformationMatrix.data?.length >= 16) {
       const { pitch, yaw, roll } = matrixToEuler(transformationMatrix.data);
@@ -65,12 +102,90 @@ export default function AvatarOverlay({
     };
   }, [transformationMatrix, width, height]);
 
+  // Expression overlay values
+  const eyeOpenLeft = 1 - Math.min(expressions.eyeBlinkLeft * 1.5, 1);
+  const eyeOpenRight = 1 - Math.min(expressions.eyeBlinkRight * 1.5, 1);
+  const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
+  const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
+
   return (
-    <img
-      src={avatarSrc}
-      alt="Avatar"
-      style={style}
-      draggable={false}
-    />
+    <div style={containerStyle}>
+      <img
+        src={avatarSrc}
+        alt="Avatar"
+        style={{ width: "100%", height: "100%", pointerEvents: "none" }}
+        draggable={false}
+      />
+      {/* Expression overlay — eyes and mouth rendered as SVG on top */}
+      <svg
+        viewBox="0 0 100 100"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+        }}
+      >
+        {/* Left eye */}
+        <ellipse
+          cx="38"
+          cy="38"
+          rx="5.5"
+          ry={Math.max(eyeOpenLeft * 5.5, 0.5)}
+          fill="#1a1a1a"
+          opacity="0.9"
+        />
+        {/* Left eye shine */}
+        <ellipse
+          cx="36.5"
+          cy={37 - eyeOpenLeft * 1.5}
+          rx="1.5"
+          ry={Math.max(eyeOpenLeft * 1.5, 0.2)}
+          fill="white"
+          opacity={eyeOpenLeft > 0.3 ? 0.8 : 0}
+        />
+
+        {/* Right eye */}
+        <ellipse
+          cx="62"
+          cy="38"
+          rx="5.5"
+          ry={Math.max(eyeOpenRight * 5.5, 0.5)}
+          fill="#1a1a1a"
+          opacity="0.9"
+        />
+        {/* Right eye shine */}
+        <ellipse
+          cx="60.5"
+          cy={37 - eyeOpenRight * 1.5}
+          rx="1.5"
+          ry={Math.max(eyeOpenRight * 1.5, 0.2)}
+          fill="white"
+          opacity={eyeOpenRight > 0.3 ? 0.8 : 0}
+        />
+
+        {/* Mouth */}
+        <ellipse
+          cx="50"
+          cy={58 + mouthOpen * 3}
+          rx={5 + smileAmount * 3}
+          ry={1 + mouthOpen * 5}
+          fill="#2d1a1a"
+          opacity="0.85"
+        />
+        {/* Tongue hint when mouth open */}
+        {mouthOpen > 0.3 && (
+          <ellipse
+            cx="50"
+            cy={60 + mouthOpen * 3}
+            rx={3 + smileAmount * 1.5}
+            ry={mouthOpen * 2.5}
+            fill="#e85d75"
+            opacity="0.7"
+          />
+        )}
+      </svg>
+    </div>
   );
 }
