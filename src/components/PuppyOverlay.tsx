@@ -20,64 +20,55 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   const [imgFailed, setImgFailed] = useState(false);
 
   const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
-  const isTriggered = rightBlink >= BLINK_THRESHOLD;
+
+  // ALWAYS TRUE for this debug test
+  const isTriggered = true;
 
   return (
     <>
-      {/* Debug: right eye value — always visible */}
+      {/* Debug readout */}
       <div
         style={{
           position: "fixed",
           top: 10,
           right: 10,
           background: "rgba(0,0,0,0.85)",
-          color: isTriggered ? "#0f0" : "#fff",
+          color: "#fff",
           fontFamily: "monospace",
           fontSize: 22,
           padding: "10px 16px",
           borderRadius: 8,
-          zIndex: 999999,
+          zIndex: 2147483647,
           pointerEvents: "none",
         }}
       >
-        Right Eye Value: {rightBlink.toFixed(3)}
-        <br />
-        {isTriggered ? "🐶 TRIGGERED" : "— waiting —"}
+        Right Eye: {rightBlink.toFixed(3)} | FORCED ON
       </div>
 
-      {/* Puppy or blue square fallback — fixed top-right */}
-      {isTriggered && (
-        imgFailed ? (
-          <div
-            style={{
-              position: "fixed",
-              right: 50,
-              top: 50,
-              width: 300,
-              height: 300,
-              background: "#2255ff",
-              zIndex: 99999,
-              pointerEvents: "none",
-            }}
-          />
+      {/* Magenta-bordered container — ALWAYS visible */}
+      <div
+        style={{
+          position: "fixed",
+          right: 80,
+          top: 150,
+          width: 300,
+          height: 300,
+          border: "5px solid #FF00FF",
+          zIndex: 2147483647,
+          pointerEvents: "none",
+        }}
+      >
+        {imgFailed ? (
+          <div style={{ width: "100%", height: "100%", background: "#2255ff" }} />
         ) : (
           <img
             src={puppySrc}
             alt="puppy"
             onError={() => setImgFailed(true)}
-            style={{
-              position: "fixed",
-              right: 50,
-              top: 50,
-              width: 300,
-              height: 300,
-              objectFit: "contain",
-              zIndex: 99999,
-              pointerEvents: "none",
-            }}
+            style={{ width: "100%", height: "auto", objectFit: "contain" }}
           />
-        )
-      )}
+        )}
+      </div>
     </>
   );
 }
