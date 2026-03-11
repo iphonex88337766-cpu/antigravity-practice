@@ -107,7 +107,7 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
       </div>
       <style>{`
         @keyframes catPop {
-          0% { opacity: 0; transform: scale(0.3); }
+          0% { opacity: 0.3; transform: scale(0.7); }
           100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
