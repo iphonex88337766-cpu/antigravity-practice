@@ -44,11 +44,12 @@ const Index = () => {
     const containerAspect = cw / ch;
     const videoAspect = vw / vh;
 
-    // object-cover centered — simple and aligned
+    // object-cover with object-position 100% and scaleX(-1)
+    // Formula: videoRect.x = (cw - w) * (1 - P), where P = 1.0
     const scale = Math.max(cw / vw, ch / vh);
     const w = Math.round(vw * scale);
     const h = Math.round(vh * scale);
-    const x = Math.round((cw - w) / 2);
+    const x = 0;
     const y = Math.round((ch - h) / 2);
     setVideoRect({ x, y, w, h });
   };
