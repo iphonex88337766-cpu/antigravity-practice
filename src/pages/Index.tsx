@@ -129,130 +129,94 @@ const Index = () => {
   const isLoading = modelState === "loading" || webcamState === "requesting";
 
   return (
-    <div className="flex h-screen w-screen flex-col md:flex-row items-stretch overflow-hidden bg-foreground">
-      {/* ── RIGHT PANEL (Avatar) — shown first on mobile ── */}
-      <div className="order-1 md:order-2 flex-1 md:flex-[1.2] relative flex items-center justify-center bg-background">
-        {/* Decorative grid pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
+    <div className="relative h-screen w-screen overflow-hidden bg-foreground">
+      {/* ── FULL-SCREEN WEBCAM ── */}
+      <div
+        ref={webcamContainerRef}
+        className="absolute inset-0"
+      >
+        {isLoading && <CalibrationOverlay />}
+
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          onLoadedMetadata={updateVideoRect}
+          onResize={updateVideoRect}
+          className="absolute inset-0 h-full w-full object-cover"
           style={{
-            backgroundImage:
-              "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
+            transform: "scaleX(-1)",
+            filter: "saturate(0.7) brightness(0.9)",
+            opacity: webcamState === "active" ? 1 : 0,
           }}
         />
 
-        {/* Avatar stage */}
-        <div
-          ref={avatarContainerRef}
-          className="relative w-full h-full max-w-[800px] max-h-[600px] m-auto"
-          style={{ aspectRatio: "4 / 3" }}
-        >
-          {/* Subtle vignette */}
-          <div className="absolute inset-0 rounded-none pointer-events-none"
+        {/* FaceMesh canvas — positioned to match the video area */}
+        {webcamState === "active" && showMesh && (
+          <div
+            className="absolute"
             style={{
-              background: "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background)) 100%)",
+              left: videoRect.x,
+              top: videoRect.y,
+              width: videoRect.w,
+              height: videoRect.h,
+              pointerEvents: "none",
             }}
-          />
-
-          {webcamState === "active" && landmarks ? (
-            <AvatarOverlay
+          >
+            <FaceMeshCanvas
               landmarks={landmarks}
-              transformationMatrix={transformMatrix}
-              width={avatarSize.width}
-              height={avatarSize.height}
+              width={videoRect.w}
+              height={videoRect.h}
+              hasDetected={hasEverDetected && landmarks !== null}
             />
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-              <div className="h-16 w-16 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-                <span className="text-muted-foreground/40 text-2xl">🐯</span>
-              </div>
-              <p className="font-syne text-sm tracking-widest text-muted-foreground/50 uppercase">
-                {isLoading ? "Calibrating…" : "Awaiting signal"}
-              </p>
-            </div>
-          )}
-
-          {/* Label */}
-          <div className="absolute top-3 left-3 z-10">
-            <span className="font-syne text-[10px] tracking-[0.3em] text-muted-foreground/60 uppercase">
-              Output
-            </span>
           </div>
-        </div>
+        )}
+
+        {webcamState === "active" && !landmarks && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="font-syne text-lg font-bold tracking-widest text-primary opacity-70">
+              SEARCHING
+            </p>
+          </div>
+        )}
+
+        {/* Mesh toggle */}
+        {webcamState === "active" && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowMesh((v) => !v)}
+            className="absolute bottom-3 left-3 z-20 bg-foreground/40 text-primary backdrop-blur-sm hover:bg-foreground/60 hover:text-primary"
+            title={showMesh ? "Hide mesh" : "Show mesh"}
+          >
+            {showMesh ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </Button>
+        )}
       </div>
 
-      {/* ── LEFT PANEL (Webcam) ── */}
-      <div className="order-2 md:order-1 flex-1 relative flex items-center justify-center bg-foreground">
-        <div
-          ref={webcamContainerRef}
-          className="relative w-full h-full overflow-hidden"
-        >
-          {isLoading && <CalibrationOverlay />}
-
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            onLoadedMetadata={updateVideoRect}
-            onResize={updateVideoRect}
-            className="absolute inset-0 h-full w-full object-contain"
-            style={{
-              transform: "scaleX(-1)",
-              filter: "saturate(0.6) brightness(0.85)",
-              opacity: webcamState === "active" ? 1 : 0,
-            }}
+      {/* ── AVATAR OVERLAY — right side ── */}
+      <div
+        ref={avatarContainerRef}
+        className="absolute top-1/2 right-[10%] -translate-y-1/2 z-10"
+        style={{ width: 280, height: 280 }}
+      >
+        {webcamState === "active" && landmarks ? (
+          <AvatarOverlay
+            landmarks={landmarks}
+            transformationMatrix={transformMatrix}
+            width={280}
+            height={280}
           />
-
-          {/* FaceMesh canvas — positioned to match the letterboxed video area */}
-          {webcamState === "active" && showMesh && (
-            <div
-              className="absolute"
-              style={{
-                left: videoRect.x,
-                top: videoRect.y,
-                width: videoRect.w,
-                height: videoRect.h,
-                pointerEvents: "none",
-              }}
-            >
-              <FaceMeshCanvas
-                landmarks={landmarks}
-                width={videoRect.w}
-                height={videoRect.h}
-                hasDetected={hasEverDetected && landmarks !== null}
-              />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3">
+            <div className="h-16 w-16 border-2 border-dashed border-primary/30 flex items-center justify-center rounded-lg">
+              <span className="text-primary/40 text-2xl">🐯</span>
             </div>
-          )}
-
-          {webcamState === "active" && !landmarks && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p className="font-syne text-lg font-bold tracking-widest text-primary opacity-70">
-                SEARCHING
-              </p>
-            </div>
-          )}
-
-          {/* Label */}
-          <div className="absolute top-3 left-3 z-10">
-            <span className="font-syne text-[10px] tracking-[0.3em] text-primary/60 uppercase">
-              Input
-            </span>
+            <p className="font-syne text-sm tracking-widest text-primary/50 uppercase">
+              {isLoading ? "Calibrating…" : "Awaiting signal"}
+            </p>
           </div>
-
-          {/* Mesh toggle */}
-          {webcamState === "active" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowMesh((v) => !v)}
-              className="absolute bottom-3 right-3 z-10 bg-foreground/40 text-primary backdrop-blur-sm hover:bg-foreground/60 hover:text-primary"
-              title={showMesh ? "Hide mesh" : "Show mesh"}
-            >
-              {showMesh ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            </Button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
