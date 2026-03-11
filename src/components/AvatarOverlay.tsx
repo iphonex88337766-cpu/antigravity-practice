@@ -35,80 +35,75 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-const MAX_JAW_PX = 55;
+const MAX_JAW_PX = 50;
 
 /**
- * Wide, soft feline upper-lip W-contour.
- * Spans the full whisker-pad area with a pronounced, rounded W shape.
- * The two whisker-pad lobes dip deeply (~73%), with a slight rise at center
- * philtrum (~71.5%), and the mouth corners curve back up to the cheeks (~66%).
- * This creates the characteristic wide cat/tiger lip shape.
+ * Integrated feline mouth contour.
+ * 
+ * KEY DESIGN: The edges (x=0%, x=100%) sit at y=100% (image bottom),
+ * so the face is NEVER split at the sides. The contour only rises into
+ * the W-lip shape in the central muzzle zone (~28–72% x). This makes
+ * the mouth opening appear as a natural part of the face, not a
+ * horizontal cut across the full image.
+ *
  * Format: [x%, y%]
  */
 const W_POINTS: [number, number][] = [
-  // ── far left cheek ──
-  [0,   64],
-  [6,   64],
-  [12,  64],
-  // ── left cheek curving into mouth corner ──
-  [16,  64.2],
-  [20,  64.8],
-  [23,  65.5],
-  [25,  66.2],
-  [27,  67.0],   // left mouth corner
-  // ── left whisker-pad lobe (deep rounded curve) ──
-  [29,  68.0],
-  [31,  69.2],
-  [33,  70.2],
-  [35,  71.0],
-  [37,  71.8],
-  [38.5,72.3],
-  [40,  72.8],   // left lobe deepest
-  [41.5,72.6],
-  [43,  72.0],
-  // ── rising toward philtrum center ──
-  [44.5,71.2],
-  [46,  70.5],
-  [47.5,70.2],
-  [49,  70.0],
-  [50,  69.8],   // philtrum – slight rise between the two lobes
-  [51,  70.0],
-  [52.5,70.2],
-  [53.5,70.5],
-  [55.5,71.2],
+  // ── far edges: no split (at image bottom) ──
+  [0,   100],
+  [10,  100],
+  [18,  100],
+  // ── curve up from chin toward left mouth corner ──
+  [22,  92],
+  [25,  82],
+  [27,  76],
+  [28.5,73],
+  [30,  71],     // left mouth corner
+  // ── left whisker-pad lobe ──
+  [32,  69.5],
+  [34,  68.5],
+  [36,  67.8],
+  [38,  67.3],
+  [40,  67.0],   // left lobe apex
+  [42,  67.2],
+  [44,  67.8],
+  // ── philtrum rise ──
+  [46,  68.2],
+  [48,  68.0],
+  [50,  67.6],   // center philtrum (slight rise between lobes)
+  [52,  68.0],
+  [54,  68.2],
   // ── right whisker-pad lobe ──
-  [57,  72.0],
-  [58.5,72.6],
-  [60,  72.8],   // right lobe deepest
-  [61.5,72.3],
-  [63,  71.8],
-  [65,  71.0],
-  [67,  70.2],
-  [69,  69.2],
-  [71,  68.0],
-  // ── right mouth corner curving back to cheek ──
-  [73,  67.0],   // right mouth corner
-  [75,  66.2],
-  [77,  65.5],
-  [80,  64.8],
-  [84,  64.2],
-  // ── far right cheek ──
-  [88,  64],
-  [94,  64],
-  [100, 64],
+  [56,  67.8],
+  [58,  67.2],
+  [60,  67.0],   // right lobe apex
+  [62,  67.3],
+  [64,  67.8],
+  [66,  68.5],
+  [68,  69.5],
+  [70,  71],     // right mouth corner
+  // ── curve back down to chin ──
+  [71.5,73],
+  [73,  76],
+  [75,  82],
+  [78,  92],
+  // ── far edges: no split ──
+  [82,  100],
+  [90,  100],
+  [100, 100],
 ];
 
 /** Build CSS clip-path polygon for the UPPER face (everything above the W) */
 function upperClipPath(): string {
-  return `polygon(0% 0%, 100% 0%, 100% ${W_POINTS[W_POINTS.length - 1][1]}%, ${
-    [...W_POINTS].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ")
-  }, 0% ${W_POINTS[0][1]}%)`;
+  // Full top rectangle, then trace the W bottom edge (reversed)
+  const reversed = [...W_POINTS].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
+  return `polygon(0% 0%, 100% 0%, 100% 100%, ${reversed}, 0% 100%)`;
 }
 
 /** Build CSS clip-path polygon for the LOWER jaw (everything below the W) */
 function lowerClipPath(): string {
   const wPath = W_POINTS.map(([x, y]) => `${x}% ${y}%`).join(", ");
-  return `polygon(${wPath}, 100% ${W_POINTS[W_POINTS.length - 1][1]}%, 100% 100%, 0% 100%, 0% ${W_POINTS[0][1]}%)`;
+  return `polygon(${wPath}, 100% 100%, 0% 100%)`;
 }
 
 const UPPER_CLIP = upperClipPath();
@@ -158,95 +153,110 @@ export default function AvatarOverlay({
   }, [transformationMatrix, width, height]);
 
   const size = Math.min(width, height) * 0.8;
-  // W-contour center Y — average of the deepest lobe points (~72.8%) and corners (~67%)
-  const wCenterY = size * 0.695;
+  // The W-lip center Y for cavity placement (~67.5% of size)
+  const mouthCenterY = size * 0.675;
+  // Mouth width spans roughly 30–70% of size
+  const mouthWidth = size * 0.42;
+  const mouthLeft = size * 0.29;
+  const halfMouth = mouthWidth / 2;
 
   return (
     <div style={containerStyle}>
-      {/* ── LAYER 1: Mouth Cavity with Fierce Dentition ── */}
+      {/* ── LAYER 1: Mouth Cavity (behind both face halves) ── */}
       <svg
         style={{
           position: "absolute",
-          left: size * 0.2,
-          top: wCenterY - 8,
-          width: size * 0.6,
-          height: jawDrop + 40,
+          left: mouthLeft,
+          top: mouthCenterY - 6,
+          width: mouthWidth,
+          height: jawDrop + 30,
           pointerEvents: "none",
           zIndex: 0,
-          opacity: jawRaw < 0.05 ? 0 : Math.min((jawRaw - 0.05) / 0.1, 1),
-          transition: "opacity 0.08s ease",
+          opacity: jawRaw < 0.04 ? 0 : Math.min((jawRaw - 0.04) / 0.08, 1),
+          transition: "opacity 0.06s ease",
         }}
-        viewBox={`0 0 ${size * 0.6} ${jawDrop + 40}`}
+        viewBox={`0 0 ${mouthWidth} ${jawDrop + 30}`}
       >
-        {/* Deep burgundy cavity — wide to fill the W opening */}
+        {/* Dark inner cavity — shaped to fill the W opening */}
         <ellipse
-          cx={size * 0.3}
-          cy={jawDrop * 0.4 + 10}
-          rx={size * 0.14 + jawDrop * 0.35}
-          ry={Math.max(jawDrop * 0.48, 0.5)}
-          fill="hsl(340, 45%, 15%)"
+          cx={halfMouth}
+          cy={jawDrop * 0.38 + 8}
+          rx={halfMouth * 0.75 + jawDrop * 0.2}
+          ry={Math.max(jawDrop * 0.46, 0.5)}
+          fill="hsl(340, 45%, 12%)"
         />
-        {/* Inner cavity gradient - darker center */}
+        {/* Deeper center darkness */}
         <ellipse
-          cx={size * 0.3}
-          cy={jawDrop * 0.4 + 10}
-          rx={size * 0.08 + jawDrop * 0.18}
-          ry={Math.max(jawDrop * 0.32, 0.3)}
-          fill="hsl(340, 50%, 10%)"
+          cx={halfMouth}
+          cy={jawDrop * 0.38 + 8}
+          rx={halfMouth * 0.45 + jawDrop * 0.1}
+          ry={Math.max(jawDrop * 0.3, 0.3)}
+          fill="hsl(340, 50%, 7%)"
         />
+
+        {/* Upper lip inner edge — soft pink/red line across top */}
+        <ellipse
+          cx={halfMouth}
+          cy={3}
+          rx={halfMouth * 0.7}
+          ry={Math.max(jawDrop * 0.06, 0.5)}
+          fill="hsl(350, 50%, 45%)"
+          opacity={Math.min(jawDrop / 8, 0.6)}
+        />
+
         {/* Soft pink tongue */}
         <ellipse
-          cx={size * 0.3}
-          cy={jawDrop * 0.55 + 14}
-          rx={size * 0.06 + jawDrop * 0.12}
+          cx={halfMouth}
+          cy={jawDrop * 0.58 + 12}
+          rx={halfMouth * 0.35 + jawDrop * 0.08}
           ry={Math.max(jawDrop * 0.2, 0.3)}
           fill="hsl(350, 60%, 58%)"
         />
         {/* Tongue highlight */}
         <ellipse
-          cx={size * 0.3 - 1}
-          cy={jawDrop * 0.5 + 13}
-          rx={size * 0.03 + jawDrop * 0.05}
+          cx={halfMouth - 1}
+          cy={jawDrop * 0.54 + 11}
+          rx={halfMouth * 0.15 + jawDrop * 0.03}
           ry={Math.max(jawDrop * 0.08, 0.2)}
           fill="hsl(350, 65%, 68%)"
-          opacity="0.6"
+          opacity="0.5"
         />
 
-        {/* ── UPPER TEETH (hang from upper jaw) ── */}
-        {/* Left canine fang */}
+        {/* ── UPPER FANGS (hang from upper lip) ── */}
+        {/* Left canine */}
         <polygon
           points={`
-            ${size * 0.3 - size * 0.07},1
-            ${size * 0.3 - size * 0.07 + 5},1
-            ${size * 0.3 - size * 0.07 + 4},${Math.min(5 + jawDrop * 0.5, 22)}
-            ${size * 0.3 - size * 0.07 + 1},${Math.min(7 + jawDrop * 0.55, 25)}
-            ${size * 0.3 - size * 0.07 - 1},${Math.min(3 + jawDrop * 0.3, 15)}
+            ${halfMouth - halfMouth * 0.42},0
+            ${halfMouth - halfMouth * 0.42 + 5},0
+            ${halfMouth - halfMouth * 0.42 + 3.5},${Math.min(6 + jawDrop * 0.55, 24)}
+            ${halfMouth - halfMouth * 0.42 + 1},${Math.min(8 + jawDrop * 0.6, 27)}
+            ${halfMouth - halfMouth * 0.42 - 0.5},${Math.min(4 + jawDrop * 0.35, 16)}
           `}
           fill="hsl(45, 20%, 96%)"
           stroke="hsl(40, 15%, 88%)"
           strokeWidth="0.5"
-          opacity={Math.min(jawDrop / 5, 1)}
+          opacity={Math.min(jawDrop / 4, 1)}
         />
-        {/* Right canine fang */}
+        {/* Right canine */}
         <polygon
           points={`
-            ${size * 0.3 + size * 0.07 - 5},1
-            ${size * 0.3 + size * 0.07},1
-            ${size * 0.3 + size * 0.07 + 1},${Math.min(3 + jawDrop * 0.3, 15)}
-            ${size * 0.3 + size * 0.07 - 1},${Math.min(7 + jawDrop * 0.55, 25)}
-            ${size * 0.3 + size * 0.07 - 4},${Math.min(5 + jawDrop * 0.5, 22)}
+            ${halfMouth + halfMouth * 0.42 - 5},0
+            ${halfMouth + halfMouth * 0.42},0
+            ${halfMouth + halfMouth * 0.42 + 0.5},${Math.min(4 + jawDrop * 0.35, 16)}
+            ${halfMouth + halfMouth * 0.42 - 1},${Math.min(8 + jawDrop * 0.6, 27)}
+            ${halfMouth + halfMouth * 0.42 - 3.5},${Math.min(6 + jawDrop * 0.55, 24)}
           `}
           fill="hsl(45, 20%, 96%)"
           stroke="hsl(40, 15%, 88%)"
           strokeWidth="0.5"
-          opacity={Math.min(jawDrop / 5, 1)}
+          opacity={Math.min(jawDrop / 4, 1)}
         />
         {/* Upper incisors */}
         {[-7, -2.5, 2.5, 7].map((xOff, i) => (
           <rect
             key={`ui-${i}`}
-            x={size * 0.3 + xOff - 2}
-            y={1}
+            x={halfMouth + xOff - 2}
+            y={0}
             width="4"
             height={Math.min(3 + jawDrop * 0.16, 8)}
             rx="1.5"
@@ -254,17 +264,18 @@ export default function AvatarOverlay({
             fill="hsl(45, 18%, 95%)"
             stroke="hsl(40, 12%, 90%)"
             strokeWidth="0.3"
-            opacity={Math.min(jawDrop / 6, 1)}
+            opacity={Math.min(jawDrop / 5, 1)}
           />
         ))}
 
         {/* ── LOWER TEETH (rise from lower jaw) ── */}
+        {/* Lower canine stubs */}
         <polygon
           points={`
-            ${size * 0.3 - size * 0.06},${jawDrop * 0.75 + 8}
-            ${size * 0.3 - size * 0.06 + 4},${jawDrop * 0.75 + 8}
-            ${size * 0.3 - size * 0.06 + 3},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.28, 11)}
-            ${size * 0.3 - size * 0.06 + 1},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.32, 13)}
+            ${halfMouth - halfMouth * 0.38},${jawDrop * 0.78 + 6}
+            ${halfMouth - halfMouth * 0.38 + 4},${jawDrop * 0.78 + 6}
+            ${halfMouth - halfMouth * 0.38 + 3},${jawDrop * 0.78 + 6 - Math.min(jawDrop * 0.25, 10)}
+            ${halfMouth - halfMouth * 0.38 + 1},${jawDrop * 0.78 + 6 - Math.min(jawDrop * 0.3, 12)}
           `}
           fill="hsl(45, 18%, 94%)"
           stroke="hsl(40, 12%, 88%)"
@@ -273,10 +284,10 @@ export default function AvatarOverlay({
         />
         <polygon
           points={`
-            ${size * 0.3 + size * 0.06 - 4},${jawDrop * 0.75 + 8}
-            ${size * 0.3 + size * 0.06},${jawDrop * 0.75 + 8}
-            ${size * 0.3 + size * 0.06 - 1},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.32, 13)}
-            ${size * 0.3 + size * 0.06 - 3},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.28, 11)}
+            ${halfMouth + halfMouth * 0.38 - 4},${jawDrop * 0.78 + 6}
+            ${halfMouth + halfMouth * 0.38},${jawDrop * 0.78 + 6}
+            ${halfMouth + halfMouth * 0.38 - 1},${jawDrop * 0.78 + 6 - Math.min(jawDrop * 0.3, 12)}
+            ${halfMouth + halfMouth * 0.38 - 3},${jawDrop * 0.78 + 6 - Math.min(jawDrop * 0.25, 10)}
           `}
           fill="hsl(45, 18%, 94%)"
           stroke="hsl(40, 12%, 88%)"
@@ -287,8 +298,8 @@ export default function AvatarOverlay({
         {[-4, 0, 4].map((xOff, i) => (
           <rect
             key={`li-${i}`}
-            x={size * 0.3 + xOff - 1.5}
-            y={jawDrop * 0.75 + 8 - Math.min(2 + jawDrop * 0.1, 5)}
+            x={halfMouth + xOff - 1.5}
+            y={jawDrop * 0.78 + 6 - Math.min(2 + jawDrop * 0.1, 5)}
             width="3"
             height={Math.min(2 + jawDrop * 0.1, 5)}
             rx="1.2"
@@ -299,6 +310,16 @@ export default function AvatarOverlay({
             opacity={Math.min(jawDrop / 6, 1)}
           />
         ))}
+
+        {/* Lower lip inner edge */}
+        <ellipse
+          cx={halfMouth}
+          cy={jawDrop * 0.78 + 8}
+          rx={halfMouth * 0.65}
+          ry={Math.max(jawDrop * 0.05, 0.5)}
+          fill="hsl(350, 45%, 42%)"
+          opacity={Math.min(jawDrop / 8, 0.5)}
+        />
       </svg>
 
       {/* ── LAYER 2: Lower Jaw (W-contour, translates down with jawOpen) ── */}
