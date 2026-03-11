@@ -9,6 +9,7 @@ import { useWebcam } from "@/hooks/useWebcam";
 import { useFaceLandmarker } from "@/hooks/useFaceLandmarker";
 import FaceMeshCanvas from "@/components/FaceMeshCanvas";
 import PuppyOverlay from "@/components/PuppyOverlay";
+import CatOverlay from "@/components/CatOverlay";
 import AvatarOverlay from "@/components/AvatarOverlay";
 import CalibrationOverlay from "@/components/CalibrationOverlay";
 import ErrorScreen from "@/components/ErrorScreen";
@@ -135,6 +136,7 @@ const Index = () => {
   return (
     <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
       {webcamState === "active" && <PuppyOverlay blendshapes={blendshapes} />}
+      {webcamState === "active" && <CatOverlay />}
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"
