@@ -14,7 +14,7 @@ export default function CatOverlay() {
         style={{
           position: "fixed",
           right: 50,
-          top: 440,
+          top: 500,
           width: 300,
           height: 300,
           background: "transparent",
