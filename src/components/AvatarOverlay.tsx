@@ -45,19 +45,19 @@ const MAX_JAW_PX = 55;
  * Format: [x%, y%] — these define the boundary between upper and lower face.
  */
 const W_POINTS: [number, number][] = [
-  [0, 74],       // far left cheek
-  [18, 75],      // left cheek edge
-  [25, 77],      // left mouth corner (dip)
-  [32, 75],      // left muzzle rise
-  [38, 73],      // left muzzle peak
-  [43, 76],      // left side of lip dip
-  [50, 78],      // center lower lip (W bottom)
-  [57, 76],      // right side of lip dip
-  [62, 73],      // right muzzle peak
-  [68, 75],      // right muzzle rise
-  [75, 77],      // right mouth corner (dip)
-  [82, 75],      // right cheek edge
-  [100, 74],     // far right cheek
+  [0, 79],       // far left cheek
+  [15, 80],      // left cheek edge
+  [24, 82],      // left mouth corner (dip)
+  [32, 80],      // left muzzle rise
+  [38, 78],      // left muzzle peak
+  [44, 81],      // left side of lip dip
+  [50, 83],      // center lower lip (W bottom)
+  [56, 81],      // right side of lip dip
+  [62, 78],      // right muzzle peak
+  [68, 80],      // right muzzle rise
+  [76, 82],      // right mouth corner (dip)
+  [85, 80],      // right cheek edge
+  [100, 79],     // far right cheek
 ];
 
 /** Build CSS clip-path polygon for the UPPER face (everything above the W) */
@@ -88,11 +88,14 @@ export default function AvatarOverlay({
 }: AvatarOverlayProps) {
   const smoothJawRef = useRef(0);
 
-  const jawDrop = useMemo(() => {
+  // Smooth jawOpen — using raw value 0-1 for scaleY factor
+  const jawRaw = useMemo(() => {
     const raw = blendshapes?.["jawOpen"] ?? 0;
-    smoothJawRef.current = lerp(smoothJawRef.current, raw, 0.25);
-    return smoothJawRef.current * MAX_JAW_PX;
+    smoothJawRef.current = lerp(smoothJawRef.current, raw, 0.3);
+    return smoothJawRef.current;
   }, [blendshapes]);
+
+  const jawDrop = jawRaw * MAX_JAW_PX;
 
   const containerStyle = useMemo(() => {
     const size = Math.min(width, height) * 0.8;
@@ -129,11 +132,13 @@ export default function AvatarOverlay({
         style={{
           position: "absolute",
           left: 0,
-          top: avgWY - 15,
+          top: avgWY - 10,
           width: size,
           height: jawDrop + 40,
           pointerEvents: "none",
           zIndex: 0,
+          opacity: jawRaw < 0.05 ? 0 : Math.min((jawRaw - 0.05) / 0.1, 1),
+          transition: "opacity 0.08s ease",
         }}
         viewBox={`0 0 ${size} ${jawDrop + 40}`}
       >
@@ -261,7 +266,7 @@ export default function AvatarOverlay({
         ))}
       </svg>
 
-      {/* ── LAYER 2: Lower Jaw (W-contour, scaleY stretch from top edge) ── */}
+      {/* ── LAYER 2: Lower Jaw (W-contour, scaleY stretch from W top edge) ── */}
       <div
         style={{
           position: "absolute",
@@ -270,8 +275,8 @@ export default function AvatarOverlay({
           width: size,
           height: size,
           clipPath: LOWER_CLIP,
-          transformOrigin: `50% ${(W_POINTS.reduce((s, [, y]) => Math.min(s, y), 100))}%`,
-          transform: `scaleY(${1 + jawDrop / size})`,
+          transformOrigin: `50% ${Math.min(...W_POINTS.map(([,y]) => y))}%`,
+          transform: `scaleY(${1 + jawRaw * 0.35})`,
           zIndex: 1,
           willChange: "transform",
         }}
