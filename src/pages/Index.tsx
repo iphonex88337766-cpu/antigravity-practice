@@ -194,7 +194,9 @@ const Index = () => {
             ref={videoRef}
             playsInline
             muted
-            className="absolute inset-0 h-full w-full object-cover"
+            onLoadedMetadata={updateVideoRect}
+            onResize={updateVideoRect}
+            className="absolute inset-0 h-full w-full object-contain"
             style={{
               transform: "scaleX(-1)",
               filter: "saturate(0.6) brightness(0.85)",
@@ -202,13 +204,25 @@ const Index = () => {
             }}
           />
 
+          {/* FaceMesh canvas — positioned to match the letterboxed video area */}
           {webcamState === "active" && showMesh && (
-            <FaceMeshCanvas
-              landmarks={landmarks}
-              width={webcamSize.width}
-              height={webcamSize.height}
-              hasDetected={hasEverDetected && landmarks !== null}
-            />
+            <div
+              className="absolute"
+              style={{
+                left: videoRect.x,
+                top: videoRect.y,
+                width: videoRect.w,
+                height: videoRect.h,
+                pointerEvents: "none",
+              }}
+            >
+              <FaceMeshCanvas
+                landmarks={landmarks}
+                width={videoRect.w}
+                height={videoRect.h}
+                hasDetected={hasEverDetected && landmarks !== null}
+              />
+            </div>
           )}
 
           {webcamState === "active" && !landmarks && (
