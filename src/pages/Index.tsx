@@ -4,12 +4,13 @@
  * Mobile: stacks vertically, avatar on top.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useWebcam } from "@/hooks/useWebcam";
 import { useFaceLandmarker } from "@/hooks/useFaceLandmarker";
 import FaceMeshCanvas from "@/components/FaceMeshCanvas";
 import PuppyOverlay from "@/components/PuppyOverlay";
 import CatOverlay from "@/components/CatOverlay";
+import HeartOverlay from "@/components/HeartOverlay";
 import AvatarOverlay from "@/components/AvatarOverlay";
 import CalibrationOverlay from "@/components/CalibrationOverlay";
 import ErrorScreen from "@/components/ErrorScreen";
