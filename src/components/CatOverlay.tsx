@@ -90,7 +90,7 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
           overflow: "hidden",
           zIndex: 2147483647,
           pointerEvents: "none",
-          animation: "catPop 0.3s ease-out both",
+          animation: "catPop 0.15s ease-out both",
         }}
       >
         <img

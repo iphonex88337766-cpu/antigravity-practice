@@ -91,7 +91,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
           overflow: "hidden",
           zIndex: 2147483647,
           pointerEvents: "none",
-          animation: "puppyPop 0.3s ease-out both",
+          animation: "puppyPop 0.15s ease-out both",
         }}
       >
         <img
