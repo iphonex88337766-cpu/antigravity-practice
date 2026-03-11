@@ -116,6 +116,15 @@ function lowerClipPath(points: [number, number][]): string {
  * Uses landmarks 13 (upper lip center) and 14 (lower lip center),
  * mapped relative to forehead (10) and chin (152) to get face-relative %.
  */
+/**
+ * Derive mouth Y offset from landmarks.
+ * Instead of mapping to an absolute avatar Y, we compute relative deviation
+ * from the "neutral" mouth position (~70% of face height) and apply only
+ * that small delta to BASE_MOUTH_Y. This keeps the mouth anchored at the
+ * correct static position while allowing subtle tracking adjustments.
+ */
+const NEUTRAL_FACE_RELATIVE = 0.70; // typical mouth center as fraction of face height
+
 function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
   const upperLip = landmarks[13];
   const lowerLip = landmarks[14];
@@ -130,10 +139,10 @@ function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
   if (faceHeight <= 0) return BASE_MOUTH_Y;
 
   const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
-  const faceRelative = (mouthCenterY - faceTop) / faceHeight; // 0-1 within face
-  // Map to avatar image space: tiger face spans ~20% to ~85% of image
-  const avatarY = 20 + faceRelative * 65;
-  return avatarY;
+  const faceRelative = (mouthCenterY - faceTop) / faceHeight;
+  // Only apply the deviation from neutral — small adjustments for head tilt etc.
+  const deviation = (faceRelative - NEUTRAL_FACE_RELATIVE) * 15; // scaled to avatar %
+  return BASE_MOUTH_Y + deviation;
 }
 
 export default function AvatarOverlay({
