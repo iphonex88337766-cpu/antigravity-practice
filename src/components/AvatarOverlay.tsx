@@ -209,7 +209,7 @@ export default function AvatarOverlay({
 
   return (
     <div style={containerStyle}>
-      {/* ── Mouth Cavity SVG — shaped to match the seam, sits behind face layers ── */}
+      {/* ── Mouth structure SVG — lip forms + cavity, behind face layers ── */}
       <svg
         style={{
           position: "absolute",
@@ -223,15 +223,21 @@ export default function AvatarOverlay({
         viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
       >
         <defs>
-          {/* Gradient for depth: darker center, lighter at edges */}
-          <radialGradient id="mouthCavity" cx="50%" cy="35%" rx="50%" ry="60%">
-            <stop offset="0%" stopColor="hsl(340, 30%, 15%)" />
-            <stop offset="100%" stopColor="hsl(340, 45%, 6%)" />
+          <radialGradient id="mouthCavity" cx="50%" cy="30%" rx="55%" ry="65%">
+            <stop offset="0%" stopColor="hsl(350, 25%, 18%)" />
+            <stop offset="70%" stopColor="hsl(345, 40%, 8%)" />
+            <stop offset="100%" stopColor="hsl(340, 45%, 5%)" />
           </radialGradient>
+          {/* Soft blur for lip form shadows */}
+          <filter id="lipSoft" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.5" />
+          </filter>
+          <filter id="cornerBlend" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" />
+          </filter>
         </defs>
-        {/* Upper lip edge (top of cavity) — follows the W-contour exactly */}
-        {/* Lower jaw edge (bottom of cavity) — same curve shifted down by openAmt */}
-        {/* Corner tapers: the cavity narrows to zero width at the mouth corners */}
+
+        {/* ── Dark mouth cavity (innermost, deepest layer) ── */}
         <path
           d={`
             M ${lcx} ${cornerY}
@@ -241,7 +247,6 @@ export default function AvatarOverlay({
             C ${cx + size * 0.08} ${philtrumY},
               ${rcx - size * 0.04} ${cornerY - 1},
               ${rcx} ${cornerY}
-
             C ${rcx - size * 0.02} ${cornerY + openAmt * 0.3},
               ${rcx - size * 0.06} ${cornerY + openAmt * 0.7},
               ${cx + size * 0.06} ${philtrumY + openAmt + 1}
@@ -256,37 +261,94 @@ export default function AvatarOverlay({
           fill="url(#mouthCavity)"
           opacity={jawRaw < 0.01 ? 0.5 : Math.min(0.5 + jawRaw * 2, 1)}
         />
-        {/* Subtle upper-lip shadow line for definition */}
+
+        {/* ── Upper lip thickness — soft shadow band above the seam ── */}
         <path
           d={`
-            M ${lcx + 2} ${cornerY}
+            M ${lcx - size * 0.03} ${cornerY - 3}
+            C ${lcx + size * 0.03} ${cornerY - 5},
+              ${cx - size * 0.10} ${philtrumY - 5},
+              ${cx} ${philtrumY - 4.5}
+            C ${cx + size * 0.10} ${philtrumY - 5},
+              ${rcx - size * 0.03} ${cornerY - 5},
+              ${rcx + size * 0.03} ${cornerY - 3}
+            C ${rcx - size * 0.02} ${cornerY - 1},
+              ${cx + size * 0.08} ${philtrumY},
+              ${cx} ${philtrumY}
+            C ${cx - size * 0.08} ${philtrumY},
+              ${lcx + size * 0.02} ${cornerY - 1},
+              ${lcx - size * 0.03} ${cornerY - 3}
+            Z
+          `}
+          fill="hsla(25, 30%, 12%, 0.18)"
+          filter="url(#lipSoft)"
+        />
+
+        {/* ── Upper lip edge — crisp seam line ── */}
+        <path
+          d={`
+            M ${lcx} ${cornerY}
             C ${lcx + size * 0.04} ${cornerY - 1},
               ${cx - size * 0.08} ${philtrumY},
               ${cx} ${philtrumY}
             C ${cx + size * 0.08} ${philtrumY},
               ${rcx - size * 0.04} ${cornerY - 1},
-              ${rcx - 2} ${cornerY}
+              ${rcx} ${cornerY}
           `}
           fill="none"
-          stroke="hsla(20, 20%, 10%, 0.25)"
+          stroke="hsla(20, 25%, 10%, 0.35)"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+
+        {/* ── Lower jaw edge — softer, slightly lighter ── */}
+        <path
+          d={`
+            M ${lcx + size * 0.02} ${cornerY + openAmt * 0.35}
+            C ${lcx + size * 0.06} ${cornerY + openAmt * 0.7},
+              ${cx - size * 0.06} ${philtrumY + openAmt + 0.5},
+              ${cx} ${philtrumY + openAmt + 1.5}
+            C ${cx + size * 0.06} ${philtrumY + openAmt + 0.5},
+              ${rcx - size * 0.06} ${cornerY + openAmt * 0.7},
+              ${rcx - size * 0.02} ${cornerY + openAmt * 0.35}
+          `}
+          fill="none"
+          stroke="hsla(30, 25%, 55%, 0.15)"
           strokeWidth="1"
           strokeLinecap="round"
         />
-        {/* Subtle lower-jaw highlight line for seam definition */}
+        {/* Lower jaw shadow — subtle depth below jaw edge */}
         <path
           d={`
-            M ${lcx + size * 0.03} ${cornerY + openAmt * 0.4}
-            C ${lcx + size * 0.07} ${cornerY + openAmt * 0.75},
-              ${cx - size * 0.06} ${philtrumY + openAmt + 1},
-              ${cx} ${philtrumY + openAmt + 1.5}
-            C ${cx + size * 0.06} ${philtrumY + openAmt + 1},
-              ${rcx - size * 0.07} ${cornerY + openAmt * 0.75},
-              ${rcx - size * 0.03} ${cornerY + openAmt * 0.4}
+            M ${lcx + size * 0.03} ${cornerY + openAmt * 0.45 + 2}
+            C ${lcx + size * 0.07} ${cornerY + openAmt * 0.8 + 2},
+              ${cx - size * 0.05} ${philtrumY + openAmt + 3},
+              ${cx} ${philtrumY + openAmt + 3.5}
+            C ${cx + size * 0.05} ${philtrumY + openAmt + 3},
+              ${rcx - size * 0.07} ${cornerY + openAmt * 0.8 + 2},
+              ${rcx - size * 0.03} ${cornerY + openAmt * 0.45 + 2}
           `}
           fill="none"
-          stroke="hsla(30, 30%, 60%, 0.12)"
-          strokeWidth="0.8"
+          stroke="hsla(25, 20%, 15%, 0.12)"
+          strokeWidth="2"
+          filter="url(#lipSoft)"
           strokeLinecap="round"
+        />
+
+        {/* ── Mouth corner blends — soft radial shadows that merge into cheeks ── */}
+        <circle
+          cx={lcx - size * 0.01}
+          cy={cornerY + openAmt * 0.15}
+          r={size * 0.025 + openAmt * 0.15}
+          fill="hsla(20, 25%, 12%, 0.2)"
+          filter="url(#cornerBlend)"
+        />
+        <circle
+          cx={rcx + size * 0.01}
+          cy={cornerY + openAmt * 0.15}
+          r={size * 0.025 + openAmt * 0.15}
+          fill="hsla(20, 25%, 12%, 0.2)"
+          filter="url(#cornerBlend)"
         />
       </svg>
 
