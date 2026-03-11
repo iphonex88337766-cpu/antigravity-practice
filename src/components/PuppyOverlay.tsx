@@ -46,8 +46,14 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
         closedFramesRef.current = 0;
       }
     } else if (phaseRef.current === "closed") {
+      // If left eye closes at ANY point during the cycle, abort immediately
+      if (!leftOpen) {
+        phaseRef.current = "idle";
+        closedFramesRef.current = 0;
+        return;
+      }
       // Right eye was closed long enough — trigger when it opens back up, left still open
-      if (rightOpen && leftOpen) {
+      if (rightOpen) {
         phaseRef.current = "idle";
         closedFramesRef.current = 0;
         setVisible(true);
@@ -56,10 +62,6 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
           setVisible(false);
           window.setTimeout(() => { cooldownRef.current = false; }, 500);
         }, DISPLAY_DURATION);
-      } else if (!leftOpen) {
-        // Both eyes closed — abort
-        phaseRef.current = "idle";
-        closedFramesRef.current = 0;
       }
     }
   }, [rightBlink, leftBlink, visible, blendshapes]);
