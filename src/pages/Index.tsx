@@ -195,7 +195,7 @@ const Index = () => {
             variant="ghost"
             size="icon"
             onClick={() => setShowMesh((v) => !v)}
-            className="absolute bottom-3 left-3 z-20 bg-foreground/40 text-primary backdrop-blur-sm hover:bg-foreground/60 hover:text-primary"
+            className="absolute bottom-3 left-3 z-20 bg-transparent text-primary hover:bg-white/10 hover:text-primary"
             title={showMesh ? "Hide mesh" : "Show mesh"}
           >
             {showMesh ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
