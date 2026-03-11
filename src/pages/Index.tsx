@@ -134,7 +134,7 @@ const Index = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
-      {/* PUPPY — disabled, awaiting transparent PNG asset */}
+      {webcamState === "active" && <PuppyOverlay blendshapes={blendshapes} />}
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"
