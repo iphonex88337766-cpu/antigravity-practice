@@ -109,8 +109,8 @@ export default function AvatarOverlay({
   const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
   const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
 
-  // Jaw drop: pure downward translation in viewBox units
-  const jawDrop = mouthOpen * 15;
+  // Jaw stretch: scaleY 1.0 → 1.8, pivoted at splitY top edge
+  const jawStretchY = 1 + mouthOpen * 0.8;
   // Split line in viewBox units (just above the static mouth)
   const splitY = 74;
 
@@ -141,7 +141,7 @@ export default function AvatarOverlay({
         <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
       </svg>
 
-      {/* Layer 1: Inner mouth cavity — dark background revealed by jaw stretch */}
+      {/* Layer 1: Inner mouth cavity — revealed between upper face and stretched jaw */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -161,10 +161,17 @@ export default function AvatarOverlay({
             <stop offset="100%" stopColor="#1a0a0e" />
           </radialGradient>
         </defs>
-        {/* Dark cavity ellipse positioned at the split line, sized to fill the gap */}
+        {/* Fur-colored bridge to hide any sub-pixel gap at the seam */}
+        <rect
+          x="20" y={splitY - 1}
+          width="60" height="3"
+          fill="#d4956b"
+          rx="1"
+        />
+        {/* Dark cavity ellipse */}
         <ellipse
           cx="50"
-          cy={splitY + 1}
+          cy={splitY + 1 + mouthOpen * 4}
           rx={8 + smileAmount * 2}
           ry={mouthOpen * 10}
           fill="url(#mouth-cavity)"
@@ -174,7 +181,7 @@ export default function AvatarOverlay({
         {mouthOpen > 0.3 && (
           <ellipse
             cx="50"
-            cy={splitY + mouthOpen * 6}
+            cy={splitY + 2 + mouthOpen * 8}
             rx={4 + smileAmount}
             ry={mouthOpen * 3}
             fill="#e85d75"
@@ -214,7 +221,7 @@ export default function AvatarOverlay({
         />
       </svg>
 
-      {/* Layer 3: Lower jaw — translates downward + scaleY from top edge */}
+      {/* Layer 3: Lower jaw — scaleY anchored at splitY top edge (rubber stretch) */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -232,8 +239,8 @@ export default function AvatarOverlay({
             <rect x="0" y={splitY} width="100" height={100 - splitY} />
           </clipPath>
         </defs>
-        {/* Pure downward translation — top edge stays anchored at splitY */}
-        <g transform={`translate(0, ${jawDrop})`}>
+        {/* scaleY pivoted at splitY: translate origin to splitY, scale, translate back */}
+        <g style={{ transformOrigin: `50px ${splitY}px` }} transform={`scale(1, ${jawStretchY})`}>
           <image
             href={avatarSrc}
             x="0" y="0" width="100" height="100"
