@@ -88,11 +88,14 @@ export default function AvatarOverlay({
 }: AvatarOverlayProps) {
   const smoothJawRef = useRef(0);
 
-  const jawDrop = useMemo(() => {
+  // Smooth jawOpen — using raw value 0-1 for scaleY factor
+  const jawRaw = useMemo(() => {
     const raw = blendshapes?.["jawOpen"] ?? 0;
-    smoothJawRef.current = lerp(smoothJawRef.current, raw, 0.25);
-    return smoothJawRef.current * MAX_JAW_PX;
+    smoothJawRef.current = lerp(smoothJawRef.current, raw, 0.3);
+    return smoothJawRef.current;
   }, [blendshapes]);
+
+  const jawDrop = jawRaw * MAX_JAW_PX;
 
   const containerStyle = useMemo(() => {
     const size = Math.min(width, height) * 0.8;
