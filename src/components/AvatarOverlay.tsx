@@ -129,17 +129,17 @@ export default function AvatarOverlay({
       >
         {/* Left eye */}
         <ellipse
-          cx="37"
-          cy="42"
-          rx="5"
-          ry={Math.max(eyeOpenLeft * 5, 0.5)}
+          cx="35"
+          cy="47"
+          rx="5.5"
+          ry={Math.max(eyeOpenLeft * 5.5, 0.5)}
           fill="#1a1a1a"
           opacity="0.85"
         />
         {/* Left eye shine */}
         <ellipse
-          cx="35.5"
-          cy={41 - eyeOpenLeft * 1.2}
+          cx="33.5"
+          cy={46 - eyeOpenLeft * 1.2}
           rx="1.3"
           ry={Math.max(eyeOpenLeft * 1.3, 0.2)}
           fill="white"
@@ -148,17 +148,17 @@ export default function AvatarOverlay({
 
         {/* Right eye */}
         <ellipse
-          cx="63"
-          cy="42"
-          rx="5"
-          ry={Math.max(eyeOpenRight * 5, 0.5)}
+          cx="65"
+          cy="47"
+          rx="5.5"
+          ry={Math.max(eyeOpenRight * 5.5, 0.5)}
           fill="#1a1a1a"
           opacity="0.85"
         />
         {/* Right eye shine */}
         <ellipse
-          cx="61.5"
-          cy={41 - eyeOpenRight * 1.2}
+          cx="63.5"
+          cy={46 - eyeOpenRight * 1.2}
           rx="1.3"
           ry={Math.max(eyeOpenRight * 1.3, 0.2)}
           fill="white"
@@ -168,7 +168,7 @@ export default function AvatarOverlay({
         {/* Mouth */}
         <ellipse
           cx="50"
-          cy={73 + mouthOpen * 2.5}
+          cy={79 + mouthOpen * 2.5}
           rx={4 + smileAmount * 2.5}
           ry={0.8 + mouthOpen * 4}
           fill="#2d1a1a"
@@ -178,7 +178,7 @@ export default function AvatarOverlay({
         {mouthOpen > 0.3 && (
           <ellipse
             cx="50"
-            cy={74.5 + mouthOpen * 2.5}
+            cy={80.5 + mouthOpen * 2.5}
             rx={2.5 + smileAmount * 1}
             ry={mouthOpen * 2}
             fill="#e85d75"
