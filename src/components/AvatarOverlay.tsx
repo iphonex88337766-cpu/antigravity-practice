@@ -35,7 +35,7 @@ function matrixToEuler(data: number[]): { pitch: number; yaw: number; roll: numb
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 
 const SZ = 500;
-const DEAD_ZONE = 0.06;
+
 
 // Mouth region in % of SZ
 const MOUTH_CX = 50;  // center X %
