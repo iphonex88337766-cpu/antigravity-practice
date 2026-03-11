@@ -10,10 +10,10 @@ interface PuppyOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const CLOSED_THRESHOLD = 0.38;  // right eye "closed" — easier to reach
-const OPEN_THRESHOLD = 0.28;    // right eye "open" — slightly more forgiving
-const LEFT_OPEN_MAX = 0.35;     // left eye must stay clearly open (stricter)
-const EYE_GAP_MIN = 0.12;       // right eye must be clearly more closed than left
+const CLOSED_THRESHOLD = 0.32;  // right eye "closed" — relaxed for natural wink
+const OPEN_THRESHOLD = 0.22;    // right eye "open"
+const LEFT_OPEN_MAX = 0.45;     // left eye tolerance — relaxed but still blocks both-eyes
+const EYE_GAP_MIN = 0.08;       // right must be more closed than left — relaxed
 const CLOSED_FRAMES_NEEDED = 1; // single confirmed closed frame → faster response
 const DISPLAY_DURATION = 2000;
 
