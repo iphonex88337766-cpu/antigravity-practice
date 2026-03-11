@@ -196,14 +196,14 @@ const Index = () => {
       <div
         ref={avatarContainerRef}
         className="absolute z-10"
-        style={{ right: 50, top: "20%", width: 800, height: 800 }}
+        style={{ right: 50, top: "20%", width: 700, height: 700 }}
       >
         {webcamState === "active" && landmarks ? (
           <AvatarOverlay
             landmarks={landmarks}
             transformationMatrix={transformMatrix}
-            width={800}
-            height={800}
+            width={700}
+            height={700}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3">
