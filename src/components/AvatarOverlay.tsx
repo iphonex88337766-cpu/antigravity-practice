@@ -40,8 +40,8 @@ const SZ = 500;
 // Mouth region in % of SZ
 const MOUTH_CX = 50;  // center X %
 const MOUTH_CY = 72;  // center Y %
-const MOUTH_W = 16;   // half-width %
-const MAX_MOUTH_H = 12; // max half-height % when fully open
+const MOUTH_W = 18;   // half-width %
+const MAX_MOUTH_H = 16; // max half-height % when fully open
 
 /**
  * MouthSVG — drawn on top of the base image, behind the shutters.
