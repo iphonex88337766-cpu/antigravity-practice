@@ -332,9 +332,9 @@ export default function AvatarOverlay({
         >
           {/* Left elastic connector — from left mouth corner W point */}
           <path
-            d={`M ${size * 0.22} ${size * 0.68}
-                Q ${size * 0.19} ${size * 0.68 + jawDrop * 0.5}
-                  ${size * 0.22} ${size * 0.68 + jawDrop}`}
+            d={`M ${size * 0.22} ${size * 0.76}
+                Q ${size * 0.19} ${size * 0.76 + jawDrop * 0.5}
+                  ${size * 0.22} ${size * 0.76 + jawDrop}`}
             stroke="hsl(28, 45%, 60%)"
             strokeWidth="2.5"
             fill="none"
@@ -343,9 +343,9 @@ export default function AvatarOverlay({
           />
           {/* Right elastic connector */}
           <path
-            d={`M ${size * 0.78} ${size * 0.68}
-                Q ${size * 0.81} ${size * 0.68 + jawDrop * 0.5}
-                  ${size * 0.78} ${size * 0.68 + jawDrop}`}
+            d={`M ${size * 0.78} ${size * 0.76}
+                Q ${size * 0.81} ${size * 0.76 + jawDrop * 0.5}
+                  ${size * 0.78} ${size * 0.76 + jawDrop}`}
             stroke="hsl(28, 45%, 60%)"
             strokeWidth="2.5"
             fill="none"
@@ -356,9 +356,9 @@ export default function AvatarOverlay({
           {jawDrop > 3 && (
             <>
               <path
-                d={`M ${size * 0.12} ${size * 0.67}
-                    Q ${size * 0.14} ${size * 0.67 + jawDrop * 0.5}
-                      ${size * 0.12} ${size * 0.67 + jawDrop}`}
+                d={`M ${size * 0.12} ${size * 0.73}
+                    Q ${size * 0.14} ${size * 0.73 + jawDrop * 0.5}
+                      ${size * 0.12} ${size * 0.73 + jawDrop}`}
                 stroke="hsl(30, 50%, 65%)"
                 strokeWidth="1.5"
                 fill="none"
@@ -366,9 +366,9 @@ export default function AvatarOverlay({
                 strokeLinecap="round"
               />
               <path
-                d={`M ${size * 0.88} ${size * 0.67}
-                    Q ${size * 0.86} ${size * 0.67 + jawDrop * 0.5}
-                      ${size * 0.88} ${size * 0.67 + jawDrop}`}
+                d={`M ${size * 0.88} ${size * 0.73}
+                    Q ${size * 0.86} ${size * 0.73 + jawDrop * 0.5}
+                      ${size * 0.88} ${size * 0.73 + jawDrop}`}
                 stroke="hsl(30, 50%, 65%)"
                 strokeWidth="1.5"
                 fill="none"
