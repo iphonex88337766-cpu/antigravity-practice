@@ -389,24 +389,24 @@ export default function AvatarOverlay({
           }}
           viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
         >
-          {/* Left mouth corner — connects upper lip to lower jaw at ~30%, 71% */}
+          {/* Left mouth corner — at ~24%, 70% */}
           <path
-            d={`M ${size * 0.30} ${size * 0.71}
-                Q ${size * 0.27} ${size * 0.71 + jawDrop * 0.5}
-                  ${size * 0.30} ${size * 0.71 + jawDrop}`}
+            d={`M ${size * 0.24} ${size * 0.70}
+                Q ${size * 0.21} ${size * 0.70 + jawDrop * 0.5}
+                  ${size * 0.24} ${size * 0.70 + jawDrop}`}
             stroke="hsl(28, 40%, 58%)"
-            strokeWidth="3"
+            strokeWidth="3.5"
             fill="none"
             opacity={Math.min(jawDrop / 10, 0.35)}
             strokeLinecap="round"
           />
           {/* Right mouth corner */}
           <path
-            d={`M ${size * 0.70} ${size * 0.71}
-                Q ${size * 0.73} ${size * 0.71 + jawDrop * 0.5}
-                  ${size * 0.70} ${size * 0.71 + jawDrop}`}
+            d={`M ${size * 0.76} ${size * 0.70}
+                Q ${size * 0.79} ${size * 0.70 + jawDrop * 0.5}
+                  ${size * 0.76} ${size * 0.70 + jawDrop}`}
             stroke="hsl(28, 40%, 58%)"
-            strokeWidth="3"
+            strokeWidth="3.5"
             fill="none"
             opacity={Math.min(jawDrop / 10, 0.35)}
             strokeLinecap="round"
