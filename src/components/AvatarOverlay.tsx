@@ -150,6 +150,8 @@ export default function AvatarOverlay({
   const leftStrip = `polygon(0% ${MOUTH_CY - gapH}%, ${MOUTH_CX - MOUTH_W}% ${MOUTH_CY - gapH}%, ${MOUTH_CX - MOUTH_W}% ${MOUTH_CY + gapH}%, 0% ${MOUTH_CY + gapH}%)`;
   const rightStrip = `polygon(${MOUTH_CX + MOUTH_W}% ${MOUTH_CY - gapH}%, 100% ${MOUTH_CY - gapH}%, 100% ${MOUTH_CY + gapH}%, ${MOUTH_CX + MOUTH_W}% ${MOUTH_CY + gapH}%)`;
 
+  const isOpen = t > 0.01;
+
   const containerStyle = useMemo(() => {
     const cx = width / 2;
     const cy = height / 2;
