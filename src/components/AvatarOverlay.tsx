@@ -38,44 +38,57 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 55;
 
 /**
- * Smooth W-shaped muzzle contour points (percentage of image size).
- * Many more control points for a soft, rounded feline lip curve.
+ * Soft, rounded feline upper-lip W-contour.
+ * Flat at the sides (cheeks), curving into a natural cat-lip M/W shape
+ * only in the central muzzle zone (~30–70% x). The two whisker-pad
+ * bumps peak at ~66.5% y, dipping to ~68% at the philtrum center.
  * Format: [x%, y%]
  */
 const W_POINTS: [number, number][] = [
-  [0, 72],
-  [5, 72],
-  [10, 72.5],
-  [14, 73],
-  [18, 74],
-  [21, 75.5],
-  [24, 76],       // left muzzle dip peak
-  [27, 75.5],
-  [30, 74.5],
-  [33, 73.5],
-  [36, 73],
-  [39, 73],       // left of W center rise
-  [42, 74],
-  [44, 75],
-  [46, 76],
-  [48, 76.8],
-  [50, 77],       // center — deepest point of W
-  [52, 76.8],
-  [54, 76],
-  [56, 75],
-  [58, 74],
-  [61, 73],       // right of W center rise
-  [64, 73],
-  [67, 73.5],
-  [70, 74.5],
-  [73, 75.5],
-  [76, 76],       // right muzzle dip peak
-  [79, 75.5],
-  [82, 74],
-  [86, 73],
-  [90, 72.5],
-  [95, 72],
-  [100, 72],
+  // ── left cheek (flat) ──
+  [0,   63],
+  [8,   63],
+  [16,  63],
+  [22,  63],
+  // ── transition into left whisker pad ──
+  [26,  63.2],
+  [29,  63.6],
+  [31,  64.2],
+  [33,  64.8],
+  // ── left whisker-pad bump (soft peak) ──
+  [35,  65.4],
+  [37,  65.9],
+  [38.5,66.2],
+  [40,  66.5],   // left pad apex
+  [41.5,66.4],
+  [43,  66.0],
+  // ── valley between pad and philtrum ──
+  [44.5,65.8],
+  [46,  66.0],
+  [47.5,66.6],
+  [49,  67.4],
+  [50,  67.8],   // philtrum center – deepest point
+  [51,  67.4],
+  [52.5,66.6],
+  [54,  66.0],
+  [55.5,65.8],
+  // ── right whisker-pad bump ──
+  [57,  66.0],
+  [58.5,66.4],
+  [60,  66.5],   // right pad apex
+  [61.5,66.2],
+  [63,  65.9],
+  [65,  65.4],
+  // ── transition out of right whisker pad ──
+  [67,  64.8],
+  [69,  64.2],
+  [71,  63.6],
+  [74,  63.2],
+  // ── right cheek (flat) ──
+  [78,  63],
+  [84,  63],
+  [92,  63],
+  [100, 63],
 ];
 
 /** Build CSS clip-path polygon for the UPPER face (everything above the W) */
