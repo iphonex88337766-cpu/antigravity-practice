@@ -106,16 +106,6 @@ export default function AvatarOverlay({
   // Expression overlay values
   const eyeOpenLeft = 1 - Math.min(expressions.eyeBlinkLeft * 1.5, 1);
   const eyeOpenRight = 1 - Math.min(expressions.eyeBlinkRight * 1.5, 1);
-  const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
-  const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
-
-  // Split line at the W-shaped lip line on the tiger muzzle
-  const splitY = 68;
-  // Jaw drop: pure downward translation to separate lips
-  const jawDrop = mouthOpen * 14;
-  // Mouth aperture: positioned between upper lip (splitY) and lower lip (splitY + jawDrop)
-  const mouthRx = 10 + smileAmount * 3;
-  const mouthRy = 1 + mouthOpen * 6;
 
   return (
     <div style={containerStyle}>
@@ -144,7 +134,7 @@ export default function AvatarOverlay({
         <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
       </svg>
 
-      {/* Layer 1: Mouth cavity — positioned between upper and lower lips */}
+      {/* Layer 1: Full tiger asset with eye mask */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -154,94 +144,9 @@ export default function AvatarOverlay({
           height: "100%",
           pointerEvents: "none",
           zIndex: 1,
-          overflow: "visible",
         }}
       >
         <defs>
-          <radialGradient id="mouth-cavity" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#3a0e1a" />
-            <stop offset="40%" stopColor="#260a12" />
-            <stop offset="100%" stopColor="#0e0508" />
-          </radialGradient>
-          <radialGradient id="inner-lip-grad" cx="50%" cy="0%" r="100%">
-            <stop offset="0%" stopColor="#8a3050" />
-            <stop offset="100%" stopColor="#4a1a2a" />
-          </radialGradient>
-          <clipPath id="mouth-aperture-clip">
-            <ellipse cx="50" cy={splitY + jawDrop * 0.5} rx={mouthRx} ry={mouthRy + jawDrop * 0.35} />
-          </clipPath>
-        </defs>
-
-        {/* Deep cavity background — centered between upper and lower lips */}
-        <ellipse
-          cx="50"
-          cy={splitY + jawDrop * 0.5}
-          rx={mouthRx}
-          ry={mouthRy + jawDrop * 0.35}
-          fill="url(#mouth-cavity)"
-        />
-
-        {/* Inner upper lip line */}
-        <ellipse
-          cx="50"
-          cy={splitY + 1}
-          rx={mouthRx - 1}
-          ry={1.5 + mouthOpen * 2}
-          fill="url(#inner-lip-grad)"
-          opacity={mouthOpen > 0.05 ? Math.min(mouthOpen * 3, 0.8) : 0}
-          clipPath="url(#mouth-aperture-clip)"
-        />
-
-        {/* Inner lower lip line */}
-        <ellipse
-          cx="50"
-          cy={splitY + jawDrop - 1}
-          rx={mouthRx - 2}
-          ry={1 + mouthOpen * 1.5}
-          fill="url(#inner-lip-grad)"
-          opacity={mouthOpen > 0.1 ? Math.min(mouthOpen * 2, 0.7) : 0}
-          clipPath="url(#mouth-aperture-clip)"
-        />
-
-        {/* Tongue hint */}
-        {mouthOpen > 0.15 && (
-          <ellipse
-            cx="50"
-            cy={splitY + jawDrop * 0.6}
-            rx={4 + smileAmount * 1.5}
-            ry={mouthOpen * 3.5}
-            fill="#d4506a"
-            opacity={0.55}
-            clipPath="url(#mouth-aperture-clip)"
-          />
-        )}
-
-        {/* Depth shadow */}
-        <ellipse
-          cx="50"
-          cy={splitY + 2 + mouthOpen * 2}
-          rx={3}
-          ry={mouthOpen * 3}
-          fill="#1a0508"
-          opacity={mouthOpen > 0.2 ? 0.4 : 0}
-          clipPath="url(#mouth-aperture-clip)"
-        />
-      </svg>
-      <svg
-        viewBox="0 0 100 100"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          zIndex: 2,
-        }}
-      >
-        <defs>
-          <clipPath id="upper-clip">
-            <rect x="0" y="0" width="100" height={splitY} />
-          </clipPath>
           <mask id="eye-mask">
             <rect x="0" y="0" width="100" height="100" fill="white" />
             <ellipse cx="35" cy="50" rx="8" ry="8" fill="black" />
@@ -251,39 +156,9 @@ export default function AvatarOverlay({
         <image
           href={avatarSrc}
           x="0" y="0" width="100" height="100"
-          clipPath="url(#upper-clip)"
           mask="url(#eye-mask)"
           preserveAspectRatio="xMidYMid slice"
         />
-      </svg>
-
-      {/* Layer 3: Lower jaw — scaleY anchored at splitY top edge (rubber stretch) */}
-      <svg
-        viewBox="0 0 100 100"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          zIndex: 3,
-          overflow: "visible",
-        }}
-      >
-        <defs>
-          <clipPath id="lower-clip">
-            <rect x="0" y={splitY} width="100" height={100 - splitY} />
-          </clipPath>
-        </defs>
-        {/* Translate jaw downward — top edge anchored at splitY, reveals cavity */}
-        <g transform={`translate(0, ${jawDrop})`}>
-          <image
-            href={avatarSrc}
-            x="0" y="0" width="100" height="100"
-            clipPath="url(#lower-clip)"
-            preserveAspectRatio="xMidYMid slice"
-          />
-        </g>
       </svg>
     </div>
   );
