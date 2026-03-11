@@ -13,6 +13,7 @@ interface PuppyOverlayProps {
 const CLOSED_THRESHOLD = 0.38;  // right eye "closed" — easier to reach
 const OPEN_THRESHOLD = 0.28;    // right eye "open" — slightly more forgiving
 const LEFT_OPEN_MAX = 0.35;     // left eye must stay clearly open (stricter)
+const EYE_GAP_MIN = 0.12;       // right eye must be clearly more closed than left
 const CLOSED_FRAMES_NEEDED = 1; // single confirmed closed frame → faster response
 const DISPLAY_DURATION = 2000;
 
@@ -24,6 +25,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   // Blink-cycle state machine: "idle" → "closed" → triggered on re-open
   const phaseRef = useRef<"idle" | "closed">("idle");
   const closedFramesRef = useRef(0);
+  const blockedCycleRef = useRef(false);
 
   const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
   const leftBlink = blendshapes?.["eyeBlinkLeft"] ?? 0;
