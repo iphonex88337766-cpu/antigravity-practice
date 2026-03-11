@@ -1,12 +1,10 @@
 /**
- * PuppyOverlay — Shows a puppy on the outer-right side of the face
- * when the user closes their right eye.
- *
- * Placement is relative to the detected face position (not screen center).
- * The puppy stays outside a face exclusion zone with extra margin.
+ * PuppyOverlay — DEBUG VERSION
+ * Shows puppy on outer-right of face when right eye closes.
+ * Currently in debug mode: shows blink values + forces visibility.
  */
 
-import { useRef, memo } from "react";
+import { useRef, useState, useEffect, memo } from "react";
 import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
 import puppySrc from "@/assets/puppy.png";
 
@@ -17,34 +15,22 @@ interface PuppyOverlayProps {
   height: number;
 }
 
-const BLINK_THRESHOLD = 0.45;
-const SMOOTHING = 0.25;
-const PUPPY_SIZE = 90;
-const FACE_MARGIN = 30; // extra margin outside face bounding box
+const BLINK_THRESHOLD = 0.35;
+const PUPPY_SIZE = 130;
 
-export default memo(function PuppyOverlay({
+export default function PuppyOverlay({
   landmarks,
   blendshapes,
   width,
   height,
 }: PuppyOverlayProps) {
-  const smoothRef = useRef(0);
-  const visRef = useRef(0); // smooth visibility for fade
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
+  const leftBlink = blendshapes?.["eyeBlinkLeft"] ?? 0;
+  const isTriggered = rightBlink >= BLINK_THRESHOLD;
 
-  // Smooth the blink value
-  smoothRef.current += (rightBlink - smoothRef.current) * SMOOTHING;
-  const isBlinking = smoothRef.current >= BLINK_THRESHOLD;
-
-  // Fade in/out
-  const targetVis = isBlinking ? 1 : 0;
-  visRef.current += (targetVis - visRef.current) * 0.12;
-  const opacity = visRef.current;
-
-  if (opacity < 0.01) return null;
-
-  // Compute face bounding box from landmarks (in pixel coords)
+  // Face bounding box from landmarks
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const lm of landmarks) {
     const px = lm.x * width;
@@ -54,36 +40,81 @@ export default memo(function PuppyOverlay({
     if (py < minY) minY = py;
     if (py > maxY) maxY = py;
   }
-
-  // Face center Y, and exclusion zone right edge
   const faceCenterY = (minY + maxY) / 2;
-  const exclusionRight = maxX + FACE_MARGIN;
 
-  // Place puppy just outside the exclusion zone on the right
-  const puppyX = exclusionRight + 10;
+  // Fixed position: just right of face bbox
+  const puppyX = maxX + 40;
   const puppyY = faceCenterY - PUPPY_SIZE / 2;
 
-  // Clamp to viewport
-  const clampedX = Math.min(puppyX, width - PUPPY_SIZE - 5);
-  const clampedY = Math.max(5, Math.min(puppyY, height - PUPPY_SIZE - 5));
-
   return (
-    <img
-      src={puppySrc}
-      alt="puppy"
-      style={{
-        position: "absolute",
-        left: clampedX,
-        top: clampedY,
-        width: PUPPY_SIZE,
-        height: PUPPY_SIZE,
-        objectFit: "contain",
-        opacity,
-        pointerEvents: "none",
-        transition: "opacity 0.15s ease-out",
-        filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.2))",
-        zIndex: 20,
-      }}
-    />
+    <>
+      {/* DEBUG: blink values overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          background: "rgba(0,0,0,0.75)",
+          color: "#0f0",
+          fontFamily: "monospace",
+          fontSize: 14,
+          padding: "8px 12px",
+          borderRadius: 6,
+          zIndex: 100,
+          pointerEvents: "none",
+        }}
+      >
+        <div>R-eye blink: {rightBlink.toFixed(3)}</div>
+        <div>L-eye blink: {leftBlink.toFixed(3)}</div>
+        <div>Threshold: {BLINK_THRESHOLD}</div>
+        <div style={{ color: isTriggered ? "#0f0" : "#f55" }}>
+          Triggered: {isTriggered ? "YES" : "NO"}
+        </div>
+        <div>Img loaded: {imgLoaded ? "YES" : "NO"}</div>
+        <div>Face X: {minX.toFixed(0)}-{maxX.toFixed(0)}</div>
+        <div>Puppy pos: ({puppyX.toFixed(0)}, {puppyY.toFixed(0)})</div>
+        <div>Container: {width}x{height}</div>
+      </div>
+
+      {/* Puppy image — visible when triggered, no fade for debug */}
+      {isTriggered && (
+        <img
+          src={puppySrc}
+          alt="puppy"
+          onLoad={() => setImgLoaded(true)}
+          onError={() => console.error("PUPPY IMG FAILED TO LOAD")}
+          style={{
+            position: "absolute",
+            left: puppyX,
+            top: puppyY,
+            width: PUPPY_SIZE,
+            height: PUPPY_SIZE,
+            objectFit: "contain",
+            opacity: 1,
+            pointerEvents: "none",
+            zIndex: 50,
+          }}
+        />
+      )}
+
+      {/* Always-visible tiny preload to confirm image works */}
+      <img
+        src={puppySrc}
+        alt="preload"
+        onLoad={() => setImgLoaded(true)}
+        style={{
+          position: "absolute",
+          bottom: 10,
+          right: 10,
+          width: 40,
+          height: 40,
+          objectFit: "contain",
+          opacity: 0.5,
+          pointerEvents: "none",
+          zIndex: 100,
+          border: "1px solid lime",
+        }}
+      />
+    </>
   );
-});
+}
