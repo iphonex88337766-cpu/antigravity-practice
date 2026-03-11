@@ -124,13 +124,13 @@ const Index = () => {
     <div className="relative h-screen w-screen overflow-hidden bg-foreground">
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
-        ref={webcamContainerRef}
         className="absolute inset-0"
       >
         {isLoading && <CalibrationOverlay />}
 
         {/* Shared wrapper: shifts video + mesh together to the left */}
         <div
+          ref={webcamContainerRef}
           className="absolute inset-0"
           style={{ transform: "translateX(-20%)", width: "140%", left: 0 }}
         >
