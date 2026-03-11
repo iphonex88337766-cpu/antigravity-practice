@@ -90,7 +90,7 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
           overflow: "hidden",
           zIndex: 2147483647,
           pointerEvents: "none",
-          animation: "catPop 0.3s ease-out both",
+          animation: "catPop 0.15s ease-out both",
         }}
       >
         <img
@@ -107,7 +107,7 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
       </div>
       <style>{`
         @keyframes catPop {
-          0% { opacity: 0; transform: scale(0.3); }
+          0% { opacity: 0.3; transform: scale(0.7); }
           100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
