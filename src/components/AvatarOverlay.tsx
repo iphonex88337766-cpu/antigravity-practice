@@ -51,45 +51,49 @@ const MAX_JAW_PX = 50;
 const W_POINTS: [number, number][] = [
   // ── far edges: no split (at image bottom) ──
   [0,   100],
-  [10,  100],
-  [18,  100],
-  // ── curve up from chin toward left mouth corner ──
-  [22,  92],
-  [25,  82],
-  [27,  76],
-  [28.5,73],
-  [30,  71],     // left mouth corner
+  [8,   100],
+  // ── sweep up broadly from jaw toward left mouth corner ──
+  [12,  95],
+  [15,  88],
+  [18,  80],
+  [20,  75],
+  [22,  72],
+  [24,  70],      // left mouth corner — wide out on cheek
   // ── left whisker-pad lobe ──
-  [32,  69.5],
-  [34,  68.5],
-  [36,  67.8],
-  [38,  67.3],
-  [40,  67.0],   // left lobe apex
-  [42,  67.2],
-  [44,  67.8],
+  [26,  69],
+  [28,  68.2],
+  [30,  67.6],
+  [33,  67.0],
+  [36,  66.6],
+  [39,  66.3],
+  [41,  66.2],    // left lobe apex
+  [43,  66.4],
+  [45,  66.8],
   // ── philtrum rise ──
-  [46,  68.2],
-  [48,  68.0],
-  [50,  67.6],   // center philtrum (slight rise between lobes)
-  [52,  68.0],
-  [54,  68.2],
+  [47,  67.0],
+  [49,  66.8],
+  [50,  66.6],    // center philtrum
+  [51,  66.8],
+  [53,  67.0],
   // ── right whisker-pad lobe ──
-  [56,  67.8],
-  [58,  67.2],
-  [60,  67.0],   // right lobe apex
-  [62,  67.3],
-  [64,  67.8],
-  [66,  68.5],
-  [68,  69.5],
-  [70,  71],     // right mouth corner
-  // ── curve back down to chin ──
-  [71.5,73],
-  [73,  76],
-  [75,  82],
-  [78,  92],
+  [55,  66.8],
+  [57,  66.4],
+  [59,  66.2],    // right lobe apex
+  [61,  66.3],
+  [64,  66.6],
+  [67,  67.0],
+  [70,  67.6],
+  [72,  68.2],
+  [74,  69],
+  [76,  70],      // right mouth corner — wide out on cheek
+  // ── sweep back down to jaw ──
+  [78,  72],
+  [80,  75],
+  [82,  80],
+  [85,  88],
+  [88,  95],
   // ── far edges: no split ──
-  [82,  100],
-  [90,  100],
+  [92,  100],
   [100, 100],
 ];
 
