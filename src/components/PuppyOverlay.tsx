@@ -44,9 +44,12 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
           right: 50,
           top: 120,
           width: 300,
+          height: 300,
           background: "transparent",
           border: "none",
           boxShadow: "none",
+          borderRadius: "50%",
+          overflow: "hidden",
           zIndex: 2147483647,
           pointerEvents: "none",
           animation: "puppyPop 0.3s ease-out both",
@@ -57,10 +60,10 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
           alt="puppy"
           style={{
             width: "100%",
-            height: "auto",
+            height: "100%",
+            objectFit: "cover",
             background: "transparent",
-            mixBlendMode: "multiply",
-            filter: "contrast(1.2) brightness(1.1)",
+            display: "block",
           }}
         />
       </div>
