@@ -45,12 +45,15 @@ const Index = () => {
     const videoAspect = vw / vh;
 
     // object-cover: scale to fill, then crop overflow
+    // object-position is 80% 50%, and video has scaleX(-1).
+    // Pre-flip x offset = (cw - w) * (1 - 0.8) = (cw - w) * 0.2
+    // After scaleX(-1), visual x flips: cw - w - x_pre = (cw - w) * 0.8
     const scale = Math.max(cw / vw, ch / vh);
     const w = Math.round(vw * scale);
     const h = Math.round(vh * scale);
-    const x = Math.round((cw - w) / 2);
+    const x = Math.round((cw - w) * 0.8);
     const y = Math.round((ch - h) / 2);
-    setVideoRect({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
+    setVideoRect({ x, y, w, h });
   };
 
   useEffect(() => {
@@ -137,6 +140,7 @@ const Index = () => {
           onResize={updateVideoRect}
           className="absolute inset-0 h-full w-full object-cover"
           style={{
+            objectPosition: "80% 50%",
             transform: "scaleX(-1)",
             filter: "saturate(0.7) brightness(0.9)",
             opacity: webcamState === "active" ? 1 : 0,
@@ -189,7 +193,7 @@ const Index = () => {
       {/* ── AVATAR OVERLAY — left side companion ── */}
       <div
         ref={avatarContainerRef}
-        className="absolute left-[2%] top-[5%] z-10"
+        className="absolute right-[2%] top-[5%] z-10"
         style={{ width: 1000, height: 1000 }}
       >
         {webcamState === "active" && landmarks ? (
