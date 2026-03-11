@@ -203,7 +203,106 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
   );
 }
 
-export default function AvatarOverlay({
+/* ── Eye positions on the 500×500 tiger asset ── */
+const LEFT_EYE  = { cx: 190, cy: 222, rx: 36, ry: 20 };  // tiger's left (viewer's right)
+const RIGHT_EYE = { cx: 310, cy: 222, rx: 36, ry: 20 };  // tiger's right (viewer's left)
+
+// Fur-colored eyelid fill — warm cream/orange matching tiger illustration
+const LID_COLOR = "hsl(30, 55%, 72%)";
+const LID_EDGE  = "hsl(25, 40%, 55%)";
+
+/** Eyelid overlay — renders curved lids that close over each eye */
+const EyelidOverlay = memo(function EyelidOverlay({
+  leftBlink,
+  rightBlink,
+}: {
+  leftBlink: number;  // 0 = open, 1 = closed
+  rightBlink: number;
+}) {
+  // Skip rendering when both eyes are fully open
+  if (leftBlink < 0.02 && rightBlink < 0.02) return null;
+
+  return (
+    <svg
+      style={{
+        position: "absolute",
+        left: 0, top: 0,
+        width: SZ, height: SZ,
+        pointerEvents: "none",
+        zIndex: 3,
+      }}
+      viewBox={`0 0 ${SZ} ${SZ}`}
+    >
+      <defs>
+        <filter id="lidSoft">
+          <feGaussianBlur stdDeviation="1.2" />
+        </filter>
+      </defs>
+      <EyelidPair eye={LEFT_EYE} blink={leftBlink} />
+      <EyelidPair eye={RIGHT_EYE} blink={rightBlink} />
+    </svg>
+  );
+});
+
+/** Single eye: upper + lower lid that converge as blink increases */
+function EyelidPair({
+  eye,
+  blink,
+}: {
+  eye: { cx: number; cy: number; rx: number; ry: number };
+  blink: number;
+}) {
+  if (blink < 0.02) return null;
+
+  const { cx, cy, rx, ry } = eye;
+  const t = Math.min(blink, 1);
+
+  // Upper lid drops, lower lid rises — they meet at center when t=1
+  const upperY = cy - ry + t * ry;        // from top of eye toward center
+  const lowerY = cy + ry - t * ry;        // from bottom of eye toward center
+
+  // Curvature control points — creates a soft arc
+  const cpDepthUpper = ry * 0.6 * (1 - t * 0.3); // flattens when nearly closed
+  const cpDepthLower = ry * 0.5 * (1 - t * 0.3);
+
+  // Upper eyelid path: arc from left corner to right corner, curving downward
+  const upperPath = `
+    M ${cx - rx - 2} ${cy - ry * 0.15}
+    Q ${cx} ${upperY + cpDepthUpper} ${cx + rx + 2} ${cy - ry * 0.15}
+    L ${cx + rx + 4} ${cy - ry - 6}
+    Q ${cx} ${cy - ry - 8} ${cx - rx - 4} ${cy - ry - 6}
+    Z
+  `;
+
+  // Lower eyelid path: arc from left corner to right corner, curving upward
+  const lowerPath = `
+    M ${cx - rx - 2} ${cy + ry * 0.15}
+    Q ${cx} ${lowerY - cpDepthLower} ${cx + rx + 2} ${cy + ry * 0.15}
+    L ${cx + rx + 4} ${cy + ry + 6}
+    Q ${cx} ${cy + ry + 8} ${cx - rx - 4} ${cy + ry + 6}
+    Z
+  `;
+
+  // Thin closed-eye line when nearly shut
+  const closedLine = t > 0.85 ? (
+    <path
+      d={`M ${cx - rx * 0.8} ${cy} Q ${cx} ${cy - 2} ${cx + rx * 0.8} ${cy}`}
+      stroke={LID_EDGE}
+      strokeWidth={1.2}
+      fill="none"
+      opacity={Math.min((t - 0.85) / 0.15, 1) * 0.7}
+    />
+  ) : null;
+
+  return (
+    <g>
+      <path d={upperPath} fill={LID_COLOR} opacity={t * 0.95} filter="url(#lidSoft)" />
+      <path d={lowerPath} fill={LID_COLOR} opacity={t * 0.85} filter="url(#lidSoft)" />
+      {closedLine}
+    </g>
+  );
+}
+
   landmarks,
   transformationMatrix,
   blendshapes,
