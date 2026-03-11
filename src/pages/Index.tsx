@@ -192,11 +192,11 @@ const Index = () => {
         )}
       </div>
 
-      {/* ── AVATAR OVERLAY — left side companion ── */}
+      {/* ── AVATAR OVERLAY — fixed right-top companion ── */}
       <div
         ref={avatarContainerRef}
-        className="absolute right-[5%] top-[15%] z-10"
-        style={{ width: 1000, height: 1000 }}
+        className="absolute z-10"
+        style={{ right: 20, top: 20, width: 500, height: 500 }}
       >
         {webcamState === "active" && landmarks ? (
           <AvatarOverlay
