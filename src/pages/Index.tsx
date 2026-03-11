@@ -132,7 +132,7 @@ const Index = () => {
   const isLoading = modelState === "loading" || webcamState === "requesting";
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-foreground">
+    <div className="relative h-screen w-screen overflow-hidden bg-transparent">
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"
