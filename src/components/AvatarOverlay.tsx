@@ -266,7 +266,7 @@ export default function AvatarOverlay({
         ))}
       </svg>
 
-      {/* ── LAYER 2: Lower Jaw (W-contour, static alignment — movement disabled) ── */}
+      {/* ── LAYER 2: Lower Jaw (W-contour, translates down with jawOpen) ── */}
       <div
         style={{
           position: "absolute",
@@ -276,6 +276,8 @@ export default function AvatarOverlay({
           height: size,
           clipPath: LOWER_CLIP,
           zIndex: 1,
+          transform: `translateY(${jawDrop}px)`,
+          willChange: "transform",
         }}
       >
         <img
@@ -330,9 +332,9 @@ export default function AvatarOverlay({
         >
           {/* Left elastic connector — from left mouth corner W point */}
           <path
-            d={`M ${size * 0.25} ${size * 0.59}
-                Q ${size * 0.22} ${size * 0.59 + jawDrop * 0.5}
-                  ${size * 0.26} ${size * 0.59 + jawDrop}`}
+            d={`M ${size * 0.22} ${size * 0.68}
+                Q ${size * 0.19} ${size * 0.68 + jawDrop * 0.5}
+                  ${size * 0.22} ${size * 0.68 + jawDrop}`}
             stroke="hsl(28, 45%, 60%)"
             strokeWidth="2.5"
             fill="none"
@@ -341,9 +343,9 @@ export default function AvatarOverlay({
           />
           {/* Right elastic connector */}
           <path
-            d={`M ${size * 0.75} ${size * 0.59}
-                Q ${size * 0.78} ${size * 0.59 + jawDrop * 0.5}
-                  ${size * 0.74} ${size * 0.59 + jawDrop}`}
+            d={`M ${size * 0.78} ${size * 0.68}
+                Q ${size * 0.81} ${size * 0.68 + jawDrop * 0.5}
+                  ${size * 0.78} ${size * 0.68 + jawDrop}`}
             stroke="hsl(28, 45%, 60%)"
             strokeWidth="2.5"
             fill="none"
@@ -354,9 +356,9 @@ export default function AvatarOverlay({
           {jawDrop > 3 && (
             <>
               <path
-                d={`M ${size * 0.18} ${size * 0.57}
-                    Q ${size * 0.20} ${size * 0.57 + jawDrop * 0.5}
-                      ${size * 0.18} ${size * 0.57 + jawDrop}`}
+                d={`M ${size * 0.12} ${size * 0.67}
+                    Q ${size * 0.14} ${size * 0.67 + jawDrop * 0.5}
+                      ${size * 0.12} ${size * 0.67 + jawDrop}`}
                 stroke="hsl(30, 50%, 65%)"
                 strokeWidth="1.5"
                 fill="none"
@@ -364,9 +366,9 @@ export default function AvatarOverlay({
                 strokeLinecap="round"
               />
               <path
-                d={`M ${size * 0.82} ${size * 0.57}
-                    Q ${size * 0.80} ${size * 0.57 + jawDrop * 0.5}
-                      ${size * 0.82} ${size * 0.57 + jawDrop}`}
+                d={`M ${size * 0.88} ${size * 0.67}
+                    Q ${size * 0.86} ${size * 0.67 + jawDrop * 0.5}
+                      ${size * 0.88} ${size * 0.67 + jawDrop}`}
                 stroke="hsl(30, 50%, 65%)"
                 strokeWidth="1.5"
                 fill="none"
