@@ -39,62 +39,61 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 45;
 
 /**
- * Feline W-contour with PRONOUNCED curvature.
+ * Subtle natural feline upper-lip contour.
  *
- * The mouth corners sit HIGH (~69% y) while the whisker-pad lobes
- * dip LOW (~76% y), creating a ~7% vertical arc that reads as a
- * clear curved feline mouth, not a flat bar.
+ * Soft W-shape with only ~2.5% vertical variation — enough to read
+ * as a real tiger cub lip boundary, not a decorative graphic curve.
+ * Lip line sits at ~75% y (center of the muzzle-to-chin zone).
+ * Corners slightly higher (~74%), lobes slightly lower (~76.5%).
  *
- * Edges at y=100% so the face sides are never split.
+ * Edges at y=100% so face sides are never split.
  * Format: [x%, y%]
  */
 const W_POINTS: [number, number][] = [
   [0,   100],
   [8,   100],
-  // gentle rise from chin into left mouth corner
-  [12,  97],
-  [15,  92],
-  [17,  86],
-  [19,  80],
-  [21,  76],
-  [23,  73],
-  [25,  71],
-  [27,  69.5],   // left mouth corner (high)
-  // descending into left whisker-pad lobe
-  [29,  70.5],
-  [31,  71.8],
-  [33,  73],
-  [35,  74],
-  [37,  74.8],
-  [39,  75.3],
-  [41,  75.6],   // left lobe deepest
-  [43,  75.3],
-  [45,  74.6],
-  // rising toward philtrum
-  [47,  74],
-  [49,  73.8],
-  [50,  73.6],   // philtrum center (slight rise between lobes)
-  [51,  73.8],
-  [53,  74],
-  // descending into right whisker-pad lobe
-  [55,  74.6],
-  [57,  75.3],
-  [59,  75.6],   // right lobe deepest
-  [61,  75.3],
-  [63,  74.8],
-  [65,  74],
-  [67,  73],
-  [69,  71.8],
-  [71,  70.5],
-  [73,  69.5],   // right mouth corner (high)
-  // descending back to chin
-  [75,  71],
-  [77,  73],
-  [79,  76],
-  [81,  80],
-  [83,  86],
-  [85,  92],
-  [88,  97],
+  // gradual rise into left mouth corner
+  [12,  98],
+  [15,  94],
+  [18,  88],
+  [20,  83],
+  [22,  79],
+  [24,  76.5],
+  [26,  75],
+  [28,  74.2],
+  [30,  73.8],   // left mouth corner
+  // gentle descent into left whisker-pad lobe
+  [32,  74.2],
+  [34,  74.8],
+  [36,  75.3],
+  [38,  75.7],
+  [40,  76],
+  [42,  76.2],   // left lobe bottom
+  [44,  76],
+  [46,  75.6],
+  // subtle philtrum rise
+  [48,  75.2],
+  [50,  75],     // philtrum center
+  [52,  75.2],
+  [54,  75.6],
+  // right whisker-pad lobe
+  [56,  76],
+  [58,  76.2],   // right lobe bottom
+  [60,  76],
+  [62,  75.7],
+  [64,  75.3],
+  [66,  74.8],
+  [68,  74.2],
+  [70,  73.8],   // right mouth corner
+  // gradual descent back to chin
+  [72,  74.2],
+  [74,  75],
+  [76,  76.5],
+  [78,  79],
+  [80,  83],
+  [82,  88],
+  [85,  94],
+  [88,  98],
   [92,  100],
   [100, 100],
 ];
@@ -158,50 +157,49 @@ export default function AvatarOverlay({
 
   const size = Math.min(width, height) * 0.8;
 
-  // Mouth corner and lobe positions in pixels
-  const lcx = size * 0.27;   // left corner x
-  const rcx = size * 0.73;   // right corner x
-  const cornerY = size * 0.695;  // corner y (high)
-  const lobeY = size * 0.756;   // lobe deepest y (low)
-  const mouthCx = size * 0.5;
+  // Mouth reference positions for the cavity slit
+  const lcx = size * 0.30;      // left corner x
+  const rcx = size * 0.70;      // right corner x
+  const cornerY = size * 0.738; // corner y
+  const lobeY = size * 0.762;   // lobe deepest y
+  const cx = size * 0.5;
 
   return (
     <div style={containerStyle}>
-      {/* ── Dark mouth cavity — SVG shape following the W-contour ── */}
-      {jawDrop > 0.5 && (
-        <svg
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: size,
-            height: size + MAX_JAW_PX,
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-          viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
-        >
-          {/* The cavity shape: top edge follows the W-contour arc,
-              bottom edge is the same arc shifted down by jawDrop */}
-          <path
-            d={`
-              M ${lcx} ${cornerY}
-              Q ${lcx + (mouthCx - lcx) * 0.5} ${lobeY},
-                ${mouthCx} ${lobeY - 2}
-              Q ${mouthCx + (rcx - mouthCx) * 0.5} ${lobeY},
-                ${rcx} ${cornerY}
-              L ${rcx} ${cornerY + jawDrop}
-              Q ${mouthCx + (rcx - mouthCx) * 0.5} ${lobeY + jawDrop + 4},
-                ${mouthCx} ${lobeY + jawDrop + 6}
-              Q ${lcx + (mouthCx - lcx) * 0.5} ${lobeY + jawDrop + 4},
-                ${lcx} ${cornerY + jawDrop}
-              Z
-            `}
-            fill="hsl(340, 50%, 8%)"
-            opacity={jawRaw < 0.02 ? 0 : Math.min((jawRaw - 0.02) / 0.06, 1)}
-          />
-        </svg>
-      )}
+      {/* ── Thin mouth slit — a narrow dark opening following the W ── */}
+      <svg
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: size,
+          height: size + MAX_JAW_PX,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+        viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
+      >
+        {/* Thin dark slit that follows the W-contour.
+            Top edge: the W-contour itself.
+            Bottom edge: same W shifted down by jawDrop (min ~2px for a thin natural line). */}
+        <path
+          d={`
+            M ${lcx} ${cornerY}
+            Q ${(lcx + cx) / 2} ${lobeY},
+              ${cx} ${lobeY - 1}
+            Q ${(cx + rcx) / 2} ${lobeY},
+              ${rcx} ${cornerY}
+            L ${rcx} ${cornerY + Math.max(jawDrop, 1.5)}
+            Q ${(cx + rcx) / 2} ${lobeY + Math.max(jawDrop, 1.5) + 1},
+              ${cx} ${lobeY + Math.max(jawDrop, 1.5) + 2}
+            Q ${(lcx + cx) / 2} ${lobeY + Math.max(jawDrop, 1.5) + 1},
+              ${lcx} ${cornerY + Math.max(jawDrop, 1.5)}
+            Z
+          `}
+          fill="hsl(340, 45%, 10%)"
+          opacity={jawRaw < 0.01 ? 0.35 : Math.min(0.35 + jawRaw * 3, 1)}
+        />
+      </svg>
 
       {/* ── Lower Jaw (translates down with jawOpen) ── */}
       <div
