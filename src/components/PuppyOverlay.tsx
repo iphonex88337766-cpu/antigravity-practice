@@ -64,8 +64,8 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
         closedFramesRef.current = 0;
       }
     } else if (phaseRef.current === "closed") {
-      // If left eye closes too much OR right is no longer clearly dominant, cancel cycle
-      if (!leftOpen || !rightDominant) {
+      // If left eye closes too much during cycle, cancel
+      if (!leftOpen) {
         phaseRef.current = "idle";
         closedFramesRef.current = 0;
         blockedCycleRef.current = true;
