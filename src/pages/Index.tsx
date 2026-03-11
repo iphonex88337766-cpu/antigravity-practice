@@ -24,10 +24,42 @@ const Index = () => {
   const [hasEverDetected, setHasEverDetected] = useState(false);
   const [showMesh, setShowMesh] = useState(true);
   const [webcamSize, setWebcamSize] = useState({ width: 640, height: 360 });
+  const [videoRect, setVideoRect] = useState({ x: 0, y: 0, w: 640, h: 360 });
   const [avatarSize, setAvatarSize] = useState({ width: 640, height: 360 });
   const webcamContainerRef = useRef<HTMLDivElement>(null);
   const avatarContainerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
+
+  /** Compute the letterboxed video rect inside the container */
+  const updateVideoRect = () => {
+    const video = videoRef.current;
+    const container = webcamContainerRef.current;
+    if (!video || !container || video.videoWidth === 0) return;
+
+    const cw = container.clientWidth;
+    const ch = container.clientHeight;
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+
+    const containerAspect = cw / ch;
+    const videoAspect = vw / vh;
+
+    let w: number, h: number, x: number, y: number;
+    if (videoAspect > containerAspect) {
+      // Video is wider — pillarbox (black bars top/bottom)
+      w = cw;
+      h = cw / videoAspect;
+      x = 0;
+      y = (ch - h) / 2;
+    } else {
+      // Video is taller — letterbox (black bars left/right)
+      h = ch;
+      w = ch * videoAspect;
+      x = (cw - w) / 2;
+      y = 0;
+    }
+    setVideoRect({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
+  };
 
   useEffect(() => {
     if (modelState === "ready") startWebcam();
@@ -44,7 +76,10 @@ const Index = () => {
         const { width, height } = entry.contentRect;
         if (width <= 0 || height <= 0) continue;
         const rounded = { width: Math.round(width), height: Math.round(height) };
-        if (entry.target === wcEl) setWebcamSize(rounded);
+        if (entry.target === wcEl) {
+          setWebcamSize(rounded);
+          updateVideoRect();
+        }
         if (entry.target === avEl) setAvatarSize(rounded);
       }
     });
@@ -159,7 +194,9 @@ const Index = () => {
             ref={videoRef}
             playsInline
             muted
-            className="absolute inset-0 h-full w-full object-cover"
+            onLoadedMetadata={updateVideoRect}
+            onResize={updateVideoRect}
+            className="absolute inset-0 h-full w-full object-contain"
             style={{
               transform: "scaleX(-1)",
               filter: "saturate(0.6) brightness(0.85)",
@@ -167,13 +204,25 @@ const Index = () => {
             }}
           />
 
+          {/* FaceMesh canvas — positioned to match the letterboxed video area */}
           {webcamState === "active" && showMesh && (
-            <FaceMeshCanvas
-              landmarks={landmarks}
-              width={webcamSize.width}
-              height={webcamSize.height}
-              hasDetected={hasEverDetected && landmarks !== null}
-            />
+            <div
+              className="absolute"
+              style={{
+                left: videoRect.x,
+                top: videoRect.y,
+                width: videoRect.w,
+                height: videoRect.h,
+                pointerEvents: "none",
+              }}
+            >
+              <FaceMeshCanvas
+                landmarks={landmarks}
+                width={videoRect.w}
+                height={videoRect.h}
+                hasDetected={hasEverDetected && landmarks !== null}
+              />
+            </div>
           )}
 
           {webcamState === "active" && !landmarks && (
