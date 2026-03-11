@@ -158,8 +158,8 @@ export default function AvatarOverlay({
   }, [transformationMatrix, width, height]);
 
   const size = Math.min(width, height) * 0.8;
-  // Center Y of the W-contour for cavity positioning (around 65% of size)
-  const wCenterY = size * 0.655;
+  // W-contour center Y — average of the deepest lobe points (~72.8%) and corners (~67%)
+  const wCenterY = size * 0.695;
 
   return (
     <div style={containerStyle}>
@@ -167,22 +167,22 @@ export default function AvatarOverlay({
       <svg
         style={{
           position: "absolute",
-          left: size * 0.25,
-          top: wCenterY - 4,
-          width: size * 0.5,
-          height: jawDrop + 35,
+          left: size * 0.2,
+          top: wCenterY - 8,
+          width: size * 0.6,
+          height: jawDrop + 40,
           pointerEvents: "none",
           zIndex: 0,
           opacity: jawRaw < 0.05 ? 0 : Math.min((jawRaw - 0.05) / 0.1, 1),
           transition: "opacity 0.08s ease",
         }}
-        viewBox={`0 0 ${size * 0.5} ${jawDrop + 35}`}
+        viewBox={`0 0 ${size * 0.6} ${jawDrop + 40}`}
       >
-        {/* Deep burgundy cavity */}
+        {/* Deep burgundy cavity — wide to fill the W opening */}
         <ellipse
-          cx={size * 0.25}
-          cy={jawDrop * 0.42 + 8}
-          rx={size * 0.08 + jawDrop * 0.35}
+          cx={size * 0.3}
+          cy={jawDrop * 0.4 + 10}
+          rx={size * 0.14 + jawDrop * 0.35}
           ry={Math.max(jawDrop * 0.48, 0.5)}
           fill="hsl(340, 45%, 15%)"
         />
