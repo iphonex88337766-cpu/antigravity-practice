@@ -117,10 +117,10 @@ function lowerClipPath(points: [number, number][]): string {
  * mapped relative to forehead (10) and chin (152) to get face-relative %.
  */
 function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
-  const upperLip = landmarks[13]; // upper lip top center
-  const lowerLip = landmarks[14]; // lower lip bottom center
-  const forehead = landmarks[10]; // top of face
-  const chin = landmarks[152];    // bottom of face
+  const upperLip = landmarks[13];
+  const lowerLip = landmarks[14];
+  const forehead = landmarks[10];
+  const chin = landmarks[152];
 
   if (!upperLip || !lowerLip || !forehead || !chin) return BASE_MOUTH_Y;
 
@@ -130,11 +130,10 @@ function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
   if (faceHeight <= 0) return BASE_MOUTH_Y;
 
   const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
-  // Convert to percentage of face height, then scale to avatar image %
-  // The avatar face occupies roughly 20%-90% of the image vertically
   const faceRelative = (mouthCenterY - faceTop) / faceHeight; // 0-1 within face
-  // Map to avatar image space: face spans ~20% to ~85% of image
-  const avatarY = 20 + faceRelative * 65;
+  // Map to avatar image space: tiger face spans ~30% to ~95% of image
+  // Mouth at ~70% of face → 30 + 0.7*65 = 75.5, at ~75% → 30 + 0.75*65 = 78.75
+  const avatarY = 30 + faceRelative * 65;
   return avatarY;
 }
 
