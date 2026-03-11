@@ -135,9 +135,9 @@ export default function AvatarOverlay({
         <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
 
         {/* Mouth */}
-        <ellipse cx="50" cy={72 + mouthOpen * 2} rx={3.5 + smileAmount * 2} ry={0.6 + mouthOpen * 3.5} fill="#2d1a1a" opacity="0.85" />
+        <ellipse cx="50" cy={79 + mouthOpen * 2} rx={3.5 + smileAmount * 2} ry={0.6 + mouthOpen * 3.5} fill="#2d1a1a" opacity="0.85" />
         {mouthOpen > 0.25 && (
-          <ellipse cx="50" cy={73 + mouthOpen * 2} rx={2 + smileAmount * 0.8} ry={mouthOpen * 1.8} fill="#e85d75" opacity="0.6" />
+          <ellipse cx="50" cy={80 + mouthOpen * 2} rx={2 + smileAmount * 0.8} ry={mouthOpen * 1.8} fill="#e85d75" opacity="0.6" />
         )}
       </svg>
 
@@ -162,7 +162,7 @@ export default function AvatarOverlay({
             {/* Punch out right eye */}
             <ellipse cx="65" cy="50" rx="8" ry="8" fill="black" />
             {/* Punch out mouth area */}
-            <ellipse cx="50" cy="73" rx="7" ry="5" fill="black" />
+            <ellipse cx="50" cy="79" rx="7" ry="5" fill="black" />
           </mask>
         </defs>
         <image
