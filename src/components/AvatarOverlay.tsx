@@ -304,6 +304,46 @@ function EyelidCover({
     </g>
   );
 }
+
+export default function AvatarOverlay({
+  landmarks,
+  transformationMatrix,
+  blendshapes,
+  width,
+  height,
+  avatarSrc = babyTigerSrc,
+}: AvatarOverlayProps) {
+  const smoothJawRef = useRef(0);
+  const smoothLeftEyeRef = useRef(0);
+  const smoothRightEyeRef = useRef(0);
+
+  const jawRaw = blendshapes?.["jawOpen"] ?? 0;
+  smoothJawRef.current = lerp(smoothJawRef.current, jawRaw, 0.18);
+  const jawNorm = smoothJawRef.current;
+  const jawDrop = easeOut(Math.min(jawNorm, 1)) * MAX_JAW_PX;
+
+  const leftBlinkRaw = blendshapes?.["eyeBlinkLeft"] ?? 0;
+  const rightBlinkRaw = blendshapes?.["eyeBlinkRight"] ?? 0;
+  smoothLeftEyeRef.current = lerp(smoothLeftEyeRef.current, leftBlinkRaw, 0.25);
+  smoothRightEyeRef.current = lerp(smoothRightEyeRef.current, rightBlinkRaw, 0.25);
+
+  const isOpen = jawNorm > OPEN_THRESHOLD;
+
+  const elasticPts = elasticLowerContour(jawDrop);
+  const ELASTIC_LOWER_CLIP = isOpen ? lowerClip(elasticPts) : "none";
+
+  const featherPx = isOpen ? Math.max(0, 1.5 - jawDrop * 0.06) : 0;
+
+  const containerStyle = useMemo(() => {
+    const cx = width / 2;
+    const cy = height / 2;
+
+    let rotate = "none";
+    if (transformationMatrix && transformationMatrix.data?.length >= 16) {
+      const { pitch, yaw, roll } = matrixToEuler(transformationMatrix.data);
+      rotate = `rotateX(${pitch}deg) rotateY(${-yaw}deg) rotateZ(${-roll}deg)`;
+    }
+
     return {
       position: "absolute" as const,
       left: cx - SZ / 2,
