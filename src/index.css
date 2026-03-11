@@ -104,20 +104,4 @@
   animation: calibrate-fill 3s ease-in-out forwards;
 }
 
-@layer components {
-  .puppy-overlay-container {
-    background-color: transparent !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-
-  .puppy-overlay-image {
-    background-color: transparent !important;
-    background: transparent !important;
-    mix-blend-mode: multiply !important;
-    filter: contrast(1.2) brightness(1.1) !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-}
+/* Puppy overlay styles removed — awaiting transparent PNG */
