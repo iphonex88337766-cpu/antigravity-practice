@@ -171,6 +171,9 @@ export default function AvatarOverlay({
     };
   }, [transformationMatrix, width, height]);
 
+  // Debug values
+  const debugGapH = MAX_MOUTH_H * t;
+
   return (
     <div style={containerStyle}>
       {/* Layer 0: Full unbroken tiger — ALWAYS visible */}
@@ -199,6 +202,20 @@ export default function AvatarOverlay({
           ))}
         </>
       )}
+
+      {/* DEBUG OVERLAY */}
+      <div style={{
+        position: "absolute", left: 4, bottom: 4, zIndex: 99,
+        background: "rgba(0,0,0,0.75)", color: "#3DFF8A",
+        padding: "6px 10px", borderRadius: 6,
+        fontSize: 11, fontFamily: "monospace", lineHeight: 1.5,
+        pointerEvents: "none",
+      }}>
+        <div>raw: {mouthOpenRaw.toFixed(3)}</div>
+        <div>norm: {normalized.toFixed(3)}</div>
+        <div>t: {t.toFixed(3)}</div>
+        <div>gapH: {debugGapH.toFixed(1)}%</div>
+      </div>
     </div>
   );
 }
