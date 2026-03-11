@@ -99,10 +99,10 @@ function shiftedWPoints(dy: number): [number, number][] {
   });
 }
 
-/** Upper face clip: everything above the W-contour (bottom edge IS the W line) */
+/** Upper face clip: everything above the W-contour */
 function upperClipPath(points: [number, number][]): string {
-  const fwd = points.map(([x, y]) => `${x}% ${y}%`).join(", ");
-  return `polygon(0% 0%, 100% 0%, ${fwd})`;
+  const rev = [...points].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
+  return `polygon(0% 0%, 100% 0%, 100% 100%, ${rev}, 0% 100%)`;
 }
 
 /** Lower jaw clip: everything below the W-contour */
@@ -334,6 +334,59 @@ export default function AvatarOverlay({
           strokeLinecap="round"
         />
 
+        {/* ── Lower jaw top edge — faint light catch on the chin edge ── */}
+        <path
+          d={`
+            M ${lcx + size * 0.03} ${cornerY + openAmt * 0.3 + 0.5}
+            C ${lcx + size * 0.07} ${cornerY + openAmt * 0.65 + 0.5},
+              ${cx - size * 0.05} ${philtrumY + openAmt + 1},
+              ${cx} ${philtrumY + openAmt + 1.8}
+            C ${cx + size * 0.05} ${philtrumY + openAmt + 1},
+              ${rcx - size * 0.07} ${cornerY + openAmt * 0.65 + 0.5},
+              ${rcx - size * 0.03} ${cornerY + openAmt * 0.3 + 0.5}
+          `}
+          fill="none"
+          stroke="hsla(35, 25%, 60%, 0.07)"
+          strokeWidth="0.6"
+          filter="url(#depthSoft)"
+          strokeLinecap="round"
+        />
+
+        {/* ── Lower jaw underside shadow — subtle depth below jaw edge ── */}
+        <path
+          d={`
+            M ${lcx + size * 0.04} ${cornerY + openAmt * 0.4 + 3}
+            C ${lcx + size * 0.08} ${cornerY + openAmt * 0.75 + 3.5},
+              ${cx - size * 0.04} ${philtrumY + openAmt + 4.5},
+              ${cx} ${philtrumY + openAmt + 5}
+            C ${cx + size * 0.04} ${philtrumY + openAmt + 4.5},
+              ${rcx - size * 0.08} ${cornerY + openAmt * 0.75 + 3.5},
+              ${rcx - size * 0.04} ${cornerY + openAmt * 0.4 + 3}
+          `}
+          fill="none"
+          stroke="hsla(25, 15%, 12%, 0.07)"
+          strokeWidth="2"
+          filter="url(#lipSoft)"
+          strokeLinecap="round"
+        />
+
+        {/* ── Mouth corners — soft fades into cheeks ── */}
+        <ellipse
+          cx={lcx - size * 0.005}
+          cy={cornerY + openAmt * 0.08}
+          rx={size * 0.025 + openAmt * 0.1}
+          ry={size * 0.018 + openAmt * 0.08}
+          fill="hsla(20, 18%, 10%, 0.14)"
+          filter="url(#cornerBlend)"
+        />
+        <ellipse
+          cx={rcx + size * 0.005}
+          cy={cornerY + openAmt * 0.08}
+          rx={size * 0.025 + openAmt * 0.1}
+          ry={size * 0.018 + openAmt * 0.08}
+          fill="hsla(20, 18%, 10%, 0.14)"
+          filter="url(#cornerBlend)"
+        />
       </svg>
 
       {/* ── Lower Jaw (translates down with jawOpen) ── */}
