@@ -39,52 +39,63 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 45;
 
 /**
- * Simple W-contour for feline upper lip.
+ * Feline W-contour with PRONOUNCED curvature.
  *
- * Edges sit at y=100% (no split at face sides).
- * Mouth corners at ~25% and ~75% x.
- * Lip line at ~74% y with gentle W-shape whisker-pad lobes.
+ * The mouth corners sit HIGH (~69% y) while the whisker-pad lobes
+ * dip LOW (~76% y), creating a ~7% vertical arc that reads as a
+ * clear curved feline mouth, not a flat bar.
  *
+ * Edges at y=100% so the face sides are never split.
  * Format: [x%, y%]
  */
 const W_POINTS: [number, number][] = [
   [0,   100],
-  [10,  100],
-  // smooth rise from chin into left mouth corner
-  [15,  96],
-  [18,  88],
-  [20,  82],
-  [22,  78],
-  [24,  75.5],
-  [25.5, 74],    // left mouth corner
-  // left whisker-pad lobe
-  [28,  73],
-  [31,  72.2],
-  [34,  71.8],
-  [37,  71.5],
-  [40,  71.4],   // left lobe bottom
-  [43,  71.6],
-  // philtrum center
-  [46,  72],
-  [48,  71.8],
-  [50,  71.5],   // center — slight rise
-  [52,  71.8],
-  [54,  72],
-  // right whisker-pad lobe
-  [57,  71.6],
-  [60,  71.4],   // right lobe bottom
-  [63,  71.5],
-  [66,  71.8],
-  [69,  72.2],
-  [72,  73],
-  [74.5, 74],    // right mouth corner
-  // smooth descent back to chin
-  [76,  75.5],
-  [78,  78],
-  [80,  82],
-  [82,  88],
-  [85,  96],
-  [90,  100],
+  [8,   100],
+  // gentle rise from chin into left mouth corner
+  [12,  97],
+  [15,  92],
+  [17,  86],
+  [19,  80],
+  [21,  76],
+  [23,  73],
+  [25,  71],
+  [27,  69.5],   // left mouth corner (high)
+  // descending into left whisker-pad lobe
+  [29,  70.5],
+  [31,  71.8],
+  [33,  73],
+  [35,  74],
+  [37,  74.8],
+  [39,  75.3],
+  [41,  75.6],   // left lobe deepest
+  [43,  75.3],
+  [45,  74.6],
+  // rising toward philtrum
+  [47,  74],
+  [49,  73.8],
+  [50,  73.6],   // philtrum center (slight rise between lobes)
+  [51,  73.8],
+  [53,  74],
+  // descending into right whisker-pad lobe
+  [55,  74.6],
+  [57,  75.3],
+  [59,  75.6],   // right lobe deepest
+  [61,  75.3],
+  [63,  74.8],
+  [65,  74],
+  [67,  73],
+  [69,  71.8],
+  [71,  70.5],
+  [73,  69.5],   // right mouth corner (high)
+  // descending back to chin
+  [75,  71],
+  [77,  73],
+  [79,  76],
+  [81,  80],
+  [83,  86],
+  [85,  92],
+  [88,  97],
+  [92,  100],
   [100, 100],
 ];
 
@@ -147,33 +158,17 @@ export default function AvatarOverlay({
 
   const size = Math.min(width, height) * 0.8;
 
-  // Mouth corner positions in px (for corner fills)
-  const lcx = size * 0.255;  // left corner x
-  const rcx = size * 0.745;  // right corner x
-  const cy = size * 0.74;    // corner y
+  // Mouth corner and lobe positions in pixels
+  const lcx = size * 0.27;   // left corner x
+  const rcx = size * 0.73;   // right corner x
+  const cornerY = size * 0.695;  // corner y (high)
+  const lobeY = size * 0.756;   // lobe deepest y (low)
+  const mouthCx = size * 0.5;
 
   return (
     <div style={containerStyle}>
-      {/* ── Dark mouth cavity background ── */}
-      {/* This is just a dark shape behind the face layers.
-          The gap between upper and lower clips reveals it. */}
-      <div
-        style={{
-          position: "absolute",
-          left: lcx - 4,
-          top: cy - 6,
-          width: rcx - lcx + 8,
-          height: jawDrop + 16,
-          background: "radial-gradient(ellipse at 50% 30%, hsl(340, 50%, 12%), hsl(340, 55%, 6%))",
-          borderRadius: "0 0 40% 40%",
-          zIndex: 0,
-          opacity: jawRaw < 0.02 ? 0 : Math.min((jawRaw - 0.02) / 0.06, 1),
-          transition: "opacity 0.08s ease",
-        }}
-      />
-
-      {/* ── Corner skin fills: bridge mouth corners into cheeks ── */}
-      {jawDrop > 1 && (
+      {/* ── Dark mouth cavity — SVG shape following the W-contour ── */}
+      {jawDrop > 0.5 && (
         <svg
           style={{
             position: "absolute",
@@ -182,31 +177,28 @@ export default function AvatarOverlay({
             width: size,
             height: size + MAX_JAW_PX,
             pointerEvents: "none",
-            zIndex: 1,
+            zIndex: 0,
           }}
           viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
         >
-          {/* Left corner — smooth triangular fill connecting upper to lower */}
+          {/* The cavity shape: top edge follows the W-contour arc,
+              bottom edge is the same arc shifted down by jawDrop */}
           <path
-            d={`M ${lcx} ${cy}
-                C ${lcx - 10} ${cy + jawDrop * 0.3},
-                  ${lcx - 10} ${cy + jawDrop * 0.7},
-                  ${lcx} ${cy + jawDrop}
-                L ${lcx + 14} ${cy + jawDrop * 0.5}
-                Z`}
-            fill="hsl(30, 52%, 67%)"
-            opacity={Math.min(jawDrop / 6, 0.6)}
-          />
-          {/* Right corner */}
-          <path
-            d={`M ${rcx} ${cy}
-                C ${rcx + 10} ${cy + jawDrop * 0.3},
-                  ${rcx + 10} ${cy + jawDrop * 0.7},
-                  ${rcx} ${cy + jawDrop}
-                L ${rcx - 14} ${cy + jawDrop * 0.5}
-                Z`}
-            fill="hsl(30, 52%, 67%)"
-            opacity={Math.min(jawDrop / 6, 0.6)}
+            d={`
+              M ${lcx} ${cornerY}
+              Q ${lcx + (mouthCx - lcx) * 0.5} ${lobeY},
+                ${mouthCx} ${lobeY - 2}
+              Q ${mouthCx + (rcx - mouthCx) * 0.5} ${lobeY},
+                ${rcx} ${cornerY}
+              L ${rcx} ${cornerY + jawDrop}
+              Q ${mouthCx + (rcx - mouthCx) * 0.5} ${lobeY + jawDrop + 4},
+                ${mouthCx} ${lobeY + jawDrop + 6}
+              Q ${lcx + (mouthCx - lcx) * 0.5} ${lobeY + jawDrop + 4},
+                ${lcx} ${cornerY + jawDrop}
+              Z
+            `}
+            fill="hsl(340, 50%, 8%)"
+            opacity={jawRaw < 0.02 ? 0 : Math.min((jawRaw - 0.02) / 0.06, 1)}
           />
         </svg>
       )}
@@ -220,7 +212,7 @@ export default function AvatarOverlay({
           width: size,
           height: size,
           clipPath: LOWER_CLIP,
-          zIndex: 2,
+          zIndex: 1,
           transform: `translateY(${jawDrop}px)`,
           willChange: "transform",
         }}
@@ -242,7 +234,7 @@ export default function AvatarOverlay({
           width: size,
           height: size,
           clipPath: UPPER_CLIP,
-          zIndex: 3,
+          zIndex: 2,
         }}
       >
         <img
