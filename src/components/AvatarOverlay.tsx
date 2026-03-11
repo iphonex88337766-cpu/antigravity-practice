@@ -1,9 +1,8 @@
 /**
- * AvatarOverlay — Frame-based mouth animation.
+ * AvatarOverlay — Frame-based mouth + elastic jaw stretch.
  *
- * Uses a single base image with an SVG mouth overlay that
- * crossfades between closed/half/wide states based on jawOpen.
- * No clip-path deformation, no elastic stretching.
+ * Upper face is static. Lower jaw (below mouth line) translates
+ * downward based on jawOpen, with the mouth interior filling the gap.
  */
 
 import { useMemo, useRef } from "react";
@@ -34,29 +33,28 @@ function lerp(a: number, b: number, t: number) {
 }
 
 const SZ = 500;
+const MAX_DROP = 150; // max chin drop in px
+const SPLIT_Y = 72; // % from top where mouth line sits
+const DEAD_ZONE = 0.05;
 
 /**
- * MouthOverlay — SVG-drawn mouth interior that fades in/out.
- * Rendered on top of the base image at the mouth region.
+ * MouthInterior — fills the gap between upper and lower jaw.
  */
-function MouthOverlay({ jawNorm }: { jawNorm: number }) {
-  if (jawNorm < 0.05) return null;
+function MouthInterior({ dropPx }: { dropPx: number }) {
+  if (dropPx < 1) return null;
 
-  // Normalize to 0-1 range for animation
-  const t = Math.min(jawNorm / 0.8, 1); // reaches full at 80% open
-
-  // Mouth geometry — centered on the tiger's muzzle
+  const t = Math.min(dropPx / MAX_DROP, 1);
   const cx = SZ * 0.5;
-  const cy = SZ * 0.72;
-  const mouthWidth = SZ * 0.18;
-  const mouthHeight = lerp(2, SZ * 0.14, t);
+  const mouthTop = SZ * (SPLIT_Y / 100);
+  const mouthBot = mouthTop + dropPx;
+  const midY = (mouthTop + mouthBot) / 2;
+  const mouthW = SZ * 0.16;
+  const mouthH = dropPx * 0.45;
 
-  // Opacities — fangs first, then tongue, then cavity deepens
-  const fangOpacity = Math.min(t * 3, 1);
-  const tongueOpacity = Math.min(t * 2, 0.9);
-  const cavityOpacity = Math.min(t * 1.2, 0.85);
-
-  const fangLen = lerp(1, 12, t);
+  const fangOpacity = Math.min(t * 4, 1);
+  const tongueOpacity = Math.min(t * 2.5, 0.9);
+  const cavityOpacity = Math.min(t * 1.2, 0.8);
+  const fangLen = lerp(2, 14, t);
 
   return (
     <svg
@@ -65,58 +63,48 @@ function MouthOverlay({ jawNorm }: { jawNorm: number }) {
         left: 0,
         top: 0,
         width: SZ,
-        height: SZ,
+        height: SZ + MAX_DROP,
         pointerEvents: "none",
+        zIndex: 1,
       }}
-      viewBox={`0 0 ${SZ} ${SZ}`}
+      viewBox={`0 0 ${SZ} ${SZ + MAX_DROP}`}
     >
       <defs>
-        <radialGradient id="cavGrad" cx="50%" cy="40%" r="55%">
+        <radialGradient id="cavG" cx="50%" cy="35%" r="55%">
           <stop offset="0%" stopColor="hsl(350, 18%, 18%)" />
           <stop offset="100%" stopColor="hsl(340, 25%, 6%)" />
         </radialGradient>
-        <filter id="softBlur">
+        <filter id="sBlur">
           <feGaussianBlur stdDeviation="2" />
         </filter>
       </defs>
 
-      {/* Dark cavity — deepens gradually */}
+      {/* Cavity */}
       <ellipse
-        cx={cx}
-        cy={cy + mouthHeight * 0.15}
-        rx={mouthWidth}
-        ry={mouthHeight * 0.55}
-        fill="url(#cavGrad)"
-        opacity={cavityOpacity}
-        filter="url(#softBlur)"
+        cx={cx} cy={midY}
+        rx={mouthW} ry={mouthH}
+        fill="url(#cavG)" opacity={cavityOpacity} filter="url(#sBlur)"
       />
 
       {/* Tongue */}
       <ellipse
-        cx={cx}
-        cy={cy + mouthHeight * 0.25}
-        rx={mouthWidth * 0.55}
-        ry={Math.max(mouthHeight * 0.3, 1.5)}
-        fill="hsl(350, 50%, 55%)"
-        opacity={tongueOpacity}
+        cx={cx} cy={midY + mouthH * 0.15}
+        rx={mouthW * 0.5} ry={Math.max(mouthH * 0.35, 2)}
+        fill="hsl(350, 50%, 55%)" opacity={tongueOpacity}
       />
 
-      {/* Left fang */}
+      {/* Fangs */}
       <path
-        d={`M ${cx - mouthWidth * 0.35} ${cy - 1}
-            L ${cx - mouthWidth * 0.25} ${cy + fangLen}
-            L ${cx - mouthWidth * 0.15} ${cy - 1} Z`}
-        fill="hsl(40, 20%, 95%)"
-        opacity={fangOpacity}
+        d={`M ${cx - mouthW * 0.4} ${mouthTop - 1}
+            L ${cx - mouthW * 0.25} ${mouthTop + fangLen}
+            L ${cx - mouthW * 0.1} ${mouthTop - 1} Z`}
+        fill="hsl(40, 20%, 95%)" opacity={fangOpacity}
       />
-
-      {/* Right fang */}
       <path
-        d={`M ${cx + mouthWidth * 0.15} ${cy - 1}
-            L ${cx + mouthWidth * 0.25} ${cy + fangLen}
-            L ${cx + mouthWidth * 0.35} ${cy - 1} Z`}
-        fill="hsl(40, 20%, 95%)"
-        opacity={fangOpacity}
+        d={`M ${cx + mouthW * 0.1} ${mouthTop - 1}
+            L ${cx + mouthW * 0.25} ${mouthTop + fangLen}
+            L ${cx + mouthW * 0.4} ${mouthTop - 1} Z`}
+        fill="hsl(40, 20%, 95%)" opacity={fangOpacity}
       />
     </svg>
   );
@@ -136,6 +124,11 @@ export default function AvatarOverlay({
   smoothJawRef.current = lerp(smoothJawRef.current, jawRaw, 0.18);
   const jawNorm = smoothJawRef.current;
 
+  const isOpen = jawNorm > DEAD_ZONE;
+  const dropPx = isOpen
+    ? Math.min(jawNorm * 1.8, 1) * MAX_DROP // aggressive 1.8x multiplier
+    : 0;
+
   const containerStyle = useMemo(() => {
     const cx = width / 2;
     const cy = height / 2;
@@ -151,7 +144,7 @@ export default function AvatarOverlay({
       left: cx - SZ / 2,
       top: cy - SZ / 2,
       width: SZ,
-      height: SZ,
+      height: SZ + MAX_DROP,
       transform: rotate,
       transformStyle: "preserve-3d" as const,
       pointerEvents: "none" as const,
@@ -159,25 +152,60 @@ export default function AvatarOverlay({
     };
   }, [transformationMatrix, width, height]);
 
+  // Upper clip: everything above the split line
+  const upperClip = `polygon(0% 0%, 100% 0%, 100% ${SPLIT_Y}%, 0% ${SPLIT_Y}%)`;
+
+  // Lower clip: everything below the split line
+  const lowerClip = `polygon(0% ${SPLIT_Y}%, 100% ${SPLIT_Y}%, 100% 100%, 0% 100%)`;
+
   return (
     <div style={containerStyle}>
-      {/* Base tiger image — always visible */}
+      {/* Base image — always visible when closed */}
       <img
         src={avatarSrc}
         alt="Avatar"
         draggable={false}
         style={{
           position: "absolute",
-          left: 0,
-          top: 0,
-          width: SZ,
-          height: SZ,
-          display: "block",
+          left: 0, top: 0,
+          width: SZ, height: SZ,
+          display: isOpen ? "none" : "block",
+          zIndex: 0,
         }}
       />
 
-      {/* Mouth overlay — fades in based on jaw open */}
-      <MouthOverlay jawNorm={jawNorm} />
+      {isOpen && (
+        <>
+          {/* Upper face — static, clipped above mouth line */}
+          <div style={{
+            position: "absolute",
+            left: 0, top: 0,
+            width: SZ, height: SZ,
+            clipPath: upperClip,
+            zIndex: 2,
+          }}>
+            <img src={avatarSrc} alt="" draggable={false}
+              style={{ width: SZ, height: SZ, display: "block" }} />
+          </div>
+
+          {/* Mouth interior — fills the gap */}
+          <MouthInterior dropPx={dropPx} />
+
+          {/* Lower jaw — clipped below mouth line, translated down */}
+          <div style={{
+            position: "absolute",
+            left: 0, top: 0,
+            width: SZ, height: SZ,
+            clipPath: lowerClip,
+            transform: `translateY(${dropPx}px)`,
+            zIndex: 2,
+            willChange: "transform",
+          }}>
+            <img src={avatarSrc} alt="" draggable={false}
+              style={{ width: SZ, height: SZ, display: "block" }} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
