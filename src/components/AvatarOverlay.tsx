@@ -40,7 +40,7 @@ function easeOut(t: number) {
 
 const SZ = 500;
 const MAX_JAW_PX = 40;
-const OPEN_THRESHOLD = 0.012;
+const OPEN_THRESHOLD = 0.06;
 
 /**
  * Static W-contour — base positions when mouth is closed.
