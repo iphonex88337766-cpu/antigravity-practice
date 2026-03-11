@@ -63,7 +63,7 @@ export default function AvatarOverlay({
         src={avatarSrc}
         alt="Avatar"
         draggable={false}
-        style={{ width: 600, height: 600, display: "block" }}
+        style={{ width: 500, height: 500, display: "block" }}
       />
     </div>
   );
