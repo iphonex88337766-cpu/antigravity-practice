@@ -1,11 +1,11 @@
 /**
  * AvatarOverlay
  *
- * Three-layer mouth composition (no SVG masks/clipPaths):
- *   1. Background: SVG mouth cavity (burgundy + tongue + cute teeth)
- *   2. Middle: Lower jaw image (CSS-cropped, translates down with jawOpen)
- *   3. Top: Upper face image (CSS-cropped, fixed)
- * Head rotation via facial transformation matrix preserved.
+ * Three-layer mouth with W-shaped feline muzzle contour:
+ *   1. Background: Detailed mouth cavity (burgundy + tongue + fierce cartoon fangs)
+ *   2. Middle: Lower jaw (W-contour top edge, translates down with jawOpen)
+ *   3. Top: Upper face (W-contour bottom edge, fixed)
+ * Uses CSS clip-path polygons for the W-shape. No SVG masks.
  */
 
 import { useMemo, useRef } from "react";
@@ -35,9 +35,48 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-// Split point as percentage of image height (where the mouth seam is)
-const SPLIT_PCT = 58;
-const MAX_JAW_PX = 60; // max pixel drop at full jawOpen
+const MAX_JAW_PX = 55;
+
+/**
+ * W-shaped muzzle contour points (percentage of image size).
+ * The W dips at center (nose bridge), rises at the muzzle sides,
+ * dips again for the mouth corners, then rises to the cheeks.
+ *
+ * Format: [x%, y%] — these define the boundary between upper and lower face.
+ */
+const W_POINTS: [number, number][] = [
+  [0, 56],       // far left cheek
+  [18, 57],      // left cheek edge
+  [25, 59],      // left mouth corner (dip)
+  [32, 56],      // left muzzle rise
+  [38, 54],      // left muzzle peak
+  [43, 57],      // left side of nose dip
+  [50, 59],      // center chin/nose dip (W bottom)
+  [57, 57],      // right side of nose dip
+  [62, 54],      // right muzzle peak
+  [68, 56],      // right muzzle rise
+  [75, 59],      // right mouth corner (dip)
+  [82, 57],      // right cheek edge
+  [100, 56],     // far right cheek
+];
+
+/** Build CSS clip-path polygon for the UPPER face (everything above the W) */
+function upperClipPath(): string {
+  // Start top-left, go across top, down right side, trace W right-to-left, back up left side
+  const wPath = W_POINTS.map(([x, y]) => `${x}% ${y}%`).join(", ");
+  return `polygon(0% 0%, 100% 0%, 100% ${W_POINTS[W_POINTS.length - 1][1]}%, ${
+    [...W_POINTS].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ")
+  }, 0% ${W_POINTS[0][1]}%)`;
+}
+
+/** Build CSS clip-path polygon for the LOWER jaw (everything below the W) */
+function lowerClipPath(): string {
+  const wPath = W_POINTS.map(([x, y]) => `${x}% ${y}%`).join(", ");
+  return `polygon(${wPath}, 100% ${W_POINTS[W_POINTS.length - 1][1]}%, 100% 100%, 0% 100%, 0% ${W_POINTS[0][1]}%)`;
+}
+
+const UPPER_CLIP = upperClipPath();
+const LOWER_CLIP = lowerClipPath();
 
 export default function AvatarOverlay({
   landmarks,
@@ -80,78 +119,157 @@ export default function AvatarOverlay({
   }, [transformationMatrix, width, height]);
 
   const size = Math.min(width, height) * 0.8;
-  const splitY = (SPLIT_PCT / 100) * size;
+  // Average Y of the W for cavity positioning
+  const avgWY = (W_POINTS.reduce((s, [, y]) => s + y, 0) / W_POINTS.length / 100) * size;
 
   return (
     <div style={containerStyle}>
-      {/* ── LAYER 1: Mouth Cavity (behind jaw) ── */}
+      {/* ── LAYER 1: Mouth Cavity with Fierce Dentition ── */}
       <svg
         style={{
           position: "absolute",
           left: 0,
-          top: splitY - 5,
+          top: avgWY - 15,
           width: size,
-          height: jawDrop + 30,
+          height: jawDrop + 40,
           pointerEvents: "none",
           zIndex: 0,
         }}
-        viewBox={`0 0 ${size} ${jawDrop + 30}`}
+        viewBox={`0 0 ${size} ${jawDrop + 40}`}
       >
-        {/* Dark burgundy cavity */}
+        {/* Deep burgundy cavity */}
         <ellipse
           cx={size / 2}
-          cy={jawDrop * 0.5 + 5}
-          rx={size * 0.08 + jawDrop * 0.3}
-          ry={Math.max(jawDrop * 0.45, 0.5)}
-          fill="hsl(345, 40%, 18%)"
+          cy={jawDrop * 0.45 + 10}
+          rx={size * 0.12 + jawDrop * 0.4}
+          ry={Math.max(jawDrop * 0.5, 0.5)}
+          fill="hsl(340, 45%, 15%)"
         />
-        {/* Soft pink tongue */}
+        {/* Inner cavity gradient - darker center */}
         <ellipse
           cx={size / 2}
-          cy={jawDrop * 0.55 + 7}
-          rx={size * 0.05 + jawDrop * 0.12}
-          ry={Math.max(jawDrop * 0.25, 0.3)}
-          fill="hsl(350, 55%, 55%)"
+          cy={jawDrop * 0.45 + 10}
+          rx={size * 0.08 + jawDrop * 0.25}
+          ry={Math.max(jawDrop * 0.35, 0.3)}
+          fill="hsl(340, 50%, 10%)"
         />
-        {/* Upper teeth — soft rounded nubs */}
-        {[-12, -4, 4, 12].map((xOff, i) => (
+        {/* Soft pink tongue - rounded and cute */}
+        <ellipse
+          cx={size / 2}
+          cy={jawDrop * 0.55 + 14}
+          rx={size * 0.06 + jawDrop * 0.15}
+          ry={Math.max(jawDrop * 0.22, 0.3)}
+          fill="hsl(350, 60%, 58%)"
+        />
+        {/* Tongue highlight */}
+        <ellipse
+          cx={size / 2 - 2}
+          cy={jawDrop * 0.52 + 13}
+          rx={size * 0.03 + jawDrop * 0.06}
+          ry={Math.max(jawDrop * 0.1, 0.2)}
+          fill="hsl(350, 65%, 68%)"
+          opacity="0.6"
+        />
+
+        {/* ── UPPER TEETH (hang from upper jaw) ── */}
+        {/* Left canine fang — prominent & sharp */}
+        <polygon
+          points={`
+            ${size * 0.38},2
+            ${size * 0.38 + 5},2
+            ${size * 0.38 + 4},${Math.min(6 + jawDrop * 0.5, 22)}
+            ${size * 0.38 + 1},${Math.min(8 + jawDrop * 0.55, 25)}
+            ${size * 0.38 - 1},${Math.min(4 + jawDrop * 0.3, 15)}
+          `}
+          fill="hsl(45, 20%, 96%)"
+          stroke="hsl(40, 15%, 88%)"
+          strokeWidth="0.5"
+          opacity={Math.min(jawDrop / 5, 1)}
+        />
+        {/* Right canine fang — prominent & sharp */}
+        <polygon
+          points={`
+            ${size * 0.62 - 5},2
+            ${size * 0.62},2
+            ${size * 0.62 + 1},${Math.min(4 + jawDrop * 0.3, 15)}
+            ${size * 0.62 - 1},${Math.min(8 + jawDrop * 0.55, 25)}
+            ${size * 0.62 - 4},${Math.min(6 + jawDrop * 0.5, 22)}
+          `}
+          fill="hsl(45, 20%, 96%)"
+          stroke="hsl(40, 15%, 88%)"
+          strokeWidth="0.5"
+          opacity={Math.min(jawDrop / 5, 1)}
+        />
+        {/* Upper incisors — small rounded teeth between canines */}
+        {[-8, -3, 2, 7].map((xOff, i) => (
           <rect
-            key={`ut-${i}`}
-            x={size / 2 + xOff - 3}
-            y={1}
-            width="6"
-            height={Math.min(4 + jawDrop * 0.15, 10)}
-            rx="3"
-            ry="3"
-            fill="hsl(40, 30%, 95%)"
-            opacity={Math.min(jawDrop / 8, 1)}
+            key={`ui-${i}`}
+            x={size / 2 + xOff - 2.5}
+            y={2}
+            width="5"
+            height={Math.min(3 + jawDrop * 0.18, 9)}
+            rx="1.8"
+            ry="1.8"
+            fill="hsl(45, 18%, 95%)"
+            stroke="hsl(40, 12%, 90%)"
+            strokeWidth="0.3"
+            opacity={Math.min(jawDrop / 6, 1)}
           />
         ))}
-        {/* Lower teeth — smaller nubs */}
-        {[-8, 0, 8].map((xOff, i) => (
+
+        {/* ── LOWER TEETH (rise from lower jaw) ── */}
+        {/* Lower canine stubs */}
+        <polygon
+          points={`
+            ${size * 0.39},${jawDrop * 0.75 + 8}
+            ${size * 0.39 + 4},${jawDrop * 0.75 + 8}
+            ${size * 0.39 + 3},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.3, 12)}
+            ${size * 0.39 + 1},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.35, 14)}
+          `}
+          fill="hsl(45, 18%, 94%)"
+          stroke="hsl(40, 12%, 88%)"
+          strokeWidth="0.3"
+          opacity={Math.min(jawDrop / 6, 1)}
+        />
+        <polygon
+          points={`
+            ${size * 0.61 - 4},${jawDrop * 0.75 + 8}
+            ${size * 0.61},${jawDrop * 0.75 + 8}
+            ${size * 0.61 - 1},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.35, 14)}
+            ${size * 0.61 - 3},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.3, 12)}
+          `}
+          fill="hsl(45, 18%, 94%)"
+          stroke="hsl(40, 12%, 88%)"
+          strokeWidth="0.3"
+          opacity={Math.min(jawDrop / 6, 1)}
+        />
+        {/* Lower incisors */}
+        {[-5, 0, 5].map((xOff, i) => (
           <rect
-            key={`lt-${i}`}
-            x={size / 2 + xOff - 2.5}
-            y={jawDrop * 0.75 + 2}
-            width="5"
-            height={Math.min(3 + jawDrop * 0.1, 7)}
-            rx="2.5"
-            ry="2.5"
-            fill="hsl(40, 25%, 92%)"
-            opacity={Math.min(jawDrop / 8, 1)}
+            key={`li-${i}`}
+            x={size / 2 + xOff - 2}
+            y={jawDrop * 0.75 + 8 - Math.min(2.5 + jawDrop * 0.1, 6)}
+            width="4"
+            height={Math.min(2.5 + jawDrop * 0.1, 6)}
+            rx="1.5"
+            ry="1.5"
+            fill="hsl(45, 15%, 93%)"
+            stroke="hsl(40, 10%, 88%)"
+            strokeWidth="0.3"
+            opacity={Math.min(jawDrop / 6, 1)}
           />
         ))}
       </svg>
 
-      {/* ── LAYER 2: Lower Jaw (translates down) ── */}
+      {/* ── LAYER 2: Lower Jaw (W-contour, translates down) ── */}
       <div
         style={{
           position: "absolute",
           left: 0,
-          top: splitY,
+          top: 0,
           width: size,
-          height: size - splitY,
-          overflow: "hidden",
+          height: size,
+          clipPath: LOWER_CLIP,
           transform: `translateY(${jawDrop}px)`,
           zIndex: 1,
           willChange: "transform",
@@ -160,47 +278,41 @@ export default function AvatarOverlay({
         <img
           src={avatarSrc}
           alt=""
+          draggable={false}
           style={{
-            position: "absolute",
-            left: 0,
-            top: -(splitY),
             width: size,
             height: size,
-            objectFit: "cover",
             display: "block",
           }}
         />
       </div>
 
-      {/* ── LAYER 3: Upper Face (fixed, on top) ── */}
+      {/* ── LAYER 3: Upper Face (W-contour, fixed on top) ── */}
       <div
         style={{
           position: "absolute",
           left: 0,
           top: 0,
           width: size,
-          height: splitY,
-          overflow: "hidden",
+          height: size,
+          clipPath: UPPER_CLIP,
           zIndex: 2,
         }}
       >
         <img
           src={avatarSrc}
           alt=""
+          draggable={false}
           style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
             width: size,
             height: size,
-            objectFit: "cover",
             display: "block",
           }}
         />
       </div>
 
-      {/* ── Elastic cheek connectors ── */}
-      {jawDrop > 1 && (
+      {/* ── Elastic cheek connectors at W endpoints ── */}
+      {jawDrop > 1.5 && (
         <svg
           style={{
             position: "absolute",
@@ -213,26 +325,53 @@ export default function AvatarOverlay({
           }}
           viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
         >
-          {/* Left cheek */}
+          {/* Left elastic connector — from left mouth corner W point */}
           <path
-            d={`M ${size * 0.38} ${splitY}
-                Q ${size * 0.35} ${splitY + jawDrop * 0.5}
-                  ${size * 0.39} ${splitY + jawDrop}`}
-            stroke="hsl(30, 45%, 62%)"
-            strokeWidth="2"
+            d={`M ${size * 0.25} ${size * 0.59}
+                Q ${size * 0.22} ${size * 0.59 + jawDrop * 0.5}
+                  ${size * 0.26} ${size * 0.59 + jawDrop}`}
+            stroke="hsl(28, 45%, 60%)"
+            strokeWidth="2.5"
             fill="none"
-            opacity={Math.min(jawDrop / 15, 0.5)}
+            opacity={Math.min(jawDrop / 12, 0.45)}
+            strokeLinecap="round"
           />
-          {/* Right cheek */}
+          {/* Right elastic connector */}
           <path
-            d={`M ${size * 0.62} ${splitY}
-                Q ${size * 0.65} ${splitY + jawDrop * 0.5}
-                  ${size * 0.61} ${splitY + jawDrop}`}
-            stroke="hsl(30, 45%, 62%)"
-            strokeWidth="2"
+            d={`M ${size * 0.75} ${size * 0.59}
+                Q ${size * 0.78} ${size * 0.59 + jawDrop * 0.5}
+                  ${size * 0.74} ${size * 0.59 + jawDrop}`}
+            stroke="hsl(28, 45%, 60%)"
+            strokeWidth="2.5"
             fill="none"
-            opacity={Math.min(jawDrop / 15, 0.5)}
+            opacity={Math.min(jawDrop / 12, 0.45)}
+            strokeLinecap="round"
           />
+          {/* Skin-fill between upper and lower along the W edges */}
+          {jawDrop > 3 && (
+            <>
+              <path
+                d={`M ${size * 0.18} ${size * 0.57}
+                    Q ${size * 0.20} ${size * 0.57 + jawDrop * 0.5}
+                      ${size * 0.18} ${size * 0.57 + jawDrop}`}
+                stroke="hsl(30, 50%, 65%)"
+                strokeWidth="1.5"
+                fill="none"
+                opacity={Math.min(jawDrop / 20, 0.3)}
+                strokeLinecap="round"
+              />
+              <path
+                d={`M ${size * 0.82} ${size * 0.57}
+                    Q ${size * 0.80} ${size * 0.57 + jawDrop * 0.5}
+                      ${size * 0.82} ${size * 0.57 + jawDrop}`}
+                stroke="hsl(30, 50%, 65%)"
+                strokeWidth="1.5"
+                fill="none"
+                opacity={Math.min(jawDrop / 20, 0.3)}
+                strokeLinecap="round"
+              />
+            </>
+          )}
         </svg>
       )}
     </div>
