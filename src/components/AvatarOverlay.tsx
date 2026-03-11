@@ -49,37 +49,37 @@ const W_POINTS: [number, number][] = [
   [0,   100],
   [10,  100],
   // rise into left mouth corner
-  [15,  95],
-  [20,  85],
-  [24,  75],
-  [27,  68],
-  [30,  64],
-  [33,  61.5],
-  [35,  60.5],   // left mouth corner
+  [15,  100],
+  [20,  90],
+  [24,  80],
+  [27,  73],
+  [30,  69],
+  [33,  66.5],
+  [35,  65.5],   // left mouth corner
   // subtle W across muzzle
-  [37,  60.8],
-  [39,  61.2],
-  [41,  61.5],
-  [43,  61.7],   // left lobe
-  [45,  61.4],
-  [47,  61],
-  [49,  60.6],
-  [50,  60.4],   // philtrum center
-  [51,  60.6],
-  [53,  61],
-  [55,  61.4],
-  [57,  61.7],   // right lobe
-  [59,  61.5],
-  [61,  61.2],
-  [63,  60.8],
-  [65,  60.5],   // right mouth corner
+  [37,  65.8],
+  [39,  66.2],
+  [41,  66.5],
+  [43,  66.7],   // left lobe
+  [45,  66.4],
+  [47,  66],
+  [49,  65.6],
+  [50,  65.4],   // philtrum center
+  [51,  65.6],
+  [53,  66],
+  [55,  66.4],
+  [57,  66.7],   // right lobe
+  [59,  66.5],
+  [61,  66.2],
+  [63,  65.8],
+  [65,  65.5],   // right mouth corner
   // descent back to chin
-  [67,  61.5],
-  [70,  64],
-  [73,  68],
-  [76,  75],
-  [80,  85],
-  [85,  95],
+  [67,  66.5],
+  [70,  69],
+  [73,  73],
+  [76,  80],
+  [80,  90],
+  [85,  100],
   [90,  100],
   [100, 100],
 ];
@@ -146,8 +146,8 @@ export default function AvatarOverlay({
   // Mouth reference positions for the cavity slit
   const lcx = size * 0.35;      // left corner x
   const rcx = size * 0.65;      // right corner x
-  const cornerY = size * 0.605; // corner y
-  const lobeY = size * 0.617;   // lobe deepest y
+  const cornerY = size * 0.655; // corner y
+  const lobeY = size * 0.667;   // lobe deepest y
   const cx = size * 0.5;
 
   return (
