@@ -324,8 +324,8 @@ export default function AvatarOverlay({
 
   const leftBlinkRaw = blendshapes?.["eyeBlinkLeft"] ?? 0;
   const rightBlinkRaw = blendshapes?.["eyeBlinkRight"] ?? 0;
-  smoothLeftEyeRef.current = lerp(smoothLeftEyeRef.current, leftBlinkRaw, 0.25);
-  smoothRightEyeRef.current = lerp(smoothRightEyeRef.current, rightBlinkRaw, 0.25);
+  smoothLeftEyeRef.current = lerp(smoothLeftEyeRef.current, leftBlinkRaw, 0.45);
+  smoothRightEyeRef.current = lerp(smoothRightEyeRef.current, rightBlinkRaw, 0.45);
 
   const isOpen = jawNorm > OPEN_THRESHOLD;
 
