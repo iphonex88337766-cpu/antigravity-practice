@@ -10,7 +10,10 @@ interface PuppyOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const BLINK_THRESHOLD = 0.6;
+const CLOSED_THRESHOLD = 0.6;   // right eye "closed"
+const OPEN_THRESHOLD = 0.3;     // right eye "open"
+const LEFT_OPEN_MAX = 0.4;      // left eye must stay below this (i.e. open)
+const CLOSED_FRAMES_NEEDED = 3; // consecutive closed frames required
 const DISPLAY_DURATION = 2000;
 
 export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
@@ -18,19 +21,48 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   const timerRef = useRef<number>(0);
   const cooldownRef = useRef(false);
 
+  // Blink-cycle state machine: "idle" → "closed" → triggered on re-open
+  const phaseRef = useRef<"idle" | "closed">("idle");
+  const closedFramesRef = useRef(0);
+
   const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
-  const isTriggered = rightBlink >= BLINK_THRESHOLD;
+  const leftBlink = blendshapes?.["eyeBlinkLeft"] ?? 0;
 
   useEffect(() => {
-    if (isTriggered && !visible && !cooldownRef.current) {
-      setVisible(true);
-      cooldownRef.current = true;
-      timerRef.current = window.setTimeout(() => {
-        setVisible(false);
-        window.setTimeout(() => { cooldownRef.current = false; }, 300);
-      }, DISPLAY_DURATION);
+    if (visible || cooldownRef.current || !blendshapes) return;
+
+    const rightClosed = rightBlink >= CLOSED_THRESHOLD;
+    const rightOpen = rightBlink < OPEN_THRESHOLD;
+    const leftOpen = leftBlink < LEFT_OPEN_MAX;
+
+    if (phaseRef.current === "idle") {
+      // Wait for right eye to close while left stays open
+      if (rightClosed && leftOpen) {
+        closedFramesRef.current++;
+        if (closedFramesRef.current >= CLOSED_FRAMES_NEEDED) {
+          phaseRef.current = "closed";
+        }
+      } else {
+        closedFramesRef.current = 0;
+      }
+    } else if (phaseRef.current === "closed") {
+      // Right eye was closed long enough — trigger when it opens back up, left still open
+      if (rightOpen && leftOpen) {
+        phaseRef.current = "idle";
+        closedFramesRef.current = 0;
+        setVisible(true);
+        cooldownRef.current = true;
+        timerRef.current = window.setTimeout(() => {
+          setVisible(false);
+          window.setTimeout(() => { cooldownRef.current = false; }, 500);
+        }, DISPLAY_DURATION);
+      } else if (!leftOpen) {
+        // Both eyes closed — abort
+        phaseRef.current = "idle";
+        closedFramesRef.current = 0;
+      }
     }
-  }, [isTriggered, visible]);
+  }, [rightBlink, leftBlink, visible, blendshapes]);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
