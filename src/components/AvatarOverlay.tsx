@@ -222,7 +222,7 @@ export default function AvatarOverlay({
 
   // Compute elastic contour — corners pinned, center drops
   const elasticPts = elasticLowerContour(jawDrop);
-  const ELASTIC_LOWER_CLIP = lowerClip(elasticPts);
+  const ELASTIC_LOWER_CLIP = isOpen ? lowerClip(elasticPts) : "none";
 
   const featherPx = isOpen ? Math.max(0, 1.5 - jawDrop * 0.06) : 0;
 
@@ -241,27 +241,13 @@ export default function AvatarOverlay({
       left: cx - SZ / 2,
       top: cy - SZ / 2,
       width: SZ,
-      height: SZ + (isOpen ? MAX_JAW_PX : 0),
+      height: SZ + MAX_JAW_PX,
       transform: rotate,
       transformStyle: "preserve-3d" as const,
       pointerEvents: "none" as const,
       willChange: "transform",
     };
-  }, [transformationMatrix, width, height, isOpen]);
-
-  // Closed: single clean image
-  if (!isOpen) {
-    return (
-      <div style={containerStyle}>
-        <img
-          src={avatarSrc}
-          alt="Avatar"
-          draggable={false}
-          style={{ width: SZ, height: SZ, display: "block" }}
-        />
-      </div>
-    );
-  }
+  }, [transformationMatrix, width, height]);
 
   const featherFilter = featherPx > 0.1
     ? `drop-shadow(0 0 ${featherPx}px rgba(0,0,0,0.06))`
@@ -269,41 +255,58 @@ export default function AvatarOverlay({
 
   return (
     <div style={containerStyle}>
-      {/* Mouth interior */}
-      <MouthInterior jawDrop={jawDrop} elasticPts={elasticPts} />
-
-      {/* Lower jaw — elastic clip only, NO image translation.
-          The clip-path deforms (center drops, corners pinned),
-          creating the opening. Image stays pixel-perfect in place. */}
-      <div
+      {/* Base image — ALWAYS rendered, never unmounted */}
+      <img
+        src={avatarSrc}
+        alt="Avatar"
+        draggable={false}
         style={{
           position: "absolute",
           left: 0, top: 0,
           width: SZ, height: SZ,
-          clipPath: ELASTIC_LOWER_CLIP,
-          zIndex: 1,
-          filter: featherFilter,
-          willChange: "clip-path",
+          display: "block",
+          zIndex: 0,
         }}
-      >
-        <img src={avatarSrc} alt="" draggable={false}
-          style={{ width: SZ, height: SZ, display: "block" }} />
-      </div>
+      />
 
-      {/* Upper face — fixed, static contour */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0, top: 0,
-          width: SZ, height: SZ,
-          clipPath: UPPER_CLIP,
-          zIndex: 2,
-          filter: featherFilter,
-        }}
-      >
-        <img src={avatarSrc} alt="" draggable={false}
-          style={{ width: SZ, height: SZ, display: "block" }} />
-      </div>
+      {/* Layered structure — only visible when open, overlays the base */}
+      {isOpen && (
+        <>
+          {/* Mouth interior — behind clipped layers */}
+          <MouthInterior jawDrop={jawDrop} elasticPts={elasticPts} />
+
+          {/* Lower jaw — elastic clip */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0, top: 0,
+              width: SZ, height: SZ,
+              clipPath: ELASTIC_LOWER_CLIP,
+              zIndex: 1,
+              filter: featherFilter,
+              willChange: "clip-path",
+            }}
+          >
+            <img src={avatarSrc} alt="" draggable={false}
+              style={{ width: SZ, height: SZ, display: "block" }} />
+          </div>
+
+          {/* Upper face — fixed contour */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0, top: 0,
+              width: SZ, height: SZ,
+              clipPath: UPPER_CLIP,
+              zIndex: 2,
+              filter: featherFilter,
+            }}
+          >
+            <img src={avatarSrc} alt="" draggable={false}
+              style={{ width: SZ, height: SZ, display: "block" }} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
