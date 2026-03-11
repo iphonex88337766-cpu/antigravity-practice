@@ -34,7 +34,7 @@ export default function AvatarOverlay({
   avatarSrc = babyTigerSrc,
 }: AvatarOverlayProps) {
   const containerStyle = useMemo(() => {
-    const sz = 600;
+    const sz = 500;
     const cx = width / 2;
     const cy = height / 2;
 
