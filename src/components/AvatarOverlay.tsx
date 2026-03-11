@@ -232,7 +232,7 @@ const EyelidOverlay = memo(function EyelidOverlay({
         left: 0, top: 0,
         width: SZ, height: SZ,
         pointerEvents: "none",
-        zIndex: 3,
+        zIndex: 10,
       }}
       viewBox={`0 0 ${SZ} ${SZ}`}
     >
