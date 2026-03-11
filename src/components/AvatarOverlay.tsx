@@ -373,7 +373,7 @@ export default function AvatarOverlay({
       </div>
 
       {/* ── Elastic cheek connectors at mouth corners ── */}
-      {jawDrop > 1.5 && (
+      {jawDrop > 2 && (
         <svg
           style={{
             position: "absolute",
@@ -386,26 +386,26 @@ export default function AvatarOverlay({
           }}
           viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
         >
-          {/* Left mouth corner connector */}
+          {/* Left mouth corner — connects upper lip to lower jaw at ~30%, 71% */}
           <path
-            d={`M ${size * 0.27} ${size * 0.67}
-                Q ${size * 0.24} ${size * 0.67 + jawDrop * 0.5}
-                  ${size * 0.27} ${size * 0.67 + jawDrop}`}
-            stroke="hsl(28, 45%, 60%)"
-            strokeWidth="2.5"
+            d={`M ${size * 0.30} ${size * 0.71}
+                Q ${size * 0.27} ${size * 0.71 + jawDrop * 0.5}
+                  ${size * 0.30} ${size * 0.71 + jawDrop}`}
+            stroke="hsl(28, 40%, 58%)"
+            strokeWidth="3"
             fill="none"
-            opacity={Math.min(jawDrop / 12, 0.4)}
+            opacity={Math.min(jawDrop / 10, 0.35)}
             strokeLinecap="round"
           />
-          {/* Right mouth corner connector */}
+          {/* Right mouth corner */}
           <path
-            d={`M ${size * 0.73} ${size * 0.67}
-                Q ${size * 0.76} ${size * 0.67 + jawDrop * 0.5}
-                  ${size * 0.73} ${size * 0.67 + jawDrop}`}
-            stroke="hsl(28, 45%, 60%)"
-            strokeWidth="2.5"
+            d={`M ${size * 0.70} ${size * 0.71}
+                Q ${size * 0.73} ${size * 0.71 + jawDrop * 0.5}
+                  ${size * 0.70} ${size * 0.71 + jawDrop}`}
+            stroke="hsl(28, 40%, 58%)"
+            strokeWidth="3"
             fill="none"
-            opacity={Math.min(jawDrop / 12, 0.4)}
+            opacity={Math.min(jawDrop / 10, 0.35)}
             strokeLinecap="round"
           />
         </svg>
