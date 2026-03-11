@@ -140,8 +140,8 @@ function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
 
   const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
   const faceRelative = (mouthCenterY - faceTop) / faceHeight;
-  // Only apply the deviation from neutral — small adjustments for head tilt etc.
-  const deviation = (faceRelative - NEUTRAL_FACE_RELATIVE) * 15; // scaled to avatar %
+  // Only apply tiny deviation from neutral — clamped to ±2% max
+  const deviation = Math.max(-2, Math.min(2, (faceRelative - NEUTRAL_FACE_RELATIVE) * 8));
   return BASE_MOUTH_Y + deviation;
 }
 
