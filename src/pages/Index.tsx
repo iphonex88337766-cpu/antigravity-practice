@@ -21,6 +21,7 @@ const Index = () => {
 
   const [landmarks, setLandmarks] = useState<NormalizedLandmark[] | null>(null);
   const [transformMatrix, setTransformMatrix] = useState<any>(null);
+  const [blendshapes, setBlendshapes] = useState<Record<string, number> | null>(null);
   const [hasEverDetected, setHasEverDetected] = useState(false);
   const [showMesh, setShowMesh] = useState(true);
   const [webcamSize, setWebcamSize] = useState({ width: 640, height: 360 });
