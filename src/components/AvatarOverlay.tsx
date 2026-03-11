@@ -120,12 +120,24 @@ export default function AvatarOverlay({
 }: AvatarOverlayProps) {
   const smoothRef = useRef(0);
 
-  const jawRaw = blendshapes?.["jawOpen"] ?? 0;
-  smoothRef.current = lerp(smoothRef.current, jawRaw, 0.18);
-  const jaw = smoothRef.current;
+  // Compute mouth openness from landmarks 13 (upper lip), 14 (lower lip), 78 (left), 308 (right)
+  const p13 = landmarks[13];
+  const p14 = landmarks[14];
+  const p78 = landmarks[78];
+  const p308 = landmarks[308];
 
-  const isOpen = jaw > DEAD_ZONE;
-  const t = isOpen ? Math.min((jaw - DEAD_ZONE) / (0.7 - DEAD_ZONE), 1) : 0;
+  const mouthHeight = Math.abs(p14.y - p13.y);
+  const mouthWidth = Math.abs(p308.x - p78.x);
+  const mouthOpenRaw = mouthWidth > 0.001 ? mouthHeight / mouthWidth : 0;
+
+  // Subtract baseline (closed mouth ratio ~0.05-0.1) and normalize
+  const BASELINE = 0.08;
+  const MAX_RATIO = 0.7; // fully open ratio
+  const normalized = Math.max(0, Math.min((mouthOpenRaw - BASELINE) / (MAX_RATIO - BASELINE), 1));
+
+  // Smooth
+  smoothRef.current = lerp(smoothRef.current, normalized, 0.25);
+  const t = smoothRef.current;
 
   // Shutter clip-paths: two halves of the snout that part vertically
   // Upper shutter covers from top to (mouthCY - gap)
