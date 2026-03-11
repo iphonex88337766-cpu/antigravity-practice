@@ -45,12 +45,15 @@ const Index = () => {
     const videoAspect = vw / vh;
 
     // object-cover: scale to fill, then crop overflow
+    // object-position is 80% 50%, and video has scaleX(-1).
+    // Pre-flip x offset = (cw - w) * (1 - 0.8) = (cw - w) * 0.2
+    // After scaleX(-1), visual x flips: cw - w - x_pre = (cw - w) * 0.8
     const scale = Math.max(cw / vw, ch / vh);
     const w = Math.round(vw * scale);
     const h = Math.round(vh * scale);
-    const x = Math.round((cw - w) / 2);
+    const x = Math.round((cw - w) * 0.8);
     const y = Math.round((ch - h) / 2);
-    setVideoRect({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
+    setVideoRect({ x, y, w, h });
   };
 
   useEffect(() => {
