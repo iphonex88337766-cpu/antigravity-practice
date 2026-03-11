@@ -12,7 +12,7 @@ interface PuppyOverlayProps {
 
 const CLOSED_THRESHOLD = 0.38;  // right eye "closed" — easier to reach
 const OPEN_THRESHOLD = 0.28;    // right eye "open" — slightly more forgiving
-const LEFT_OPEN_MAX = 0.58;     // left eye tolerance
+const LEFT_OPEN_MAX = 0.35;     // left eye must stay clearly open (stricter)
 const CLOSED_FRAMES_NEEDED = 1; // single confirmed closed frame → faster response
 const DISPLAY_DURATION = 2000;
 
