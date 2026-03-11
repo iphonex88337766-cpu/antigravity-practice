@@ -119,10 +119,12 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
   // The visible opening height is the distance between static upper and elastic lower center
   const openingHeight = cavityCenterY - contourY;
 
-  const cavityOpacity = Math.max(0, (bloom - 0.15) * 0.85);
-  const fangOpacity = Math.min(bloom * 3, 0.92);
+  // Cavity opacity tied directly to bloom — delayed and gradual
+  const cavityOpacity = Math.min(bloom * 1.5, 1.0) * 0.7;
+  // Fangs and tongue appear FIRST — immediate visibility
+  const fangOpacity = Math.min(bloom * 4, 1.0);
   const fangLength = Math.min(openingHeight * 0.7, 15);
-  const tongueOpacity = Math.min(bloom * 2, 0.75);
+  const tongueOpacity = Math.min(bloom * 3, 0.9);
 
   // Cavity width follows the elastic spread — narrower than the corner span
   const leftCorner = elasticPts.find(([x]) => x === 34);
@@ -154,7 +156,7 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
         </filter>
       </defs>
 
-      {/* Dark cavity — delayed, follows elastic shape */}
+      {/* Layer 1: Dark cavity — renders BEHIND, opacity tied to bloom */}
       <ellipse
         cx={SZ * 0.5}
         cy={cavityCY}
@@ -165,8 +167,8 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
         filter="url(#mSoft)"
       />
 
-      {/* Tongue — early hint */}
-      {openingHeight > 2 && (
+      {/* Layer 2: Tongue — on top of cavity */}
+      {openingHeight > 1 && (
         <ellipse
           cx={SZ * 0.5}
           cy={cavityCY + openingHeight * 0.1}
@@ -174,12 +176,11 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
           ry={Math.max(openingHeight * 0.25, 1.5)}
           fill="hsl(350, 50%, 58%)"
           opacity={tongueOpacity}
-          filter="url(#mSoft)"
         />
       )}
 
-      {/* Fangs — appear first */}
-      {openingHeight > 1 && (
+      {/* Layer 3: Fangs — rendered LAST = topmost, appear immediately */}
+      {openingHeight > 0.5 && (
         <>
           <path
             d={`M ${SZ * 0.43} ${contourY - 0.5}
