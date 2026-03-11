@@ -389,60 +389,7 @@ export default function AvatarOverlay({
 
   return (
     <div style={containerStyle}>
-      {/* Base image — ALWAYS rendered, never unmounted */}
-      <img
-        src={avatarSrc}
-        alt="Avatar"
-        draggable={false}
-        style={{
-          position: "absolute",
-          left: 0, top: 0,
-          width: SZ, height: SZ,
-          display: "block",
-          zIndex: 0,
-        }}
-      />
-
-      {/* Layered structure — only visible when open, overlays the base */}
-      {isOpen && (
-        <>
-          {/* Mouth interior — behind clipped layers */}
-          <MouthInterior jawDrop={jawDrop} elasticPts={elasticPts} />
-
-          {/* Lower jaw — elastic clip */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0, top: 0,
-              width: SZ, height: SZ,
-              clipPath: ELASTIC_LOWER_CLIP,
-              zIndex: 1,
-              filter: featherFilter,
-              willChange: "clip-path",
-            }}
-          >
-            <img src={avatarSrc} alt="" draggable={false}
-              style={{ width: SZ, height: SZ, display: "block" }} />
-          </div>
-
-          {/* Upper face — fixed contour */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0, top: 0,
-              width: SZ, height: SZ,
-              clipPath: UPPER_CLIP,
-              zIndex: 2,
-              filter: featherFilter,
-            }}
-          >
-            <img src={avatarSrc} alt="" draggable={false}
-              style={{ width: SZ, height: SZ, display: "block" }} />
-          </div>
-        </>
-      )}
-
-      {/* Eyelid blink overlay — DISABLED for now */}
+      {/* Stage cleared — container kept for future animal effects */}
     </div>
   );
 }
