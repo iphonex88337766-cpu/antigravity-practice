@@ -196,7 +196,7 @@ const Index = () => {
       <div
         ref={avatarContainerRef}
         className="absolute z-10"
-        style={{ right: 50, top: "20%", width: 800, height: 800 }}
+        style={{ right: 50, top: "20%", width: 700, height: 700 }}
       >
         {webcamState === "active" && landmarks ? (
           <AvatarOverlay
