@@ -161,12 +161,14 @@ export default function AvatarOverlay({
             <stop offset="100%" stopColor="#1a0a0e" />
           </radialGradient>
         </defs>
-        {/* Fur-colored bridge to hide any sub-pixel gap at the seam */}
-        <rect
-          x="20" y={splitY - 1}
-          width="60" height="3"
-          fill="#d4956b"
-          rx="1"
+        {/* Dark cavity always visible at the seam so the mouth has depth */}
+        <ellipse
+          cx="50"
+          cy={splitY}
+          rx={10 + smileAmount * 2}
+          ry={2 + mouthOpen * 8}
+          fill="url(#mouth-cavity)"
+          opacity={1}
         />
         {/* Dark cavity ellipse */}
         <ellipse
