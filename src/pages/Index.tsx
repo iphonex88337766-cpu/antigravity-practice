@@ -125,8 +125,7 @@ const Index = () => {
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         ref={webcamContainerRef}
-        className="absolute top-0 left-0 bottom-0"
-        style={{ width: "55%" }}
+        className="absolute inset-0"
       >
         {isLoading && <CalibrationOverlay />}
 
