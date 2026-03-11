@@ -1,13 +1,71 @@
 /**
- * CatOverlay — Static cat sticker in a circular frame.
- * Matches the dog's visual style (300×300 circle, pop animation).
- * Positioned on the left side to avoid overlapping the dog.
- * No trigger logic yet — always visible when webcam is active.
+ * CatOverlay — Cat sticker triggered by left-eye blink.
+ * Mirrors the dog's right-eye logic but for the left eye.
+ * Appears for 2s with pop animation in a circular frame.
  */
 
+import { useState, useEffect, useRef } from "react";
 import catSrc from "@/assets/cat.png";
 
-export default function CatOverlay() {
+interface CatOverlayProps {
+  blendshapes: Record<string, number> | null;
+}
+
+const CLOSED_THRESHOLD = 0.38;
+const OPEN_THRESHOLD = 0.28;
+const RIGHT_OPEN_MAX = 0.35;
+const CLOSED_FRAMES_NEEDED = 1;
+const DISPLAY_DURATION = 2000;
+
+export default function CatOverlay({ blendshapes }: CatOverlayProps) {
+  const [visible, setVisible] = useState(false);
+  const timerRef = useRef<number>(0);
+  const cooldownRef = useRef(false);
+  const phaseRef = useRef<"idle" | "closed">("idle");
+  const closedFramesRef = useRef(0);
+
+  const leftBlink = blendshapes?.["eyeBlinkLeft"] ?? 0;
+  const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
+
+  useEffect(() => {
+    if (visible || cooldownRef.current || !blendshapes) return;
+
+    const leftClosed = leftBlink >= CLOSED_THRESHOLD;
+    const leftOpen = leftBlink < OPEN_THRESHOLD;
+    const rightOpen = rightBlink < RIGHT_OPEN_MAX;
+
+    if (phaseRef.current === "idle") {
+      if (leftClosed && rightOpen) {
+        closedFramesRef.current++;
+        if (closedFramesRef.current >= CLOSED_FRAMES_NEEDED) {
+          phaseRef.current = "closed";
+        }
+      } else {
+        closedFramesRef.current = 0;
+      }
+    } else if (phaseRef.current === "closed") {
+      if (!rightOpen) {
+        phaseRef.current = "idle";
+        closedFramesRef.current = 0;
+        return;
+      }
+      if (leftOpen) {
+        phaseRef.current = "idle";
+        closedFramesRef.current = 0;
+        setVisible(true);
+        cooldownRef.current = true;
+        timerRef.current = window.setTimeout(() => {
+          setVisible(false);
+          window.setTimeout(() => { cooldownRef.current = false; }, 500);
+        }, DISPLAY_DURATION);
+      }
+    }
+  }, [leftBlink, rightBlink, visible, blendshapes]);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  if (!visible) return null;
+
   return (
     <>
       <div
