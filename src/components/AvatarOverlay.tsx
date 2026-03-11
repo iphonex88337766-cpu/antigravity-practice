@@ -40,8 +40,8 @@ const SZ = 500;
 // Mouth region in % of SZ
 const MOUTH_CX = 50;  // center X %
 const MOUTH_CY = 72;  // center Y %
-const MOUTH_W = 16;   // half-width %
-const MAX_MOUTH_H = 12; // max half-height % when fully open
+const MOUTH_W = 18;   // half-width %
+const MAX_MOUTH_H = 16; // max half-height % when fully open
 
 /**
  * MouthSVG — drawn on top of the base image, behind the shutters.
@@ -51,9 +51,13 @@ function MouthSVG({ t }: { t: number }) {
   if (t <= 0) return null;
 
   const cx = SZ * (MOUTH_CX / 100);
-  const cy = SZ * (MOUTH_CY / 100);
+  const baseCy = SZ * (MOUTH_CY / 100);
   const hw = SZ * (MOUTH_W / 100);
-  const hh = SZ * (MAX_MOUTH_H / 100) * t; // grows with opening
+  const totalH = SZ * (MAX_MOUTH_H / 100) * t;
+  const hh = totalH * 0.5; // half-height for ellipse rendering
+  const upperH = totalH * 0.15;
+  const lowerH = totalH * 0.85;
+  const cy = baseCy - upperH + totalH * 0.5; // shifted center
 
   // Opacities: fangs instant, tongue early, cavity last
   const fangOp = Math.min(t * 5, 1);
@@ -131,24 +135,34 @@ export default function AvatarOverlay({
   const mouthOpenRaw = mouthWidth > 0.001 ? mouthHeight / mouthWidth : 0;
 
   // Subtract baseline (closed mouth ratio ~0.05-0.1) and normalize
-  const BASELINE = 0.08;
-  const MAX_RATIO = 0.7; // fully open ratio
+  const BASELINE = 0.06;
+  const MAX_RATIO = 0.55; // fully open ratio — lower = more sensitive
   const normalized = Math.max(0, Math.min((mouthOpenRaw - BASELINE) / (MAX_RATIO - BASELINE), 1));
 
-  // Smooth
-  smoothRef.current = lerp(smoothRef.current, normalized, 0.25);
+  // Smooth — fast follow for responsiveness
+  smoothRef.current = lerp(smoothRef.current, normalized, 0.3);
   const t = smoothRef.current;
 
-  // Shutter clip-paths: two halves of the snout that part vertically
-  // Upper shutter covers from top to (mouthCY - gap)
-  // Lower shutter covers from (mouthCY + gap) to bottom
-  const gapH = MAX_MOUTH_H * t; // half-gap in %
-  const upperShutter = `polygon(0% 0%, 100% 0%, 100% ${MOUTH_CY - gapH}%, 0% ${MOUTH_CY - gapH}%)`;
-  const lowerShutter = `polygon(0% ${MOUTH_CY + gapH}%, 100% ${MOUTH_CY + gapH}%, 100% 100%, 0% 100%)`;
+  // Upper shutter: fixed — only a tiny lift (20% of gap) so upper lip barely moves
+  const gapH = MAX_MOUTH_H * t; // full gap in %
+  const upperLift = gapH * 0.15; // upper lip lifts only 15%
+  const lowerDrop = gapH * 0.85; // lower chin drops 85%
 
-  // Side strips keep the silhouette solid at the edges
-  const leftStrip = `polygon(0% ${MOUTH_CY - gapH}%, ${MOUTH_CX - MOUTH_W}% ${MOUTH_CY - gapH}%, ${MOUTH_CX - MOUTH_W}% ${MOUTH_CY + gapH}%, 0% ${MOUTH_CY + gapH}%)`;
-  const rightStrip = `polygon(${MOUTH_CX + MOUTH_W}% ${MOUTH_CY - gapH}%, 100% ${MOUTH_CY - gapH}%, 100% ${MOUTH_CY + gapH}%, ${MOUTH_CX + MOUTH_W}% ${MOUTH_CY + gapH}%)`;
+  // Upper shutter — covers from top to just above mouth center
+  const upperShutter = `polygon(0% 0%, 100% 0%, 100% ${MOUTH_CY - upperLift}%, 0% ${MOUTH_CY - upperLift}%)`;
+
+  // Lower shutter — covers from below mouth center to bottom
+  // Use a curved polygon so the chin drops smoothly in the center but stays connected at edges
+  const lEdge = MOUTH_CX - MOUTH_W;
+  const rEdge = MOUTH_CX + MOUTH_W;
+  const dropCenter = MOUTH_CY + lowerDrop;
+  const dropEdge = MOUTH_CY + lowerDrop * 0.25; // edges drop only 25% as much — keeps face connected
+  const lowerShutter = `polygon(0% ${MOUTH_CY}%, ${lEdge}% ${dropEdge}%, ${MOUTH_CX}% ${dropCenter}%, ${rEdge}% ${dropEdge}%, 100% ${MOUTH_CY}%, 100% 100%, 0% 100%)`;
+
+  // Side strips — wide enough to overlap the curved lower shutter edges seamlessly
+  const stripW = MOUTH_W + 4; // extend 4% beyond mouth width for overlap
+  const leftStrip = `polygon(0% ${MOUTH_CY - upperLift}%, ${MOUTH_CX - stripW}% ${MOUTH_CY - upperLift}%, ${MOUTH_CX - stripW}% ${MOUTH_CY + lowerDrop * 0.3}%, 0% ${MOUTH_CY + lowerDrop * 0.15}%)`;
+  const rightStrip = `polygon(${MOUTH_CX + stripW}% ${MOUTH_CY - upperLift}%, 100% ${MOUTH_CY - upperLift}%, 100% ${MOUTH_CY + lowerDrop * 0.15}%, ${MOUTH_CX + stripW}% ${MOUTH_CY + lowerDrop * 0.3}%)`;
 
   const isOpen = t > 0.01;
 
