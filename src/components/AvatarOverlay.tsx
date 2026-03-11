@@ -247,9 +247,6 @@ export default function AvatarOverlay({
           <filter id="cornerBlend" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="4.5" />
           </filter>
-          <filter id="chinBlend" x="-30%" y="-20%" width="160%" height="140%">
-            <feGaussianBlur stdDeviation="5" />
-          </filter>
         </defs>
 
         {/* ── Mouth cavity — soft dark interior visible through the slit ── */}
