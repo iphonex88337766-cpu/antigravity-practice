@@ -30,14 +30,20 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   const leftBlink = blendshapes?.["eyeBlinkLeft"] ?? 0;
 
   useEffect(() => {
-    if (visible || cooldownRef.current || !blendshapes) return;
+    if (cooldownRef.current || !blendshapes) return;
+
+    // While visible, freeze the state machine — no new detections
+    if (visible) {
+      phaseRef.current = "idle";
+      closedFramesRef.current = 0;
+      return;
+    }
 
     const rightClosed = rightBlink >= CLOSED_THRESHOLD;
     const rightOpen = rightBlink < OPEN_THRESHOLD;
     const leftOpen = leftBlink < LEFT_OPEN_MAX;
 
     if (phaseRef.current === "idle") {
-      // Wait for right eye to close while left stays open
       if (rightClosed && leftOpen) {
         closedFramesRef.current++;
         if (closedFramesRef.current >= CLOSED_FRAMES_NEEDED) {
@@ -47,13 +53,11 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
         closedFramesRef.current = 0;
       }
     } else if (phaseRef.current === "closed") {
-      // If left eye closes at ANY point during the cycle, abort immediately
       if (!leftOpen) {
         phaseRef.current = "idle";
         closedFramesRef.current = 0;
         return;
       }
-      // Right eye was closed long enough — trigger when it opens back up, left still open
       if (rightOpen) {
         phaseRef.current = "idle";
         closedFramesRef.current = 0;
@@ -61,7 +65,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
         cooldownRef.current = true;
         timerRef.current = window.setTimeout(() => {
           setVisible(false);
-          window.setTimeout(() => { cooldownRef.current = false; }, 500);
+          window.setTimeout(() => { cooldownRef.current = false; }, COOLDOWN_AFTER_HIDE);
         }, DISPLAY_DURATION);
       }
     }
