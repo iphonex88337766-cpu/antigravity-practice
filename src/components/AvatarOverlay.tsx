@@ -38,32 +38,48 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 55;
 
 /**
- * W-shaped muzzle contour points (percentage of image size).
- * The W dips at center (nose bridge), rises at the muzzle sides,
- * dips again for the mouth corners, then rises to the cheeks.
- *
- * Format: [x%, y%] — these define the boundary between upper and lower face.
+ * Smooth W-shaped muzzle contour points (percentage of image size).
+ * Many more control points for a soft, rounded feline lip curve.
+ * Format: [x%, y%]
  */
 const W_POINTS: [number, number][] = [
-  [0, 72],       // far left cheek
-  [12, 73],      // left cheek edge
-  [22, 76],      // left muzzle dip
-  [30, 74],      // left muzzle rise
-  [38, 73],      // left nose-to-lip boundary
-  [44, 75],      // left of center dip
-  [50, 77],      // center — bottom of nose, top of W-lip
-  [56, 75],      // right of center dip
-  [62, 73],      // right nose-to-lip boundary
-  [70, 74],      // right muzzle rise
-  [78, 76],      // right muzzle dip
-  [88, 73],      // right cheek edge
-  [100, 72],     // far right cheek
+  [0, 72],
+  [5, 72],
+  [10, 72.5],
+  [14, 73],
+  [18, 74],
+  [21, 75.5],
+  [24, 76],       // left muzzle dip peak
+  [27, 75.5],
+  [30, 74.5],
+  [33, 73.5],
+  [36, 73],
+  [39, 73],       // left of W center rise
+  [42, 74],
+  [44, 75],
+  [46, 76],
+  [48, 76.8],
+  [50, 77],       // center — deepest point of W
+  [52, 76.8],
+  [54, 76],
+  [56, 75],
+  [58, 74],
+  [61, 73],       // right of W center rise
+  [64, 73],
+  [67, 73.5],
+  [70, 74.5],
+  [73, 75.5],
+  [76, 76],       // right muzzle dip peak
+  [79, 75.5],
+  [82, 74],
+  [86, 73],
+  [90, 72.5],
+  [95, 72],
+  [100, 72],
 ];
 
 /** Build CSS clip-path polygon for the UPPER face (everything above the W) */
 function upperClipPath(): string {
-  // Start top-left, go across top, down right side, trace W right-to-left, back up left side
-  const wPath = W_POINTS.map(([x, y]) => `${x}% ${y}%`).join(", ");
   return `polygon(0% 0%, 100% 0%, 100% ${W_POINTS[W_POINTS.length - 1][1]}%, ${
     [...W_POINTS].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ")
   }, 0% ${W_POINTS[0][1]}%)`;
