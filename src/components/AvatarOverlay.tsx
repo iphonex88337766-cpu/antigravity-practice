@@ -1,10 +1,9 @@
 /**
- * AvatarOverlay — Elastic corner-anchored bloom mouth.
+ * AvatarOverlay — Frame-based mouth animation.
  *
- * The W-contour corners are FIXED to the upper face.
- * Only the center of the contour drops with jawOpen, creating
- * an elastic stretching effect — no gap at the sides ever.
- * When closed: single unclipped image, zero seam.
+ * Uses a single base image with an SVG mouth overlay that
+ * crossfades between closed/half/wide states based on jawOpen.
+ * No clip-path deformation, no elastic stretching.
  */
 
 import { useMemo, useRef } from "react";
@@ -34,172 +33,91 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-function easeOut(t: number) {
-  return 1 - Math.pow(1 - t, 3);
-}
-
 const SZ = 500;
-const MAX_JAW_PX = 200;
-const OPEN_THRESHOLD = 0.06;
 
 /**
- * Static W-contour — base positions when mouth is closed.
- * Format: [x%, y%, elasticity]
- *   elasticity: 0 = pinned (corners/edges), 1 = full drop (center)
- *   Values in between create the elastic stretch gradient.
+ * MouthOverlay — SVG-drawn mouth interior that fades in/out.
+ * Rendered on top of the base image at the mouth region.
  */
-const W_BASE: [number, number, number][] = [
-  // Left edge — pinned
-  [0, 100, 0], [12, 100, 0], [18, 100, 0],
-  // Transition into mouth — gradual elasticity
-  [22, 95, 0], [26, 87, 0], [29, 80, 0.02],
-  [32, 76, 0.08],
-  [34, 74, 0.15],    // left corner — nearly pinned
-  [36, 73.5, 0.25],
-  [39, 73.2, 0.4],
-  [42, 73, 0.6],
-  [44, 72.8, 0.75],
-  [46, 72.5, 0.85],
-  [48, 72.2, 0.95],
-  [50, 72, 1.0],     // center — full drop
-  [52, 72.2, 0.95],
-  [54, 72.5, 0.85],
-  [56, 72.8, 0.75],
-  [58, 73, 0.6],
-  [61, 73.2, 0.4],
-  [64, 73.5, 0.25],
-  [66, 74, 0.15],    // right corner — nearly pinned
-  [68, 76, 0.08],
-  [71, 80, 0.02],
-  [74, 87, 0], [78, 95, 0],
-  // Right edge — pinned
-  [82, 100, 0], [88, 100, 0], [100, 100, 0],
-];
+function MouthOverlay({ jawNorm }: { jawNorm: number }) {
+  if (jawNorm < 0.05) return null;
 
-/**
- * Compute the elastically deformed lower jaw contour.
- * Each point's Y shifts down by (jawDropPx * elasticity),
- * converted to % of SZ. Corners stay put, center stretches.
- */
-function elasticLowerContour(jawDropPx: number): [number, number][] {
-  return W_BASE.map(([x, y, e]) => {
-    if (y >= 100) return [x, y] as [number, number];
-    const dropPct = (jawDropPx * e / SZ) * 100;
-    return [x, Math.min(y + dropPct, 100)] as [number, number];
-  });
-}
+  // Normalize to 0-1 range for animation
+  const t = Math.min(jawNorm / 0.8, 1); // reaches full at 80% open
 
-/** Upper face always uses the STATIC contour (corners never move) */
-function upperClip(pts: [number, number][]): string {
-  const rev = [...pts].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
-  return `polygon(0% 0%, 100% 0%, 100% 100%, ${rev}, 0% 100%)`;
-}
+  // Mouth geometry — centered on the tiger's muzzle
+  const cx = SZ * 0.5;
+  const cy = SZ * 0.72;
+  const mouthWidth = SZ * 0.18;
+  const mouthHeight = lerp(2, SZ * 0.14, t);
 
-function lowerClip(pts: [number, number][]): string {
-  const fwd = pts.map(([x, y]) => `${x}% ${y}%`).join(", ");
-  return `polygon(${fwd}, 100% 100%, 0% 100%)`;
-}
+  // Opacities — fangs first, then tongue, then cavity deepens
+  const fangOpacity = Math.min(t * 3, 1);
+  const tongueOpacity = Math.min(t * 2, 0.9);
+  const cavityOpacity = Math.min(t * 1.2, 0.85);
 
-// Static upper clip — corners are always fixed
-const STATIC_CONTOUR: [number, number][] = W_BASE.map(([x, y]) => [x, y]);
-const UPPER_CLIP = upperClip(STATIC_CONTOUR);
-
-/** Mouth interior — fangs first, cavity last */
-function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [number, number][] }) {
-  if (jawDrop < 0.5) return null;
-
-  const bloom = Math.min(jawDrop / MAX_JAW_PX, 1);
-  const contourY = SZ * 0.72;
-
-  // Cavity center follows the elastic center point
-  const centerPt = elasticPts.find(([x]) => x === 50);
-  const cavityCenterY = centerPt ? SZ * (centerPt[1] / 100) : contourY + jawDrop * 0.3;
-  const cavityCY = (contourY + cavityCenterY) / 2;
-
-  // The visible opening height is the distance between static upper and elastic lower center
-  const openingHeight = cavityCenterY - contourY;
-
-  // Cavity opacity tied directly to bloom — delayed and gradual
-  const cavityOpacity = Math.min(bloom * 1.5, 1.0) * 0.7;
-  // Fangs and tongue appear FIRST — immediate visibility
-  const fangOpacity = Math.min(bloom * 4, 1.0);
-  const fangLength = Math.min(openingHeight * 0.7, 15);
-  const tongueOpacity = Math.min(bloom * 3, 0.9);
-
-  // Cavity width follows the elastic spread — narrower than the corner span
-  const leftCorner = elasticPts.find(([x]) => x === 34);
-  const rightCorner = elasticPts.find(([x]) => x === 66);
-  const lcX = leftCorner ? SZ * (leftCorner[0] / 100) : SZ * 0.34;
-  const rcX = rightCorner ? SZ * (rightCorner[0] / 100) : SZ * 0.66;
-  const mouthWidth = (rcX - lcX) * 0.6;
+  const fangLen = lerp(1, 12, t);
 
   return (
     <svg
       style={{
         position: "absolute",
-        left: 0, top: 0,
-        width: SZ, height: SZ + MAX_JAW_PX,
+        left: 0,
+        top: 0,
+        width: SZ,
+        height: SZ,
         pointerEvents: "none",
       }}
-      viewBox={`0 0 ${SZ} ${SZ + MAX_JAW_PX}`}
+      viewBox={`0 0 ${SZ} ${SZ}`}
     >
       <defs>
-        <radialGradient id="cavG" cx="50%" cy="30%" r="60%">
-          <stop offset="0%" stopColor="hsl(350, 18%, 15%)" />
-          <stop offset="100%" stopColor="hsl(340, 25%, 8%)" />
+        <radialGradient id="cavGrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor="hsl(350, 18%, 18%)" />
+          <stop offset="100%" stopColor="hsl(340, 25%, 6%)" />
         </radialGradient>
-        <filter id="mSoft">
-          <feGaussianBlur stdDeviation="2.5" />
-        </filter>
-        <filter id="fSoft">
-          <feGaussianBlur stdDeviation="0.4" />
+        <filter id="softBlur">
+          <feGaussianBlur stdDeviation="2" />
         </filter>
       </defs>
 
-      {/* Layer 1: Dark cavity — renders BEHIND, opacity tied to bloom */}
+      {/* Dark cavity — deepens gradually */}
       <ellipse
-        cx={SZ * 0.5}
-        cy={cavityCY}
-        rx={mouthWidth * 0.5}
-        ry={openingHeight * 0.45}
-        fill="url(#cavG)"
+        cx={cx}
+        cy={cy + mouthHeight * 0.15}
+        rx={mouthWidth}
+        ry={mouthHeight * 0.55}
+        fill="url(#cavGrad)"
         opacity={cavityOpacity}
-        filter="url(#mSoft)"
+        filter="url(#softBlur)"
       />
 
-      {/* Layer 2: Tongue — on top of cavity */}
-      {openingHeight > 1 && (
-        <ellipse
-          cx={SZ * 0.5}
-          cy={cavityCY + openingHeight * 0.1}
-          rx={mouthWidth * 0.3}
-          ry={Math.max(openingHeight * 0.25, 1.5)}
-          fill="hsl(350, 50%, 58%)"
-          opacity={tongueOpacity}
-        />
-      )}
+      {/* Tongue */}
+      <ellipse
+        cx={cx}
+        cy={cy + mouthHeight * 0.25}
+        rx={mouthWidth * 0.55}
+        ry={Math.max(mouthHeight * 0.3, 1.5)}
+        fill="hsl(350, 50%, 55%)"
+        opacity={tongueOpacity}
+      />
 
-      {/* Layer 3: Fangs — rendered LAST = topmost, appear immediately */}
-      {openingHeight > 0.5 && (
-        <>
-          <path
-            d={`M ${SZ * 0.43} ${contourY - 0.5}
-                L ${SZ * 0.445} ${contourY + fangLength}
-                L ${SZ * 0.46} ${contourY - 0.5} Z`}
-            fill="hsl(40, 15%, 96%)"
-            opacity={fangOpacity}
-            filter="url(#fSoft)"
-          />
-          <path
-            d={`M ${SZ * 0.54} ${contourY - 0.5}
-                L ${SZ * 0.555} ${contourY + fangLength}
-                L ${SZ * 0.57} ${contourY - 0.5} Z`}
-            fill="hsl(40, 15%, 96%)"
-            opacity={fangOpacity}
-            filter="url(#fSoft)"
-          />
-        </>
-      )}
+      {/* Left fang */}
+      <path
+        d={`M ${cx - mouthWidth * 0.35} ${cy - 1}
+            L ${cx - mouthWidth * 0.25} ${cy + fangLen}
+            L ${cx - mouthWidth * 0.15} ${cy - 1} Z`}
+        fill="hsl(40, 20%, 95%)"
+        opacity={fangOpacity}
+      />
+
+      {/* Right fang */}
+      <path
+        d={`M ${cx + mouthWidth * 0.15} ${cy - 1}
+            L ${cx + mouthWidth * 0.25} ${cy + fangLen}
+            L ${cx + mouthWidth * 0.35} ${cy - 1} Z`}
+        fill="hsl(40, 20%, 95%)"
+        opacity={fangOpacity}
+      />
     </svg>
   );
 }
@@ -217,15 +135,6 @@ export default function AvatarOverlay({
   const jawRaw = blendshapes?.["jawOpen"] ?? 0;
   smoothJawRef.current = lerp(smoothJawRef.current, jawRaw, 0.18);
   const jawNorm = smoothJawRef.current;
-  const jawDrop = easeOut(Math.min(jawNorm, 1)) * MAX_JAW_PX;
-
-  const isOpen = jawNorm > OPEN_THRESHOLD;
-
-  // Compute elastic contour — corners pinned, center drops
-  const elasticPts = elasticLowerContour(jawDrop);
-  const ELASTIC_LOWER_CLIP = isOpen ? lowerClip(elasticPts) : "none";
-
-  const featherPx = isOpen ? Math.max(0, 1.5 - jawDrop * 0.06) : 0;
 
   const containerStyle = useMemo(() => {
     const cx = width / 2;
@@ -242,7 +151,7 @@ export default function AvatarOverlay({
       left: cx - SZ / 2,
       top: cy - SZ / 2,
       width: SZ,
-      height: SZ + MAX_JAW_PX,
+      height: SZ,
       transform: rotate,
       transformStyle: "preserve-3d" as const,
       pointerEvents: "none" as const,
@@ -250,66 +159,25 @@ export default function AvatarOverlay({
     };
   }, [transformationMatrix, width, height]);
 
-  const featherFilter = featherPx > 0.1
-    ? `drop-shadow(0 0 ${featherPx}px rgba(0,0,0,0.06))`
-    : "none";
-
   return (
     <div style={containerStyle}>
-      {/* Base image — ALWAYS rendered, never unmounted */}
+      {/* Base tiger image — always visible */}
       <img
         src={avatarSrc}
         alt="Avatar"
         draggable={false}
         style={{
           position: "absolute",
-          left: 0, top: 0,
-          width: SZ, height: SZ,
+          left: 0,
+          top: 0,
+          width: SZ,
+          height: SZ,
           display: "block",
-          zIndex: 0,
         }}
       />
 
-      {/* Layered structure — only visible when open, overlays the base */}
-      {isOpen && (
-        <>
-          {/* Mouth interior — behind clipped layers */}
-          <MouthInterior jawDrop={jawDrop} elasticPts={elasticPts} />
-
-          {/* Lower jaw — elastic clip only, NO translateY.
-              The clip-path deforms: corners pinned, center drops,
-              revealing mouth interior through the growing gap. */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0, top: 0,
-              width: SZ, height: SZ,
-              clipPath: ELASTIC_LOWER_CLIP,
-              zIndex: 1,
-              filter: featherFilter,
-              willChange: "clip-path",
-            }}
-          >
-            <img src={avatarSrc} alt="" draggable={false}
-              style={{ width: SZ, height: SZ, display: "block" }} />
-          </div>
-
-          {/* Upper face — fixed contour */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0, top: 0,
-              width: SZ, height: SZ,
-              clipPath: UPPER_CLIP,
-              zIndex: 2,
-              filter: featherFilter,
-            }}
-          >
-            <img src={avatarSrc} alt="" draggable={false}
-              style={{ width: SZ, height: SZ, display: "block" }} />
-          </div>
-        </>
-      )}
+      {/* Mouth overlay — fades in based on jaw open */}
+      <MouthOverlay jawNorm={jawNorm} />
     </div>
   );
 }
