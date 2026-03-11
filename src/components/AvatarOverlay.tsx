@@ -146,8 +146,8 @@ export default function AvatarOverlay({
   // Mouth reference positions for the cavity slit
   const lcx = size * 0.35;      // left corner x
   const rcx = size * 0.65;      // right corner x
-  const cornerY = size * 0.605; // corner y
-  const lobeY = size * 0.617;   // lobe deepest y
+  const cornerY = size * 0.655; // corner y
+  const lobeY = size * 0.667;   // lobe deepest y
   const cx = size * 0.5;
 
   return (
