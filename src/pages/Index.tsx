@@ -76,7 +76,10 @@ const Index = () => {
         const { width, height } = entry.contentRect;
         if (width <= 0 || height <= 0) continue;
         const rounded = { width: Math.round(width), height: Math.round(height) };
-        if (entry.target === wcEl) setWebcamSize(rounded);
+        if (entry.target === wcEl) {
+          setWebcamSize(rounded);
+          updateVideoRect();
+        }
         if (entry.target === avEl) setAvatarSize(rounded);
       }
     });
