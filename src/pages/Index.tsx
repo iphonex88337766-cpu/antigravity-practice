@@ -189,15 +189,15 @@ const Index = () => {
       {/* ── AVATAR OVERLAY — right side ── */}
       <div
         ref={avatarContainerRef}
-        className="absolute top-1/2 right-[10%] -translate-y-1/2 z-10"
-        style={{ width: 280, height: 280 }}
+        className="absolute top-1/2 left-[10%] -translate-y-1/2 z-10"
+        style={{ width: 840, height: 840 }}
       >
         {webcamState === "active" && landmarks ? (
           <AvatarOverlay
             landmarks={landmarks}
             transformationMatrix={transformMatrix}
-            width={280}
-            height={280}
+            width={840}
+            height={840}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3">
