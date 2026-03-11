@@ -139,8 +139,8 @@ const Index = () => {
           onLoadedMetadata={updateVideoRect}
           onResize={updateVideoRect}
           className="absolute inset-0 h-full w-full object-cover"
-          style-object-position="80% 50%"
           style={{
+            objectPosition: "80% 50%",
             transform: "scaleX(-1)",
             filter: "saturate(0.7) brightness(0.9)",
             opacity: webcamState === "active" ? 1 : 0,
