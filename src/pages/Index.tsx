@@ -44,20 +44,12 @@ const Index = () => {
     const containerAspect = cw / ch;
     const videoAspect = vw / vh;
 
-    let w: number, h: number, x: number, y: number;
-    if (videoAspect > containerAspect) {
-      // Video is wider — pillarbox (black bars top/bottom)
-      w = cw;
-      h = cw / videoAspect;
-      x = 0;
-      y = (ch - h) / 2;
-    } else {
-      // Video is taller — letterbox (black bars left/right)
-      h = ch;
-      w = ch * videoAspect;
-      x = (cw - w) / 2;
-      y = 0;
-    }
+    // object-cover: scale to fill, then crop overflow
+    const scale = Math.max(cw / vw, ch / vh);
+    const w = Math.round(vw * scale);
+    const h = Math.round(vh * scale);
+    const x = Math.round((cw - w) / 2);
+    const y = Math.round((ch - h) / 2);
     setVideoRect({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
   };
 
