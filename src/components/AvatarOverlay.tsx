@@ -35,7 +35,7 @@ function matrixToEuler(data: number[]): { pitch: number; yaw: number; roll: numb
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 
 const SZ = 500;
-const DEAD_ZONE = 0.06;
+
 
 // Mouth region in % of SZ
 const MOUTH_CX = 50;  // center X %
@@ -120,12 +120,24 @@ export default function AvatarOverlay({
 }: AvatarOverlayProps) {
   const smoothRef = useRef(0);
 
-  const jawRaw = blendshapes?.["jawOpen"] ?? 0;
-  smoothRef.current = lerp(smoothRef.current, jawRaw, 0.18);
-  const jaw = smoothRef.current;
+  // Compute mouth openness from landmarks 13 (upper lip), 14 (lower lip), 78 (left), 308 (right)
+  const p13 = landmarks[13];
+  const p14 = landmarks[14];
+  const p78 = landmarks[78];
+  const p308 = landmarks[308];
 
-  const isOpen = jaw > DEAD_ZONE;
-  const t = isOpen ? Math.min((jaw - DEAD_ZONE) / (0.7 - DEAD_ZONE), 1) : 0;
+  const mouthHeight = Math.abs(p14.y - p13.y);
+  const mouthWidth = Math.abs(p308.x - p78.x);
+  const mouthOpenRaw = mouthWidth > 0.001 ? mouthHeight / mouthWidth : 0;
+
+  // Subtract baseline (closed mouth ratio ~0.05-0.1) and normalize
+  const BASELINE = 0.08;
+  const MAX_RATIO = 0.7; // fully open ratio
+  const normalized = Math.max(0, Math.min((mouthOpenRaw - BASELINE) / (MAX_RATIO - BASELINE), 1));
+
+  // Smooth
+  smoothRef.current = lerp(smoothRef.current, normalized, 0.25);
+  const t = smoothRef.current;
 
   // Shutter clip-paths: two halves of the snout that part vertically
   // Upper shutter covers from top to (mouthCY - gap)
@@ -137,6 +149,8 @@ export default function AvatarOverlay({
   // Side strips keep the silhouette solid at the edges
   const leftStrip = `polygon(0% ${MOUTH_CY - gapH}%, ${MOUTH_CX - MOUTH_W}% ${MOUTH_CY - gapH}%, ${MOUTH_CX - MOUTH_W}% ${MOUTH_CY + gapH}%, 0% ${MOUTH_CY + gapH}%)`;
   const rightStrip = `polygon(${MOUTH_CX + MOUTH_W}% ${MOUTH_CY - gapH}%, 100% ${MOUTH_CY - gapH}%, 100% ${MOUTH_CY + gapH}%, ${MOUTH_CX + MOUTH_W}% ${MOUTH_CY + gapH}%)`;
+
+  const isOpen = t > 0.01;
 
   const containerStyle = useMemo(() => {
     const cx = width / 2;
@@ -156,6 +170,9 @@ export default function AvatarOverlay({
       willChange: "transform",
     };
   }, [transformationMatrix, width, height]);
+
+  // Debug values
+  const debugGapH = MAX_MOUTH_H * t;
 
   return (
     <div style={containerStyle}>
@@ -185,6 +202,20 @@ export default function AvatarOverlay({
           ))}
         </>
       )}
+
+      {/* DEBUG OVERLAY */}
+      <div style={{
+        position: "absolute", left: 4, bottom: 4, zIndex: 99,
+        background: "rgba(0,0,0,0.75)", color: "#3DFF8A",
+        padding: "6px 10px", borderRadius: 6,
+        fontSize: 11, fontFamily: "monospace", lineHeight: 1.5,
+        pointerEvents: "none",
+      }}>
+        <div>raw: {mouthOpenRaw.toFixed(3)}</div>
+        <div>norm: {normalized.toFixed(3)}</div>
+        <div>t: {t.toFixed(3)}</div>
+        <div>gapH: {debugGapH.toFixed(1)}%</div>
+      </div>
     </div>
   );
 }
