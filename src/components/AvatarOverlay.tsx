@@ -40,24 +40,12 @@ export default function AvatarOverlay({
   avatarSrc = babyTigerSrc,
 }: AvatarOverlayProps) {
   const style = useMemo(() => {
-    if (!landmarks || landmarks.length === 0) return { display: "none" as const };
-
-    // Scale based on distance between outer eye corners (landmarks 33 & 263)
-    const leftEye = landmarks[33];
-    const rightEye = landmarks[263];
-    const eyeDistPx = Math.hypot(
-      (leftEye.x - rightEye.x) * width,
-      (leftEye.y - rightEye.y) * height
-    );
-
-    // Avatar size = ~3.2× eye distance for a good face cover
-    const size = Math.max(eyeDistPx * 3.2, 80);
-
-    // Center in container
+    // Fixed size — fills container, no landmark-based positioning
+    const size = Math.min(width, height) * 0.8;
     const cx = width / 2;
     const cy = height / 2;
 
-    // Rotation from transformation matrix
+    // Rotation from transformation matrix only
     let rotate = "none";
     if (transformationMatrix && transformationMatrix.data?.length >= 16) {
       const { pitch, yaw, roll } = matrixToEuler(transformationMatrix.data);
@@ -73,9 +61,9 @@ export default function AvatarOverlay({
       transform: rotate,
       transformStyle: "preserve-3d" as const,
       pointerEvents: "none" as const,
-      willChange: "transform, width, height",
+      willChange: "transform",
     };
-  }, [landmarks, transformationMatrix, width, height]);
+  }, [transformationMatrix, width, height]);
 
   return (
     <img
