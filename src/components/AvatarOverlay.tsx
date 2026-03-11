@@ -51,9 +51,13 @@ function MouthSVG({ t }: { t: number }) {
   if (t <= 0) return null;
 
   const cx = SZ * (MOUTH_CX / 100);
-  const cy = SZ * (MOUTH_CY / 100);
+  const baseCy = SZ * (MOUTH_CY / 100);
   const hw = SZ * (MOUTH_W / 100);
-  const hh = SZ * (MAX_MOUTH_H / 100) * t; // grows with opening
+  const totalH = SZ * (MAX_MOUTH_H / 100) * t;
+  // Asymmetric: upper edge barely lifts, lower edge drops more
+  const upperH = totalH * 0.15;
+  const lowerH = totalH * 0.85;
+  const cy = baseCy - upperH + totalH * 0.5; // shifted center
 
   // Opacities: fangs instant, tongue early, cavity last
   const fangOp = Math.min(t * 5, 1);
