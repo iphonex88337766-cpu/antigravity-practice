@@ -129,60 +129,60 @@ export default function AvatarOverlay({
       >
         {/* Left eye */}
         <ellipse
-          cx="38"
-          cy="38"
-          rx="5.5"
-          ry={Math.max(eyeOpenLeft * 5.5, 0.5)}
+          cx="37"
+          cy="42"
+          rx="5"
+          ry={Math.max(eyeOpenLeft * 5, 0.5)}
           fill="#1a1a1a"
-          opacity="0.9"
+          opacity="0.85"
         />
         {/* Left eye shine */}
         <ellipse
-          cx="36.5"
-          cy={37 - eyeOpenLeft * 1.5}
-          rx="1.5"
-          ry={Math.max(eyeOpenLeft * 1.5, 0.2)}
+          cx="35.5"
+          cy={41 - eyeOpenLeft * 1.2}
+          rx="1.3"
+          ry={Math.max(eyeOpenLeft * 1.3, 0.2)}
           fill="white"
-          opacity={eyeOpenLeft > 0.3 ? 0.8 : 0}
+          opacity={eyeOpenLeft > 0.3 ? 0.75 : 0}
         />
 
         {/* Right eye */}
         <ellipse
-          cx="62"
-          cy="38"
-          rx="5.5"
-          ry={Math.max(eyeOpenRight * 5.5, 0.5)}
+          cx="63"
+          cy="42"
+          rx="5"
+          ry={Math.max(eyeOpenRight * 5, 0.5)}
           fill="#1a1a1a"
-          opacity="0.9"
+          opacity="0.85"
         />
         {/* Right eye shine */}
         <ellipse
-          cx="60.5"
-          cy={37 - eyeOpenRight * 1.5}
-          rx="1.5"
-          ry={Math.max(eyeOpenRight * 1.5, 0.2)}
+          cx="61.5"
+          cy={41 - eyeOpenRight * 1.2}
+          rx="1.3"
+          ry={Math.max(eyeOpenRight * 1.3, 0.2)}
           fill="white"
-          opacity={eyeOpenRight > 0.3 ? 0.8 : 0}
+          opacity={eyeOpenRight > 0.3 ? 0.75 : 0}
         />
 
         {/* Mouth */}
         <ellipse
           cx="50"
-          cy={58 + mouthOpen * 3}
-          rx={5 + smileAmount * 3}
-          ry={1 + mouthOpen * 5}
+          cy={73 + mouthOpen * 2.5}
+          rx={4 + smileAmount * 2.5}
+          ry={0.8 + mouthOpen * 4}
           fill="#2d1a1a"
-          opacity="0.85"
+          opacity="0.8"
         />
         {/* Tongue hint when mouth open */}
         {mouthOpen > 0.3 && (
           <ellipse
             cx="50"
-            cy={60 + mouthOpen * 3}
-            rx={3 + smileAmount * 1.5}
-            ry={mouthOpen * 2.5}
+            cy={74.5 + mouthOpen * 2.5}
+            rx={2.5 + smileAmount * 1}
+            ry={mouthOpen * 2}
             fill="#e85d75"
-            opacity="0.7"
+            opacity="0.65"
           />
         )}
       </svg>
