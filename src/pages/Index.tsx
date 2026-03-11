@@ -202,8 +202,8 @@ const Index = () => {
           <AvatarOverlay
             landmarks={landmarks}
             transformationMatrix={transformMatrix}
-            width={700}
-            height={700}
+            width={600}
+            height={600}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3">
