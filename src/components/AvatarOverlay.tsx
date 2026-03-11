@@ -109,15 +109,13 @@ export default function AvatarOverlay({
   const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
   const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
 
-  // Split line in viewBox units (just above the static mouth)
-  const splitY = 74;
-  // Jaw scaleY: stretches from 1.0 (closed) up to ~1.7 (wide open), pivoted at splitY
-  const jawStretchY = 1 + mouthOpen * 0.7;
-  // Equivalent vertical drop in viewBox units for cavity positioning
-  const jawDrop = (100 - splitY) * (jawStretchY - 1);
-  // Mouth aperture width narrows slightly with smile
+  // Split line at the W-shaped lip line on the tiger muzzle
+  const splitY = 68;
+  // Jaw drop: pure downward translation to separate lips
+  const jawDrop = mouthOpen * 14;
+  // Mouth aperture: positioned between upper lip (splitY) and lower lip (splitY + jawDrop)
   const mouthRx = 10 + smileAmount * 3;
-  const mouthRy = 1 + mouthOpen * 9;
+  const mouthRy = 1 + mouthOpen * 6;
 
   return (
     <div style={containerStyle}>
