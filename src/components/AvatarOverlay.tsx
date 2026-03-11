@@ -45,19 +45,19 @@ const MAX_JAW_PX = 55;
  * Format: [x%, y%] — these define the boundary between upper and lower face.
  */
 const W_POINTS: [number, number][] = [
-  [0, 58],       // far left cheek
-  [12, 59],      // left cheek edge
-  [22, 62],      // left muzzle dip
-  [30, 60],      // left muzzle rise
-  [38, 58],      // left nose base
-  [44, 61],      // left of nose center dip
-  [50, 63],      // center nose base (W bottom)
-  [56, 61],      // right of nose center dip
-  [62, 58],      // right nose base
-  [70, 60],      // right muzzle rise
-  [78, 62],      // right muzzle dip
-  [88, 59],      // right cheek edge
-  [100, 58],     // far right cheek
+  [0, 66],       // far left cheek
+  [12, 67],      // left cheek edge
+  [22, 70],      // left muzzle dip
+  [30, 68],      // left muzzle rise
+  [38, 66],      // left nose-to-lip boundary
+  [44, 69],      // left of center dip
+  [50, 71],      // center — bottom of nose, top of W-lip
+  [56, 69],      // right of center dip
+  [62, 66],      // right nose-to-lip boundary
+  [70, 68],      // right muzzle rise
+  [78, 70],      // right muzzle dip
+  [88, 67],      // right cheek edge
+  [100, 66],     // far right cheek
 ];
 
 /** Build CSS clip-path polygon for the UPPER face (everything above the W) */
