@@ -311,11 +311,19 @@ function EyelidPair({
   avatarSrc = babyTigerSrc,
 }: AvatarOverlayProps) {
   const smoothJawRef = useRef(0);
+  const smoothLeftEyeRef = useRef(0);
+  const smoothRightEyeRef = useRef(0);
 
   const jawRaw = blendshapes?.["jawOpen"] ?? 0;
   smoothJawRef.current = lerp(smoothJawRef.current, jawRaw, 0.18);
   const jawNorm = smoothJawRef.current;
   const jawDrop = easeOut(Math.min(jawNorm, 1)) * MAX_JAW_PX;
+
+  // Eye blink: blendshape gives 0=open, 1=closed
+  const leftBlinkRaw = blendshapes?.["eyeBlinkLeft"] ?? 0;
+  const rightBlinkRaw = blendshapes?.["eyeBlinkRight"] ?? 0;
+  smoothLeftEyeRef.current = lerp(smoothLeftEyeRef.current, leftBlinkRaw, 0.25);
+  smoothRightEyeRef.current = lerp(smoothRightEyeRef.current, rightBlinkRaw, 0.25);
 
   const isOpen = jawNorm > OPEN_THRESHOLD;
 
