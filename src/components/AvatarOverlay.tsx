@@ -103,13 +103,9 @@ export default function AvatarOverlay({
     };
   }, [transformationMatrix, width, height]);
 
-  // Expression overlay values
-  const eyeOpenLeft = 1 - Math.min(expressions.eyeBlinkLeft * 1.5, 1);
-  const eyeOpenRight = 1 - Math.min(expressions.eyeBlinkRight * 1.5, 1);
-
   return (
     <div style={containerStyle}>
-      {/* Layer 0: Dynamic eyes rendered BEHIND the solid base */}
+      {/* Single solid tiger asset — no masks, no clips, no splits */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -118,45 +114,11 @@ export default function AvatarOverlay({
           width: "100%",
           height: "100%",
           pointerEvents: "none",
-          zIndex: 0,
         }}
       >
-        {/* Left eye */}
-        <ellipse cx="35" cy="50" rx="7" ry={Math.max(eyeOpenLeft * 7, 0.6)} fill="#3a2518" />
-        <ellipse cx="35" cy="50" rx="4.5" ry={Math.max(eyeOpenLeft * 4.5, 0.4)} fill="#6b4423" />
-        <ellipse cx="35" cy="50" rx="2.5" ry={Math.max(eyeOpenLeft * 2.5, 0.3)} fill="#1a0e08" />
-        <ellipse cx="33" cy={48.5 - eyeOpenLeft} rx="1.2" ry={Math.max(eyeOpenLeft * 1.5, 0.15)} fill="white" opacity={eyeOpenLeft > 0.2 ? 0.85 : 0} />
-
-        {/* Right eye */}
-        <ellipse cx="65" cy="50" rx="7" ry={Math.max(eyeOpenRight * 7, 0.6)} fill="#3a2518" />
-        <ellipse cx="65" cy="50" rx="4.5" ry={Math.max(eyeOpenRight * 4.5, 0.4)} fill="#6b4423" />
-        <ellipse cx="65" cy="50" rx="2.5" ry={Math.max(eyeOpenRight * 2.5, 0.3)} fill="#1a0e08" />
-        <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
-      </svg>
-
-      {/* Layer 1: Full tiger asset with eye mask */}
-      <svg
-        viewBox="0 0 100 100"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      >
-        <defs>
-          <mask id="eye-mask">
-            <rect x="0" y="0" width="100" height="100" fill="white" />
-            <ellipse cx="35" cy="50" rx="8" ry="8" fill="black" />
-            <ellipse cx="65" cy="50" rx="8" ry="8" fill="black" />
-          </mask>
-        </defs>
         <image
           href={avatarSrc}
           x="0" y="0" width="100" height="100"
-          mask="url(#eye-mask)"
           preserveAspectRatio="xMidYMid slice"
         />
       </svg>
