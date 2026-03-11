@@ -11,9 +11,9 @@ interface HeartOverlayProps {
   onBothEyesClosed?: (closed: boolean) => void;
 }
 
-const BOTH_CLOSED_THRESHOLD = 0.38;
+const BOTH_CLOSED_THRESHOLD = 0.50;
 const OPEN_THRESHOLD = 0.32;
-const CLOSED_FRAMES_NEEDED = 2; // require 2 frames to avoid accidental squints
+const CLOSED_FRAMES_NEEDED = 3; // require 3 frames to avoid accidental squints
 const DISPLAY_DURATION = 2000;
 const COOLDOWN_AFTER_HIDE = 800;
 
