@@ -204,8 +204,10 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
 }
 
 /* ── Eye positions on the 500×500 tiger asset ── */
-const LEFT_EYE  = { cx: 190, cy: 222, rx: 38, ry: 22 };
-const RIGHT_EYE = { cx: 310, cy: 222, rx: 38, ry: 22 };
+// LEFT_EYE = avatar's left eye (appears on screen-right due to mirror)
+// Tuned: almond shape, 10-15% oversize to fully cover white area
+const LEFT_EYE  = { cx: 192, cy: 220, rx: 44, ry: 26 };
+const RIGHT_EYE = { cx: 308, cy: 220, rx: 44, ry: 26 };
 
 // Colors sampled from the tiger's fur around the eyes
 const LID_FILL   = "#E89033";  // orange fur
