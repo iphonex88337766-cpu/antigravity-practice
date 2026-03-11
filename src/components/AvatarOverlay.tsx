@@ -39,7 +39,7 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 45;
 
 /** Baseline Y% for the W-contour center (philtrum). Offsets are applied dynamically. */
-const BASE_MOUTH_Y = 65.4;
+const BASE_MOUTH_Y = 68.4;
 
 /**
  * Feline upper-lip contour — positioned in the MOUTH zone (~59-62% y),
