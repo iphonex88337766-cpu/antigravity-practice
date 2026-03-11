@@ -8,7 +8,7 @@
 
 import { useMemo, useRef, useEffect } from "react";
 import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
-import babyTigerSrc from "@/assets/baby-tiger-faceless.png";
+import babyTigerSrc from "@/assets/baby-tiger.png";
 
 interface AvatarOverlayProps {
   landmarks: NormalizedLandmark[];
