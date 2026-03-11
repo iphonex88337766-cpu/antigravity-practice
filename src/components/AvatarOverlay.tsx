@@ -231,16 +231,14 @@ export default function AvatarOverlay({
             <rect x="0" y={splitY} width="100" height={100 - splitY} />
           </clipPath>
         </defs>
-        {/* Translate the jaw down by mouthOpen amount, then scaleY anchored at splitY top edge */}
-        <g transform={`translate(0, ${mouthOpen * 12})`}>
-          <g transform={`translate(0, ${splitY}) scale(1, ${mouthStretchY}) translate(0, ${-splitY})`}>
-            <image
-              href={avatarSrc}
-              x="0" y="0" width="100" height="100"
-              clipPath="url(#lower-clip)"
-              preserveAspectRatio="xMidYMid slice"
-            />
-          </g>
+        {/* Pure downward translation — top edge stays anchored at splitY */}
+        <g transform={`translate(0, ${jawDrop})`}>
+          <image
+            href={avatarSrc}
+            x="0" y="0" width="100" height="100"
+            clipPath="url(#lower-clip)"
+            preserveAspectRatio="xMidYMid slice"
+          />
         </g>
       </svg>
     </div>
