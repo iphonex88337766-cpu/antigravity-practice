@@ -38,57 +38,64 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 55;
 
 /**
- * Soft, rounded feline upper-lip W-contour.
- * Flat at the sides (cheeks), curving into a natural cat-lip M/W shape
- * only in the central muzzle zone (~30–70% x). The two whisker-pad
- * bumps peak at ~66.5% y, dipping to ~68% at the philtrum center.
+ * Wide, soft feline upper-lip W-contour.
+ * Spans the full whisker-pad area with a pronounced, rounded W shape.
+ * The two whisker-pad lobes dip deeply (~73%), with a slight rise at center
+ * philtrum (~71.5%), and the mouth corners curve back up to the cheeks (~66%).
+ * This creates the characteristic wide cat/tiger lip shape.
  * Format: [x%, y%]
  */
 const W_POINTS: [number, number][] = [
-  // ── left cheek (flat) ──
-  [0,   63],
-  [8,   63],
-  [16,  63],
-  [22,  63],
-  // ── transition into left whisker pad ──
-  [26,  63.2],
-  [29,  63.6],
-  [31,  64.2],
-  [33,  64.8],
-  // ── left whisker-pad bump (soft peak) ──
-  [35,  65.4],
-  [37,  65.9],
-  [38.5,66.2],
-  [40,  66.5],   // left pad apex
-  [41.5,66.4],
-  [43,  66.0],
-  // ── valley between pad and philtrum ──
-  [44.5,65.8],
-  [46,  66.0],
-  [47.5,66.6],
-  [49,  67.4],
-  [50,  67.8],   // philtrum center – deepest point
-  [51,  67.4],
-  [52.5,66.6],
-  [54,  66.0],
-  [55.5,65.8],
-  // ── right whisker-pad bump ──
-  [57,  66.0],
-  [58.5,66.4],
-  [60,  66.5],   // right pad apex
-  [61.5,66.2],
-  [63,  65.9],
-  [65,  65.4],
-  // ── transition out of right whisker pad ──
-  [67,  64.8],
-  [69,  64.2],
-  [71,  63.6],
-  [74,  63.2],
-  // ── right cheek (flat) ──
-  [78,  63],
-  [84,  63],
-  [92,  63],
-  [100, 63],
+  // ── far left cheek ──
+  [0,   64],
+  [6,   64],
+  [12,  64],
+  // ── left cheek curving into mouth corner ──
+  [16,  64.2],
+  [20,  64.8],
+  [23,  65.5],
+  [25,  66.2],
+  [27,  67.0],   // left mouth corner
+  // ── left whisker-pad lobe (deep rounded curve) ──
+  [29,  68.0],
+  [31,  69.2],
+  [33,  70.2],
+  [35,  71.0],
+  [37,  71.8],
+  [38.5,72.3],
+  [40,  72.8],   // left lobe deepest
+  [41.5,72.6],
+  [43,  72.0],
+  // ── rising toward philtrum center ──
+  [44.5,71.2],
+  [46,  70.5],
+  [47.5,70.2],
+  [49,  70.0],
+  [50,  69.8],   // philtrum – slight rise between the two lobes
+  [51,  70.0],
+  [52.5,70.2],
+  [53.5,70.5],
+  [55.5,71.2],
+  // ── right whisker-pad lobe ──
+  [57,  72.0],
+  [58.5,72.6],
+  [60,  72.8],   // right lobe deepest
+  [61.5,72.3],
+  [63,  71.8],
+  [65,  71.0],
+  [67,  70.2],
+  [69,  69.2],
+  [71,  68.0],
+  // ── right mouth corner curving back to cheek ──
+  [73,  67.0],   // right mouth corner
+  [75,  66.2],
+  [77,  65.5],
+  [80,  64.8],
+  [84,  64.2],
+  // ── far right cheek ──
+  [88,  64],
+  [94,  64],
+  [100, 64],
 ];
 
 /** Build CSS clip-path polygon for the UPPER face (everything above the W) */
