@@ -144,7 +144,7 @@ export default function AvatarOverlay({
         <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
       </svg>
 
-      {/* Layer 1: Inner mouth cavity — revealed between upper face and stretched jaw */}
+      {/* Layer 1: Detailed inner mouth cavity — revealed as jaw drops */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -158,44 +158,76 @@ export default function AvatarOverlay({
         }}
       >
         <defs>
-          <radialGradient id="mouth-cavity" cx="50%" cy="30%" r="60%">
-            <stop offset="0%" stopColor="#4a1a2a" />
-            <stop offset="50%" stopColor="#2d0f18" />
-            <stop offset="100%" stopColor="#1a0a0e" />
+          <radialGradient id="mouth-cavity" cx="50%" cy="20%" r="70%">
+            <stop offset="0%" stopColor="#3a0e1a" />
+            <stop offset="40%" stopColor="#260a12" />
+            <stop offset="100%" stopColor="#0e0508" />
           </radialGradient>
+          <radialGradient id="inner-lip-grad" cx="50%" cy="0%" r="100%">
+            <stop offset="0%" stopColor="#8a3050" />
+            <stop offset="100%" stopColor="#4a1a2a" />
+          </radialGradient>
+          {/* Clip the cavity to an elliptical aperture shape */}
+          <clipPath id="mouth-aperture-clip">
+            <ellipse cx="50" cy={splitY + jawDrop * 0.5} rx={mouthRx} ry={mouthRy + jawDrop * 0.4} />
+          </clipPath>
         </defs>
-        {/* Dark cavity always visible at the seam so the mouth has depth */}
+
+        {/* Deep cavity background */}
         <ellipse
           cx="50"
-          cy={splitY}
-          rx={10 + smileAmount * 2}
-          ry={2 + mouthOpen * 8}
+          cy={splitY + jawDrop * 0.5}
+          rx={mouthRx}
+          ry={mouthRy + jawDrop * 0.4}
           fill="url(#mouth-cavity)"
-          opacity={1}
         />
-        {/* Dark cavity ellipse */}
+
+        {/* Inner upper lip line */}
         <ellipse
           cx="50"
-          cy={splitY + 1 + mouthOpen * 4}
-          rx={8 + smileAmount * 2}
-          ry={mouthOpen * 10}
-          fill="url(#mouth-cavity)"
-          opacity={mouthOpen > 0.05 ? Math.min(mouthOpen * 2, 1) : 0}
+          cy={splitY + 1}
+          rx={mouthRx - 1}
+          ry={1.5 + mouthOpen * 2}
+          fill="url(#inner-lip-grad)"
+          opacity={mouthOpen > 0.05 ? Math.min(mouthOpen * 3, 0.8) : 0}
+          clipPath="url(#mouth-aperture-clip)"
         />
-        {/* Tongue hint */}
-        {mouthOpen > 0.3 && (
+
+        {/* Inner lower lip line */}
+        <ellipse
+          cx="50"
+          cy={splitY + jawDrop - 1}
+          rx={mouthRx - 2}
+          ry={1 + mouthOpen * 1.5}
+          fill="url(#inner-lip-grad)"
+          opacity={mouthOpen > 0.1 ? Math.min(mouthOpen * 2, 0.7) : 0}
+          clipPath="url(#mouth-aperture-clip)"
+        />
+
+        {/* Tongue — soft pink, slightly recessed */}
+        {mouthOpen > 0.15 && (
           <ellipse
             cx="50"
-            cy={splitY + 2 + mouthOpen * 8}
-            rx={4 + smileAmount}
-            ry={mouthOpen * 3}
-            fill="#e85d75"
-            opacity={0.5}
+            cy={splitY + jawDrop * 0.65}
+            rx={4 + smileAmount * 1.5}
+            ry={mouthOpen * 4}
+            fill="#d4506a"
+            opacity={0.55}
+            clipPath="url(#mouth-aperture-clip)"
           />
         )}
-      </svg>
 
-      {/* Layer 2: Upper tiger (above mouth line) — solid, with eye holes only */}
+        {/* Uvula/depth shadow at top of cavity */}
+        <ellipse
+          cx="50"
+          cy={splitY + 2 + mouthOpen * 2}
+          rx={3}
+          ry={mouthOpen * 3}
+          fill="#1a0508"
+          opacity={mouthOpen > 0.2 ? 0.4 : 0}
+          clipPath="url(#mouth-aperture-clip)"
+        />
+      </svg>
       <svg
         viewBox="0 0 100 100"
         style={{
