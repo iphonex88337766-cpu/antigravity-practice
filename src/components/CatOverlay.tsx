@@ -16,6 +16,7 @@ const OPEN_THRESHOLD = 0.22;
 const RIGHT_OPEN_MAX = 0.40;
 const CLOSED_FRAMES_NEEDED = 1;
 const DISPLAY_DURATION = 2000;
+const COOLDOWN_AFTER_HIDE = 800;
 
 export default function CatOverlay({ blendshapes }: CatOverlayProps) {
   const [visible, setVisible] = useState(false);
