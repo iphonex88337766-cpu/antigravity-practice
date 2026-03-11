@@ -181,10 +181,7 @@ const Playground = () => {
               }}
             >
               <PuppyOverlay
-                landmarks={landmarks}
                 blendshapes={blendshapes}
-                width={videoRect.w}
-                height={videoRect.h}
               />
             </div>
           )}
