@@ -132,11 +132,13 @@ export default function AvatarOverlay({
         style={{
           position: "absolute",
           left: 0,
-          top: avgWY - 15,
+          top: avgWY - 10,
           width: size,
           height: jawDrop + 40,
           pointerEvents: "none",
           zIndex: 0,
+          opacity: jawRaw < 0.05 ? 0 : Math.min((jawRaw - 0.05) / 0.1, 1),
+          transition: "opacity 0.08s ease",
         }}
         viewBox={`0 0 ${size} ${jawDrop + 40}`}
       >
