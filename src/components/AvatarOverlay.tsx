@@ -131,9 +131,8 @@ function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
 
   const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
   const faceRelative = (mouthCenterY - faceTop) / faceHeight; // 0-1 within face
-  // Map to avatar image space: tiger face spans ~30% to ~95% of image
-  // Mouth at ~70% of face → 30 + 0.7*65 = 75.5, at ~75% → 30 + 0.75*65 = 78.75
-  const avatarY = 30 + faceRelative * 65;
+  // Map to avatar image space: tiger face spans ~20% to ~85% of image
+  const avatarY = 20 + faceRelative * 65;
   return avatarY;
 }
 
