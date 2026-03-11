@@ -144,7 +144,7 @@ export default function AvatarOverlay({
         <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
       </svg>
 
-      {/* Layer 1: Detailed inner mouth cavity — revealed as jaw drops */}
+      {/* Layer 1: Mouth cavity — positioned between upper and lower lips */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -158,7 +158,7 @@ export default function AvatarOverlay({
         }}
       >
         <defs>
-          <radialGradient id="mouth-cavity" cx="50%" cy="20%" r="70%">
+          <radialGradient id="mouth-cavity" cx="50%" cy="30%" r="70%">
             <stop offset="0%" stopColor="#3a0e1a" />
             <stop offset="40%" stopColor="#260a12" />
             <stop offset="100%" stopColor="#0e0508" />
@@ -167,18 +167,17 @@ export default function AvatarOverlay({
             <stop offset="0%" stopColor="#8a3050" />
             <stop offset="100%" stopColor="#4a1a2a" />
           </radialGradient>
-          {/* Clip the cavity to an elliptical aperture shape */}
           <clipPath id="mouth-aperture-clip">
-            <ellipse cx="50" cy={splitY + jawDrop * 0.5} rx={mouthRx} ry={mouthRy + jawDrop * 0.4} />
+            <ellipse cx="50" cy={splitY + jawDrop * 0.5} rx={mouthRx} ry={mouthRy + jawDrop * 0.35} />
           </clipPath>
         </defs>
 
-        {/* Deep cavity background */}
+        {/* Deep cavity background — centered between upper and lower lips */}
         <ellipse
           cx="50"
           cy={splitY + jawDrop * 0.5}
           rx={mouthRx}
-          ry={mouthRy + jawDrop * 0.4}
+          ry={mouthRy + jawDrop * 0.35}
           fill="url(#mouth-cavity)"
         />
 
@@ -204,20 +203,20 @@ export default function AvatarOverlay({
           clipPath="url(#mouth-aperture-clip)"
         />
 
-        {/* Tongue — soft pink, slightly recessed */}
+        {/* Tongue hint */}
         {mouthOpen > 0.15 && (
           <ellipse
             cx="50"
-            cy={splitY + jawDrop * 0.65}
+            cy={splitY + jawDrop * 0.6}
             rx={4 + smileAmount * 1.5}
-            ry={mouthOpen * 4}
+            ry={mouthOpen * 3.5}
             fill="#d4506a"
             opacity={0.55}
             clipPath="url(#mouth-aperture-clip)"
           />
         )}
 
-        {/* Uvula/depth shadow at top of cavity */}
+        {/* Depth shadow */}
         <ellipse
           cx="50"
           cy={splitY + 2 + mouthOpen * 2}
