@@ -415,6 +415,12 @@ export default function AvatarOverlay({
           </div>
         </>
       )}
+
+      {/* Eyelid blink overlay — always on top */}
+      <EyelidOverlay
+        leftBlink={smoothLeftEyeRef.current}
+        rightBlink={smoothRightEyeRef.current}
+      />
     </div>
   );
 }
