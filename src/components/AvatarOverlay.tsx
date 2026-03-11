@@ -162,7 +162,7 @@ export default function AvatarOverlay({
             {/* Punch out right eye */}
             <ellipse cx="65" cy="50" rx="8" ry="8" fill="black" />
             {/* Punch out mouth area */}
-            <ellipse cx="50" cy="73" rx="7" ry="5" fill="black" />
+            <ellipse cx="50" cy="79" rx="7" ry="5" fill="black" />
           </mask>
         </defs>
         <image
