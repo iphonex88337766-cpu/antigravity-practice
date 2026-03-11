@@ -10,11 +10,12 @@ interface PuppyOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const CLOSED_THRESHOLD = 0.38;  // right eye "closed" — easier to reach
-const OPEN_THRESHOLD = 0.28;    // right eye "open" — slightly more forgiving
-const LEFT_OPEN_MAX = 0.35;     // left eye must stay clearly open (stricter)
-const CLOSED_FRAMES_NEEDED = 1; // single confirmed closed frame → faster response
+const CLOSED_THRESHOLD = 0.38;
+const OPEN_THRESHOLD = 0.28;
+const LEFT_OPEN_MAX = 0.35;
+const CLOSED_FRAMES_NEEDED = 1;
 const DISPLAY_DURATION = 2000;
+const COOLDOWN_AFTER_HIDE = 800;
 
 export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   const [visible, setVisible] = useState(false);

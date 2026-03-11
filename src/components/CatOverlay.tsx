@@ -29,7 +29,14 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
   const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
 
   useEffect(() => {
-    if (visible || cooldownRef.current || !blendshapes) return;
+    if (cooldownRef.current || !blendshapes) return;
+
+    // While visible, freeze the state machine — no new detections
+    if (visible) {
+      phaseRef.current = "idle";
+      closedFramesRef.current = 0;
+      return;
+    }
 
     const leftClosed = leftBlink >= CLOSED_THRESHOLD;
     const leftOpen = leftBlink < OPEN_THRESHOLD;
@@ -57,7 +64,7 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
         cooldownRef.current = true;
         timerRef.current = window.setTimeout(() => {
           setVisible(false);
-          window.setTimeout(() => { cooldownRef.current = false; }, 500);
+          window.setTimeout(() => { cooldownRef.current = false; }, COOLDOWN_AFTER_HIDE);
         }, DISPLAY_DURATION);
       }
     }
