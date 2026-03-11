@@ -109,10 +109,12 @@ export default function AvatarOverlay({
   const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
   const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
 
-  // Jaw drop: pure translation downward (aperture reveal)
-  const jawDrop = mouthOpen * 18;
   // Split line in viewBox units (just above the static mouth)
   const splitY = 74;
+  // Jaw scaleY: stretches from 1.0 (closed) up to ~1.7 (wide open), pivoted at splitY
+  const jawStretchY = 1 + mouthOpen * 0.7;
+  // Equivalent vertical drop in viewBox units for cavity positioning
+  const jawDrop = (100 - splitY) * (jawStretchY - 1);
   // Mouth aperture width narrows slightly with smile
   const mouthRx = 10 + smileAmount * 3;
   const mouthRy = 1 + mouthOpen * 9;
@@ -276,8 +278,8 @@ export default function AvatarOverlay({
             <rect x="0" y={splitY} width="100" height={100 - splitY} />
           </clipPath>
         </defs>
-        {/* Pure downward translation — jaw drops to reveal cavity behind it */}
-        <g transform={`translate(0, ${jawDrop})`}>
+        {/* ScaleY stretch anchored at splitY — top edge stays connected, bottom stretches down */}
+        <g transform={`translate(0, ${splitY}) scale(1, ${jawStretchY}) translate(0, ${-splitY})`}>
           <image
             href={avatarSrc}
             x="0" y="0" width="100" height="100"
