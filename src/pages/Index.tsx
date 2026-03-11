@@ -44,20 +44,12 @@ const Index = () => {
     const containerAspect = cw / ch;
     const videoAspect = vw / vh;
 
-    let w: number, h: number, x: number, y: number;
-    if (videoAspect > containerAspect) {
-      // Video is wider — pillarbox (black bars top/bottom)
-      w = cw;
-      h = cw / videoAspect;
-      x = 0;
-      y = (ch - h) / 2;
-    } else {
-      // Video is taller — letterbox (black bars left/right)
-      h = ch;
-      w = ch * videoAspect;
-      x = (cw - w) / 2;
-      y = 0;
-    }
+    // object-cover: scale to fill, then crop overflow
+    const scale = Math.max(cw / vw, ch / vh);
+    const w = Math.round(vw * scale);
+    const h = Math.round(vh * scale);
+    const x = Math.round((cw - w) / 2);
+    const y = Math.round((ch - h) / 2);
     setVideoRect({ x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
   };
 
@@ -186,7 +178,7 @@ const Index = () => {
             variant="ghost"
             size="icon"
             onClick={() => setShowMesh((v) => !v)}
-            className="absolute bottom-3 left-3 z-20 bg-foreground/40 text-primary backdrop-blur-sm hover:bg-foreground/60 hover:text-primary"
+            className="absolute bottom-3 right-3 z-20 bg-foreground/40 text-primary backdrop-blur-sm hover:bg-foreground/60 hover:text-primary"
             title={showMesh ? "Hide mesh" : "Show mesh"}
           >
             {showMesh ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
@@ -197,15 +189,15 @@ const Index = () => {
       {/* ── AVATAR OVERLAY — right side ── */}
       <div
         ref={avatarContainerRef}
-        className="absolute top-1/2 right-[10%] -translate-y-1/2 z-10"
-        style={{ width: 280, height: 280 }}
+        className="absolute top-1/2 left-[10%] -translate-y-1/2 z-10"
+        style={{ width: 840, height: 840 }}
       >
         {webcamState === "active" && landmarks ? (
           <AvatarOverlay
             landmarks={landmarks}
             transformationMatrix={transformMatrix}
-            width={280}
-            height={280}
+            width={840}
+            height={840}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3">
