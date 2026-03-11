@@ -442,11 +442,7 @@ export default function AvatarOverlay({
         </>
       )}
 
-      {/* Eyelid blink overlay — always on top */}
-      <EyelidOverlay
-        leftBlink={smoothLeftEyeRef.current}
-        rightBlink={smoothRightEyeRef.current}
-      />
+      {/* Eyelid blink overlay — DISABLED for now */}
     </div>
   );
 }
