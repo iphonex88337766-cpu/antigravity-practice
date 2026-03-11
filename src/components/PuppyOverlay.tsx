@@ -13,6 +13,7 @@ interface PuppyOverlayProps {
 const CLOSED_THRESHOLD = 0.38;  // right eye "closed" — easier to reach
 const OPEN_THRESHOLD = 0.28;    // right eye "open" — slightly more forgiving
 const LEFT_OPEN_MAX = 0.35;     // left eye must stay clearly open (stricter)
+const EYE_GAP_MIN = 0.12;       // right eye must be clearly more closed than left
 const CLOSED_FRAMES_NEEDED = 1; // single confirmed closed frame → faster response
 const DISPLAY_DURATION = 2000;
 
@@ -24,6 +25,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   // Blink-cycle state machine: "idle" → "closed" → triggered on re-open
   const phaseRef = useRef<"idle" | "closed">("idle");
   const closedFramesRef = useRef(0);
+  const blockedCycleRef = useRef(false);
 
   const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
   const leftBlink = blendshapes?.["eyeBlinkLeft"] ?? 0;
@@ -34,10 +36,26 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
     const rightClosed = rightBlink >= CLOSED_THRESHOLD;
     const rightOpen = rightBlink < OPEN_THRESHOLD;
     const leftOpen = leftBlink < LEFT_OPEN_MAX;
+    const rightDominant = rightBlink - leftBlink >= EYE_GAP_MIN;
+    const bothEyesClosed = rightClosed && leftBlink >= CLOSED_THRESHOLD;
+
+    // Hard block: any both-eyes-closed moment invalidates this blink cycle
+    if (bothEyesClosed) {
+      phaseRef.current = "idle";
+      closedFramesRef.current = 0;
+      blockedCycleRef.current = true;
+      return;
+    }
+
+    // After a blocked cycle, require a clean reset before allowing triggers again
+    if (blockedCycleRef.current) {
+      if (rightOpen && leftOpen) blockedCycleRef.current = false;
+      return;
+    }
 
     if (phaseRef.current === "idle") {
-      // Wait for right eye to close while left stays open
-      if (rightClosed && leftOpen) {
+      // Wait for right eye to close clearly more than left while left stays open
+      if (rightClosed && leftOpen && rightDominant) {
         closedFramesRef.current++;
         if (closedFramesRef.current >= CLOSED_FRAMES_NEEDED) {
           phaseRef.current = "closed";
@@ -46,10 +64,11 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
         closedFramesRef.current = 0;
       }
     } else if (phaseRef.current === "closed") {
-      // If left eye closes at ANY point during the cycle, abort immediately
-      if (!leftOpen) {
+      // If left eye closes too much OR right is no longer clearly dominant, cancel cycle
+      if (!leftOpen || !rightDominant) {
         phaseRef.current = "idle";
         closedFramesRef.current = 0;
+        blockedCycleRef.current = true;
         return;
       }
       // Right eye was closed long enough — trigger when it opens back up, left still open
