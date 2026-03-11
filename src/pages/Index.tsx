@@ -139,7 +139,6 @@ const Index = () => {
           className="absolute inset-0 h-full w-full object-cover"
           style={{
             transform: "scaleX(-1)",
-            transform: "scaleX(-1)",
             filter: "saturate(0.7) brightness(0.9)",
             opacity: webcamState === "active" ? 1 : 0,
           }}
