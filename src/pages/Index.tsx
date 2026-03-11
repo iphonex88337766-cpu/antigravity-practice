@@ -44,14 +44,11 @@ const Index = () => {
     const containerAspect = cw / ch;
     const videoAspect = vw / vh;
 
-    // object-cover: scale to fill, then crop overflow
-    // object-position is 100% 50%, video has scaleX(-1).
-    // Pre-flip x offset = (cw - w) * (1 - 1.0) = 0
-    // After scaleX(-1), visual x flips: cw - w - 0 = (cw - w)
+    // object-cover centered — simple and aligned
     const scale = Math.max(cw / vw, ch / vh);
     const w = Math.round(vw * scale);
     const h = Math.round(vh * scale);
-    const x = Math.round((cw - w) * 1.0);
+    const x = Math.round((cw - w) / 2);
     const y = Math.round((ch - h) / 2);
     setVideoRect({ x, y, w, h });
   };
@@ -128,7 +125,8 @@ const Index = () => {
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         ref={webcamContainerRef}
-        className="absolute inset-0"
+        className="absolute top-0 left-0 bottom-0"
+        style={{ width: "55%" }}
       >
         {isLoading && <CalibrationOverlay />}
 
@@ -140,7 +138,6 @@ const Index = () => {
           onResize={updateVideoRect}
           className="absolute inset-0 h-full w-full object-cover"
           style={{
-            objectPosition: "100% 50%",
             transform: "scaleX(-1)",
             filter: "saturate(0.7) brightness(0.9)",
             opacity: webcamState === "active" ? 1 : 0,
