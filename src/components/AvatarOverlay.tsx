@@ -99,10 +99,10 @@ function shiftedWPoints(dy: number): [number, number][] {
   });
 }
 
-/** Upper face clip: everything above the W-contour */
+/** Upper face clip: everything above the W-contour (bottom edge IS the W line) */
 function upperClipPath(points: [number, number][]): string {
-  const rev = [...points].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
-  return `polygon(0% 0%, 100% 0%, 100% 100%, ${rev}, 0% 100%)`;
+  const fwd = points.map(([x, y]) => `${x}% ${y}%`).join(", ");
+  return `polygon(0% 0%, 100% 0%, ${fwd})`;
 }
 
 /** Lower jaw clip: everything below the W-contour */
