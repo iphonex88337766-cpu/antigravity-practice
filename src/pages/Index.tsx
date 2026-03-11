@@ -1,5 +1,7 @@
 /**
- * Studio Animata — Face Tracking Engine (Step 2: Character Rigging)
+ * Studio Animata — Side-by-Side Layout
+ * Left: Webcam input. Right: Avatar output.
+ * Mobile: stacks vertically, avatar on top.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -21,30 +23,34 @@ const Index = () => {
   const [transformMatrix, setTransformMatrix] = useState<any>(null);
   const [hasEverDetected, setHasEverDetected] = useState(false);
   const [showMesh, setShowMesh] = useState(true);
-  const [displaySize, setDisplaySize] = useState({ width: 1280, height: 720 });
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [webcamSize, setWebcamSize] = useState({ width: 640, height: 360 });
+  const [avatarSize, setAvatarSize] = useState({ width: 640, height: 360 });
+  const webcamContainerRef = useRef<HTMLDivElement>(null);
+  const avatarContainerRef = useRef<HTMLDivElement>(null);
   const animFrameRef = useRef<number>(0);
 
-  // Start webcam once model is ready
   useEffect(() => {
-    if (modelState === "ready") {
-      startWebcam();
-    }
+    if (modelState === "ready") startWebcam();
   }, [modelState, startWebcam]);
 
-  // Track container size
+  // Track both containers
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const wcEl = webcamContainerRef.current;
+    const avEl = avatarContainerRef.current;
+    if (!wcEl || !avEl) return;
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
-        if (width > 0 && height > 0) {
-          setDisplaySize({ width: Math.round(width), height: Math.round(height) });
-        }
+        if (width <= 0 || height <= 0) continue;
+        const rounded = { width: Math.round(width), height: Math.round(height) };
+        if (entry.target === wcEl) setWebcamSize(rounded);
+        if (entry.target === avEl) setAvatarSize(rounded);
       }
     });
-    observer.observe(el);
+
+    observer.observe(wcEl);
+    observer.observe(avEl);
     return () => observer.disconnect();
   }, []);
 
@@ -69,15 +75,12 @@ const Index = () => {
       const result = detect(video, now);
       if (result && result.faceLandmarks && result.faceLandmarks.length > 0) {
         setLandmarks(result.faceLandmarks[0]);
-        setTransformMatrix(
-          result.facialTransformationMatrixes?.[0] ?? null
-        );
+        setTransformMatrix(result.facialTransformationMatrixes?.[0] ?? null);
         if (!hasEverDetected) setHasEverDetected(true);
       } else {
         setLandmarks(null);
         setTransformMatrix(null);
       }
-
       animFrameRef.current = requestAnimationFrame(loop);
     }
 
@@ -85,78 +88,122 @@ const Index = () => {
     return () => cancelAnimationFrame(animFrameRef.current);
   }, [webcamState, modelState, detect, videoRef, hasEverDetected]);
 
-  // Error states
-  if (webcamState === "error" && webcamError) {
-    return <ErrorScreen message={webcamError} />;
-  }
-  if (modelState === "error") {
-    return <ErrorScreen message={modelError || "MODEL LOAD FAILED"} />;
-  }
+  if (webcamState === "error" && webcamError) return <ErrorScreen message={webcamError} />;
+  if (modelState === "error") return <ErrorScreen message={modelError || "MODEL LOAD FAILED"} />;
 
   const isLoading = modelState === "loading" || webcamState === "requesting";
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center overflow-hidden bg-background">
-      <div
-        ref={containerRef}
-        className="relative w-full max-w-[1280px] overflow-hidden"
-        style={{ aspectRatio: "16 / 9" }}
-      >
-        {isLoading && <CalibrationOverlay />}
-
-        <video
-          ref={videoRef}
-          playsInline
-          muted
-          className="absolute inset-0 h-full w-full object-cover"
+    <div className="flex h-screen w-screen flex-col md:flex-row items-stretch overflow-hidden bg-foreground">
+      {/* ── RIGHT PANEL (Avatar) — shown first on mobile ── */}
+      <div className="order-1 md:order-2 flex-1 md:flex-[1.2] relative flex items-center justify-center bg-background">
+        {/* Decorative grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.04]"
           style={{
-            transform: "scaleX(-1)",
-            filter: "saturate(0.8) brightness(0.9)",
-            opacity: webcamState === "active" ? 1 : 0,
+            backgroundImage:
+              "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
           }}
         />
 
-        {/* Face Mesh overlay — toggleable */}
-        {webcamState === "active" && showMesh && (
-          <FaceMeshCanvas
-            landmarks={landmarks}
-            width={displaySize.width}
-            height={displaySize.height}
-            hasDetected={hasEverDetected && landmarks !== null}
+        {/* Avatar stage */}
+        <div
+          ref={avatarContainerRef}
+          className="relative w-full h-full max-w-[800px] max-h-[600px] m-auto"
+          style={{ aspectRatio: "4 / 3" }}
+        >
+          {/* Subtle vignette */}
+          <div className="absolute inset-0 rounded-none pointer-events-none"
+            style={{
+              background: "radial-gradient(ellipse at center, transparent 50%, hsl(var(--background)) 100%)",
+            }}
           />
-        )}
 
-        {/* Avatar overlay */}
-        {webcamState === "active" && landmarks && (
-          <AvatarOverlay
-            landmarks={landmarks}
-            transformationMatrix={transformMatrix}
-            width={displaySize.width}
-            height={displaySize.height}
-          />
-        )}
+          {webcamState === "active" && landmarks ? (
+            <AvatarOverlay
+              landmarks={landmarks}
+              transformationMatrix={transformMatrix}
+              width={avatarSize.width}
+              height={avatarSize.height}
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+              <div className="h-16 w-16 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                <span className="text-muted-foreground/40 text-2xl">🐯</span>
+              </div>
+              <p className="font-syne text-sm tracking-widest text-muted-foreground/50 uppercase">
+                {isLoading ? "Calibrating…" : "Awaiting signal"}
+              </p>
+            </div>
+          )}
 
-        {/* Searching label */}
-        {webcamState === "active" && !landmarks && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="font-syne text-2xl font-bold tracking-widest text-foreground opacity-60">
-              SEARCHING
-            </p>
+          {/* Label */}
+          <div className="absolute top-3 left-3 z-10">
+            <span className="font-syne text-[10px] tracking-[0.3em] text-muted-foreground/60 uppercase">
+              Output
+            </span>
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Mesh toggle button */}
-        {webcamState === "active" && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowMesh((v) => !v)}
-            className="absolute bottom-4 right-4 z-10 bg-background/40 backdrop-blur-sm hover:bg-background/60"
-            title={showMesh ? "Hide mesh" : "Show mesh"}
-          >
-            {showMesh ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
-          </Button>
-        )}
+      {/* ── LEFT PANEL (Webcam) ── */}
+      <div className="order-2 md:order-1 flex-1 relative flex items-center justify-center bg-foreground">
+        <div
+          ref={webcamContainerRef}
+          className="relative w-full h-full overflow-hidden"
+        >
+          {isLoading && <CalibrationOverlay />}
+
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{
+              transform: "scaleX(-1)",
+              filter: "saturate(0.6) brightness(0.85)",
+              opacity: webcamState === "active" ? 1 : 0,
+            }}
+          />
+
+          {webcamState === "active" && showMesh && (
+            <FaceMeshCanvas
+              landmarks={landmarks}
+              width={webcamSize.width}
+              height={webcamSize.height}
+              hasDetected={hasEverDetected && landmarks !== null}
+            />
+          )}
+
+          {webcamState === "active" && !landmarks && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="font-syne text-lg font-bold tracking-widest text-primary opacity-70">
+                SEARCHING
+              </p>
+            </div>
+          )}
+
+          {/* Label */}
+          <div className="absolute top-3 left-3 z-10">
+            <span className="font-syne text-[10px] tracking-[0.3em] text-primary/60 uppercase">
+              Input
+            </span>
+          </div>
+
+          {/* Mesh toggle */}
+          {webcamState === "active" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowMesh((v) => !v)}
+              className="absolute bottom-3 right-3 z-10 bg-foreground/40 text-primary backdrop-blur-sm hover:bg-foreground/60 hover:text-primary"
+              title={showMesh ? "Hide mesh" : "Show mesh"}
+            >
+              {showMesh ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
