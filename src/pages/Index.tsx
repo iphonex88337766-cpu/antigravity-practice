@@ -104,10 +104,20 @@ const Index = () => {
       if (result && result.faceLandmarks && result.faceLandmarks.length > 0) {
         setLandmarks(result.faceLandmarks[0]);
         setTransformMatrix(result.facialTransformationMatrixes?.[0] ?? null);
+        // Extract blendshapes into a simple map
+        const bs = result.faceBlendshapes?.[0]?.categories;
+        if (bs) {
+          const map: Record<string, number> = {};
+          for (const c of bs) map[c.categoryName] = c.score;
+          setBlendshapes(map);
+        } else {
+          setBlendshapes(null);
+        }
         if (!hasEverDetected) setHasEverDetected(true);
       } else {
         setLandmarks(null);
         setTransformMatrix(null);
+        setBlendshapes(null);
       }
       animFrameRef.current = requestAnimationFrame(loop);
     }
