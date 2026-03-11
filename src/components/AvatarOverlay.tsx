@@ -221,7 +221,7 @@ export default function AvatarOverlay({
         />
       </svg>
 
-      {/* Layer 3: Lower jaw — translates downward + scaleY from top edge */}
+      {/* Layer 3: Lower jaw — scaleY anchored at splitY top edge (rubber stretch) */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -239,8 +239,8 @@ export default function AvatarOverlay({
             <rect x="0" y={splitY} width="100" height={100 - splitY} />
           </clipPath>
         </defs>
-        {/* Pure downward translation — top edge stays anchored at splitY */}
-        <g transform={`translate(0, ${jawDrop})`}>
+        {/* scaleY pivoted at splitY: translate origin to splitY, scale, translate back */}
+        <g style={{ transformOrigin: `50px ${splitY}px` }} transform={`scale(1, ${jawStretchY})`}>
           <image
             href={avatarSrc}
             x="0" y="0" width="100" height="100"
