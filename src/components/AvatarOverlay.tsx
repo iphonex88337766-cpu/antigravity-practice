@@ -188,25 +188,25 @@ export default function AvatarOverlay({
         />
         {/* Inner cavity gradient - darker center */}
         <ellipse
-          cx={size * 0.25}
-          cy={jawDrop * 0.42 + 8}
-          rx={size * 0.05 + jawDrop * 0.2}
+          cx={size * 0.3}
+          cy={jawDrop * 0.4 + 10}
+          rx={size * 0.08 + jawDrop * 0.18}
           ry={Math.max(jawDrop * 0.32, 0.3)}
           fill="hsl(340, 50%, 10%)"
         />
         {/* Soft pink tongue */}
         <ellipse
-          cx={size * 0.25}
-          cy={jawDrop * 0.55 + 12}
-          rx={size * 0.04 + jawDrop * 0.12}
+          cx={size * 0.3}
+          cy={jawDrop * 0.55 + 14}
+          rx={size * 0.06 + jawDrop * 0.12}
           ry={Math.max(jawDrop * 0.2, 0.3)}
           fill="hsl(350, 60%, 58%)"
         />
         {/* Tongue highlight */}
         <ellipse
-          cx={size * 0.25 - 1}
-          cy={jawDrop * 0.5 + 11}
-          rx={size * 0.02 + jawDrop * 0.05}
+          cx={size * 0.3 - 1}
+          cy={jawDrop * 0.5 + 13}
+          rx={size * 0.03 + jawDrop * 0.05}
           ry={Math.max(jawDrop * 0.08, 0.2)}
           fill="hsl(350, 65%, 68%)"
           opacity="0.6"
@@ -216,11 +216,11 @@ export default function AvatarOverlay({
         {/* Left canine fang */}
         <polygon
           points={`
-            ${size * 0.25 - size * 0.06},1
-            ${size * 0.25 - size * 0.06 + 5},1
-            ${size * 0.25 - size * 0.06 + 4},${Math.min(5 + jawDrop * 0.5, 22)}
-            ${size * 0.25 - size * 0.06 + 1},${Math.min(7 + jawDrop * 0.55, 25)}
-            ${size * 0.25 - size * 0.06 - 1},${Math.min(3 + jawDrop * 0.3, 15)}
+            ${size * 0.3 - size * 0.07},1
+            ${size * 0.3 - size * 0.07 + 5},1
+            ${size * 0.3 - size * 0.07 + 4},${Math.min(5 + jawDrop * 0.5, 22)}
+            ${size * 0.3 - size * 0.07 + 1},${Math.min(7 + jawDrop * 0.55, 25)}
+            ${size * 0.3 - size * 0.07 - 1},${Math.min(3 + jawDrop * 0.3, 15)}
           `}
           fill="hsl(45, 20%, 96%)"
           stroke="hsl(40, 15%, 88%)"
@@ -230,11 +230,11 @@ export default function AvatarOverlay({
         {/* Right canine fang */}
         <polygon
           points={`
-            ${size * 0.25 + size * 0.06 - 5},1
-            ${size * 0.25 + size * 0.06},1
-            ${size * 0.25 + size * 0.06 + 1},${Math.min(3 + jawDrop * 0.3, 15)}
-            ${size * 0.25 + size * 0.06 - 1},${Math.min(7 + jawDrop * 0.55, 25)}
-            ${size * 0.25 + size * 0.06 - 4},${Math.min(5 + jawDrop * 0.5, 22)}
+            ${size * 0.3 + size * 0.07 - 5},1
+            ${size * 0.3 + size * 0.07},1
+            ${size * 0.3 + size * 0.07 + 1},${Math.min(3 + jawDrop * 0.3, 15)}
+            ${size * 0.3 + size * 0.07 - 1},${Math.min(7 + jawDrop * 0.55, 25)}
+            ${size * 0.3 + size * 0.07 - 4},${Math.min(5 + jawDrop * 0.5, 22)}
           `}
           fill="hsl(45, 20%, 96%)"
           stroke="hsl(40, 15%, 88%)"
@@ -245,7 +245,7 @@ export default function AvatarOverlay({
         {[-7, -2.5, 2.5, 7].map((xOff, i) => (
           <rect
             key={`ui-${i}`}
-            x={size * 0.25 + xOff - 2}
+            x={size * 0.3 + xOff - 2}
             y={1}
             width="4"
             height={Math.min(3 + jawDrop * 0.16, 8)}
@@ -261,10 +261,10 @@ export default function AvatarOverlay({
         {/* ── LOWER TEETH (rise from lower jaw) ── */}
         <polygon
           points={`
-            ${size * 0.25 - size * 0.055},${jawDrop * 0.75 + 7}
-            ${size * 0.25 - size * 0.055 + 4},${jawDrop * 0.75 + 7}
-            ${size * 0.25 - size * 0.055 + 3},${jawDrop * 0.75 + 7 - Math.min(jawDrop * 0.28, 11)}
-            ${size * 0.25 - size * 0.055 + 1},${jawDrop * 0.75 + 7 - Math.min(jawDrop * 0.32, 13)}
+            ${size * 0.3 - size * 0.06},${jawDrop * 0.75 + 8}
+            ${size * 0.3 - size * 0.06 + 4},${jawDrop * 0.75 + 8}
+            ${size * 0.3 - size * 0.06 + 3},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.28, 11)}
+            ${size * 0.3 - size * 0.06 + 1},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.32, 13)}
           `}
           fill="hsl(45, 18%, 94%)"
           stroke="hsl(40, 12%, 88%)"
@@ -273,10 +273,10 @@ export default function AvatarOverlay({
         />
         <polygon
           points={`
-            ${size * 0.25 + size * 0.055 - 4},${jawDrop * 0.75 + 7}
-            ${size * 0.25 + size * 0.055},${jawDrop * 0.75 + 7}
-            ${size * 0.25 + size * 0.055 - 1},${jawDrop * 0.75 + 7 - Math.min(jawDrop * 0.32, 13)}
-            ${size * 0.25 + size * 0.055 - 3},${jawDrop * 0.75 + 7 - Math.min(jawDrop * 0.28, 11)}
+            ${size * 0.3 + size * 0.06 - 4},${jawDrop * 0.75 + 8}
+            ${size * 0.3 + size * 0.06},${jawDrop * 0.75 + 8}
+            ${size * 0.3 + size * 0.06 - 1},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.32, 13)}
+            ${size * 0.3 + size * 0.06 - 3},${jawDrop * 0.75 + 8 - Math.min(jawDrop * 0.28, 11)}
           `}
           fill="hsl(45, 18%, 94%)"
           stroke="hsl(40, 12%, 88%)"
@@ -287,8 +287,8 @@ export default function AvatarOverlay({
         {[-4, 0, 4].map((xOff, i) => (
           <rect
             key={`li-${i}`}
-            x={size * 0.25 + xOff - 1.5}
-            y={jawDrop * 0.75 + 7 - Math.min(2 + jawDrop * 0.1, 5)}
+            x={size * 0.3 + xOff - 1.5}
+            y={jawDrop * 0.75 + 8 - Math.min(2 + jawDrop * 0.1, 5)}
             width="3"
             height={Math.min(2 + jawDrop * 0.1, 5)}
             rx="1.2"
