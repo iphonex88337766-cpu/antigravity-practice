@@ -48,7 +48,7 @@ export function useFaceLandmarker(): UseFaceLandmarkerReturn {
           runningMode: "VIDEO",
           numFaces: 1,
           outputFaceBlendshapes: false,
-          outputFacialTransformationMatrixes: false,
+          outputFacialTransformationMatrixes: true,
         });
 
         if (!cancelled) {
