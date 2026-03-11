@@ -249,7 +249,7 @@ const EyelidOverlay = memo(function EyelidOverlay({
       </defs>
       {/* LEFT EYE — DEBUG: forced visible at 0.5 min opacity */}
       {showLeft && (
-        <EyelidCover eye={LEFT_EYE} blink={Math.max(leftBlink, 0.6)} debugMode />
+        <EyelidCover eye={LEFT_EYE} blink={Math.max(leftBlink, 0.6)} />
       )}
       {showRight && (
         <EyelidCover eye={RIGHT_EYE} blink={rightBlink} />
