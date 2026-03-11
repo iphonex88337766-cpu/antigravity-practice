@@ -5,7 +5,7 @@
  * No trigger logic yet — always visible when webcam is active.
  */
 
-import catSrc from "@/assets/cat-transparent.png";
+import catSrc from "@/assets/cat.png";
 
 export default function CatOverlay() {
   return (
