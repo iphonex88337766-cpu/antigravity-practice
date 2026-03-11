@@ -115,7 +115,7 @@ export default function AvatarOverlay({
 
   return (
     <div style={containerStyle}>
-      {/* Layer 1: Dynamic eyes rendered BEHIND the masked base */}
+      {/* Layer 0: Dynamic eyes rendered BEHIND the solid base */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -140,7 +140,7 @@ export default function AvatarOverlay({
         <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
       </svg>
 
-      {/* Layer 2: Upper tiger (above mouth) with eye masks */}
+      {/* Layer 1: Inner mouth cavity — dark background revealed by jaw stretch */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -150,6 +150,48 @@ export default function AvatarOverlay({
           height: "100%",
           pointerEvents: "none",
           zIndex: 1,
+          overflow: "visible",
+        }}
+      >
+        <defs>
+          <radialGradient id="mouth-cavity" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#4a1a2a" />
+            <stop offset="50%" stopColor="#2d0f18" />
+            <stop offset="100%" stopColor="#1a0a0e" />
+          </radialGradient>
+        </defs>
+        {/* Dark cavity ellipse positioned at the split line, sized to fill the gap */}
+        <ellipse
+          cx="50"
+          cy={splitY + 1}
+          rx={8 + smileAmount * 2}
+          ry={mouthOpen * 10}
+          fill="url(#mouth-cavity)"
+          opacity={mouthOpen > 0.05 ? Math.min(mouthOpen * 2, 1) : 0}
+        />
+        {/* Tongue hint */}
+        {mouthOpen > 0.3 && (
+          <ellipse
+            cx="50"
+            cy={splitY + mouthOpen * 6}
+            rx={4 + smileAmount}
+            ry={mouthOpen * 3}
+            fill="#e85d75"
+            opacity={0.5}
+          />
+        )}
+      </svg>
+
+      {/* Layer 2: Upper tiger (above mouth line) — solid, with eye holes only */}
+      <svg
+        viewBox="0 0 100 100"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 2,
         }}
       >
         <defs>
@@ -171,16 +213,16 @@ export default function AvatarOverlay({
         />
       </svg>
 
-      {/* Layer 3: Lower jaw — rubber-stretches downward */}
+      {/* Layer 3: Lower jaw — solid rubber-stretch downward */}
       <svg
-        viewBox={`0 0 100 ${100 + mouthOpen * 20}`}
+        viewBox="0 0 100 130"
         style={{
           position: "absolute",
           inset: 0,
           width: "100%",
           height: "100%",
           pointerEvents: "none",
-          zIndex: 1,
+          zIndex: 3,
           overflow: "visible",
         }}
       >
