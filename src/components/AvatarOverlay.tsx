@@ -110,7 +110,7 @@ export default function AvatarOverlay({
 
   return (
     <div style={containerStyle}>
-      {/* Layer 1: Dynamic expressions rendered BEHIND the base */}
+      {/* Layer 1: Dynamic expressions rendered BEHIND the masked base */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -122,100 +122,28 @@ export default function AvatarOverlay({
           zIndex: 0,
         }}
       >
-        {/* Left eye — sits inside the left eye socket cutout */}
-        <ellipse
-          cx="35"
-          cy="50"
-          rx="7"
-          ry={Math.max(eyeOpenLeft * 7, 0.6)}
-          fill="#3a2518"
-        />
-        {/* Left iris */}
-        <ellipse
-          cx="35"
-          cy="50"
-          rx="4.5"
-          ry={Math.max(eyeOpenLeft * 4.5, 0.4)}
-          fill="#6b4423"
-        />
-        {/* Left pupil */}
-        <ellipse
-          cx="35"
-          cy="50"
-          rx="2.5"
-          ry={Math.max(eyeOpenLeft * 2.5, 0.3)}
-          fill="#1a0e08"
-        />
-        {/* Left eye shine */}
-        <ellipse
-          cx="33"
-          cy={48.5 - eyeOpenLeft * 1}
-          rx="1.2"
-          ry={Math.max(eyeOpenLeft * 1.5, 0.15)}
-          fill="white"
-          opacity={eyeOpenLeft > 0.2 ? 0.85 : 0}
-        />
+        {/* Left eye */}
+        <ellipse cx="35" cy="50" rx="7" ry={Math.max(eyeOpenLeft * 7, 0.6)} fill="#3a2518" />
+        <ellipse cx="35" cy="50" rx="4.5" ry={Math.max(eyeOpenLeft * 4.5, 0.4)} fill="#6b4423" />
+        <ellipse cx="35" cy="50" rx="2.5" ry={Math.max(eyeOpenLeft * 2.5, 0.3)} fill="#1a0e08" />
+        <ellipse cx="33" cy={48.5 - eyeOpenLeft} rx="1.2" ry={Math.max(eyeOpenLeft * 1.5, 0.15)} fill="white" opacity={eyeOpenLeft > 0.2 ? 0.85 : 0} />
 
-        {/* Right eye — sits inside the right eye socket cutout */}
-        <ellipse
-          cx="65"
-          cy="50"
-          rx="7"
-          ry={Math.max(eyeOpenRight * 7, 0.6)}
-          fill="#3a2518"
-        />
-        {/* Right iris */}
-        <ellipse
-          cx="65"
-          cy="50"
-          rx="4.5"
-          ry={Math.max(eyeOpenRight * 4.5, 0.4)}
-          fill="#6b4423"
-        />
-        {/* Right pupil */}
-        <ellipse
-          cx="65"
-          cy="50"
-          rx="2.5"
-          ry={Math.max(eyeOpenRight * 2.5, 0.3)}
-          fill="#1a0e08"
-        />
-        {/* Right eye shine */}
-        <ellipse
-          cx="63"
-          cy={48.5 - eyeOpenRight * 1}
-          rx="1.2"
-          ry={Math.max(eyeOpenRight * 1.5, 0.15)}
-          fill="white"
-          opacity={eyeOpenRight > 0.2 ? 0.85 : 0}
-        />
+        {/* Right eye */}
+        <ellipse cx="65" cy="50" rx="7" ry={Math.max(eyeOpenRight * 7, 0.6)} fill="#3a2518" />
+        <ellipse cx="65" cy="50" rx="4.5" ry={Math.max(eyeOpenRight * 4.5, 0.4)} fill="#6b4423" />
+        <ellipse cx="65" cy="50" rx="2.5" ry={Math.max(eyeOpenRight * 2.5, 0.3)} fill="#1a0e08" />
+        <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
 
-        {/* Mouth — below the nose in the mouth cutout area */}
-        <ellipse
-          cx="50"
-          cy={72 + mouthOpen * 2}
-          rx={3.5 + smileAmount * 2}
-          ry={0.6 + mouthOpen * 3.5}
-          fill="#2d1a1a"
-          opacity="0.85"
-        />
-        {/* Tongue when mouth open */}
+        {/* Mouth */}
+        <ellipse cx="50" cy={72 + mouthOpen * 2} rx={3.5 + smileAmount * 2} ry={0.6 + mouthOpen * 3.5} fill="#2d1a1a" opacity="0.85" />
         {mouthOpen > 0.25 && (
-          <ellipse
-            cx="50"
-            cy={73 + mouthOpen * 2}
-            rx={2 + smileAmount * 0.8}
-            ry={mouthOpen * 1.8}
-            fill="#e85d75"
-            opacity="0.6"
-          />
+          <ellipse cx="50" cy={73 + mouthOpen * 2} rx={2 + smileAmount * 0.8} ry={mouthOpen * 1.8} fill="#e85d75" opacity="0.6" />
         )}
       </svg>
 
-      {/* Layer 2: Faceless tiger base rendered ON TOP */}
-      <img
-        src={avatarSrc}
-        alt="Avatar"
+      {/* Layer 2: Original tiger PNG with SVG mask punching out eyes & mouth */}
+      <svg
+        viewBox="0 0 100 100"
         style={{
           position: "absolute",
           inset: 0,
@@ -224,8 +152,29 @@ export default function AvatarOverlay({
           pointerEvents: "none",
           zIndex: 1,
         }}
-        draggable={false}
-      />
+      >
+        <defs>
+          <mask id="tiger-face-mask">
+            {/* White = visible, Black = hidden */}
+            <rect x="0" y="0" width="100" height="100" fill="white" />
+            {/* Punch out left eye */}
+            <ellipse cx="35" cy="50" rx="8" ry="8" fill="black" />
+            {/* Punch out right eye */}
+            <ellipse cx="65" cy="50" rx="8" ry="8" fill="black" />
+            {/* Punch out mouth area */}
+            <ellipse cx="50" cy="73" rx="7" ry="5" fill="black" />
+          </mask>
+        </defs>
+        <image
+          href={avatarSrc}
+          x="0"
+          y="0"
+          width="100"
+          height="100"
+          mask="url(#tiger-face-mask)"
+          preserveAspectRatio="xMidYMid slice"
+        />
+      </svg>
     </div>
   );
 }
