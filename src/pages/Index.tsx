@@ -133,7 +133,7 @@ const Index = () => {
   const isLoading = modelState === "loading" || webcamState === "requesting";
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-transparent">
+    <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
       {/* PUPPY — rendered OUTSIDE all containers, fixed position */}
       <PuppyOverlay
         landmarks={landmarks ?? []}
