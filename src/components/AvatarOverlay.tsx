@@ -214,8 +214,8 @@ const LID_FILL   = "#E89033";  // orange fur
 const LID_SHADOW = "#C47428";  // darker crease
 const LID_LINE   = "#8B5E2B";  // closed-eye line
 
-/** Eyelid overlay — invisible when open, solid cover when blinking */
-const BLINK_THRESHOLD = 0.15;
+/** Eyelid overlay — DEBUG: always visible at 0.5 opacity for calibration */
+const BLINK_THRESHOLD = 0.2;
 
 const EyelidOverlay = memo(function EyelidOverlay({
   leftBlink,
@@ -224,8 +224,12 @@ const EyelidOverlay = memo(function EyelidOverlay({
   leftBlink: number;
   rightBlink: number;
 }) {
-  // 100% invisible when eyes are open
-  if (leftBlink < BLINK_THRESHOLD && rightBlink < BLINK_THRESHOLD) return null;
+  // DEBUG MODE: Always render left eye at 0.5 opacity for calibration
+  // Right eye uses normal threshold logic
+  const showLeft = true; // ALWAYS show for debug
+  const showRight = rightBlink >= BLINK_THRESHOLD;
+
+  if (!showLeft && !showRight) return null;
 
   return (
     <svg
@@ -243,10 +247,11 @@ const EyelidOverlay = memo(function EyelidOverlay({
           <feGaussianBlur stdDeviation="1" />
         </filter>
       </defs>
-      {leftBlink >= BLINK_THRESHOLD && (
-        <EyelidCover eye={LEFT_EYE} blink={leftBlink} />
+      {/* LEFT EYE — DEBUG: forced visible at 0.5 min opacity */}
+      {showLeft && (
+        <EyelidCover eye={LEFT_EYE} blink={Math.max(leftBlink, 0.6)} />
       )}
-      {rightBlink >= BLINK_THRESHOLD && (
+      {showRight && (
         <EyelidCover eye={RIGHT_EYE} blink={rightBlink} />
       )}
     </svg>
