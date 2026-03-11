@@ -43,6 +43,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   return (
     <>
       <div
+        className="puppy-overlay-container"
         style={{
           position: "fixed",
           right: 80,
@@ -50,18 +51,21 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
           width: 300,
           background: "transparent",
           border: "none",
+          boxShadow: "none",
           zIndex: 2147483647,
           pointerEvents: "none",
           animation: "puppyPop 0.25s ease-out both",
         }}
       >
         <img
+          className="puppy-overlay-image"
           src={puppySrc}
           alt="puppy"
           style={{
             width: "100%",
             height: "auto",
             mixBlendMode: "multiply",
+            filter: "contrast(1.2) brightness(1.1)",
           }}
         />
       </div>
