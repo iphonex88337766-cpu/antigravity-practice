@@ -135,7 +135,7 @@ const Index = () => {
           muted
           onLoadedMetadata={updateVideoRect}
           onResize={updateVideoRect}
-          className="absolute inset-0 h-full w-full object-cover object-right"
+          className="absolute inset-0 h-full w-full object-cover"
           style={{
             transform: "scaleX(-1)",
             filter: "saturate(0.7) brightness(0.9)",
@@ -189,7 +189,7 @@ const Index = () => {
       {/* ── AVATAR OVERLAY — left side companion ── */}
       <div
         ref={avatarContainerRef}
-        className="absolute right-[2%] top-[5%] z-10"
+        className="absolute left-[2%] top-[5%] z-10"
         style={{ width: 1000, height: 1000 }}
       >
         {webcamState === "active" && landmarks ? (
