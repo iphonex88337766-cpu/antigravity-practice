@@ -161,8 +161,8 @@ export default function AvatarOverlay({
             <ellipse cx="35" cy="50" rx="8" ry="8" fill="black" />
             {/* Punch out right eye */}
             <ellipse cx="65" cy="50" rx="8" ry="8" fill="black" />
-            {/* Punch out mouth area — large enough to cover static mouth + jaw open range */}
-            <ellipse cx="50" cy={79 + mouthOpen * 2} rx={9 + smileAmount * 2} ry={7 + mouthOpen * 4} fill="black" />
+            {/* Punch out mouth area — always covers static mouth, expands with jaw */}
+            <ellipse cx="50" cy={79 + mouthOpen * 2} rx={10 + smileAmount * 2} ry={Math.max(9, 9 + mouthOpen * 5)} fill="black" />
           </mask>
         </defs>
         <image
