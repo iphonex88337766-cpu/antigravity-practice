@@ -213,9 +213,9 @@ export default function AvatarOverlay({
         />
       </svg>
 
-      {/* Layer 3: Lower jaw — solid rubber-stretch downward */}
+      {/* Layer 3: Lower jaw — translates downward + scaleY from top edge */}
       <svg
-        viewBox="0 0 100 130"
+        viewBox="0 0 100 100"
         style={{
           position: "absolute",
           inset: 0,
@@ -231,13 +231,16 @@ export default function AvatarOverlay({
             <rect x="0" y={splitY} width="100" height={100 - splitY} />
           </clipPath>
         </defs>
-        <g transform={`translate(0, ${splitY}) scale(1, ${mouthStretchY}) translate(0, ${-splitY})`}>
-          <image
-            href={avatarSrc}
-            x="0" y="0" width="100" height="100"
-            clipPath="url(#lower-clip)"
-            preserveAspectRatio="xMidYMid slice"
-          />
+        {/* Translate the jaw down by mouthOpen amount, then scaleY anchored at splitY top edge */}
+        <g transform={`translate(0, ${mouthOpen * 12})`}>
+          <g transform={`translate(0, ${splitY}) scale(1, ${mouthStretchY}) translate(0, ${-splitY})`}>
+            <image
+              href={avatarSrc}
+              x="0" y="0" width="100" height="100"
+              clipPath="url(#lower-clip)"
+              preserveAspectRatio="xMidYMid slice"
+            />
+          </g>
         </g>
       </svg>
     </div>
