@@ -1,17 +1,22 @@
 /**
- * AvatarOverlay — "Solid Face" approach.
+ * AvatarOverlay — Image-swap approach.
  *
- * The full tiger image is ALWAYS visible as the base.
- * A mouth opening is painted ON TOP of it using SVG,
- * then two "shutter" clip-paths cover the snout area
- * and part vertically to reveal the mouth interior.
- *
- * NO translateY. NO detached jaw. One solid silhouette always.
+ * Five pre-rendered tiger PNGs with different mouth states
+ * are crossfaded based on the tracked mouth openness.
+ * The head never moves; only the visible image changes.
  */
 
 import { useMemo, useRef } from "react";
 import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
-import babyTigerSrc from "@/assets/baby-tiger.png";
+
+import tigerMouth0 from "@/assets/tiger-mouth-0.png";
+import tigerMouth1 from "@/assets/tiger-mouth-1.png";
+import tigerMouth2 from "@/assets/tiger-mouth-2.png";
+import tigerMouth3 from "@/assets/tiger-mouth-3.png";
+import tigerMouth4 from "@/assets/tiger-mouth-4.png";
+
+const MOUTH_STATES = [tigerMouth0, tigerMouth1, tigerMouth2, tigerMouth3, tigerMouth4];
+const THRESHOLDS = [0.10, 0.20, 0.32, 0.48]; // boundaries between states 0-1, 1-2, 2-3, 3-4
 
 interface AvatarOverlayProps {
   landmarks: NormalizedLandmark[];
@@ -35,96 +40,34 @@ function matrixToEuler(data: number[]): { pitch: number; yaw: number; roll: numb
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 
 const SZ = 500;
-
-
-// Mouth region in % of SZ
-const MOUTH_CX = 50;  // center X %
-const MOUTH_CY = 72;  // center Y %
-const MOUTH_W = 18;   // half-width %
-const MAX_MOUTH_H = 16; // max half-height % when fully open
+const BASELINE = 0.06;
+const MAX_RATIO = 0.55;
 
 /**
- * MouthSVG — drawn on top of the base image, behind the shutters.
- * Contains cavity, tongue (flat semi-oval), and fangs.
+ * Given a normalized 0..1 value, return the primary state index
+ * and a blend factor (0..1) toward the next state for crossfading.
  */
-function MouthSVG({ t }: { t: number }) {
-  if (t <= 0) return null;
-
-  const cx = SZ * (MOUTH_CX / 100);
-  const baseCy = SZ * (MOUTH_CY / 100);
-  const hw = SZ * (MOUTH_W / 100);
-  const totalH = SZ * (MAX_MOUTH_H / 100) * t;
-  const hh = totalH * 0.5; // half-height for ellipse rendering
-  const upperH = totalH * 0.15;
-  const lowerH = totalH * 0.85;
-  const cy = baseCy - upperH + totalH * 0.5; // shifted center
-
-  // Opacities: fangs instant, tongue early, cavity last
-  const fangOp = Math.min(t * 5, 1);
-  const tongueOp = Math.min(t * 3, 0.9);
-  const cavityOp = Math.min(t * 2, 1) * 0.8;
-
-  const fangLen = lerp(2, 11, t);
-
-  return (
-    <svg
-      style={{
-        position: "absolute", left: 0, top: 0,
-        width: SZ, height: SZ,
-        pointerEvents: "none", zIndex: 1,
-      }}
-      viewBox={`0 0 ${SZ} ${SZ}`}
-    >
-      <defs>
-        <radialGradient id="mcG" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="hsl(350, 15%, 15%)" />
-          <stop offset="100%" stopColor="hsl(340, 20%, 5%)" />
-        </radialGradient>
-        <clipPath id="mouthClip">
-          <ellipse cx={cx} cy={cy} rx={hw} ry={hh} />
-        </clipPath>
-      </defs>
-
-      {/* Cavity — elliptical, grows with t */}
-      <ellipse cx={cx} cy={cy} rx={hw} ry={hh}
-        fill="url(#mcG)" opacity={cavityOp} />
-
-      {/* Tongue — flat semi-oval at the bottom of the mouth */}
-      <ellipse
-        cx={cx}
-        cy={cy + hh * 0.45}
-        rx={hw * 0.55}
-        ry={hh * 0.35}
-        fill="hsl(350, 50%, 52%)"
-        opacity={tongueOp}
-        clipPath="url(#mouthClip)"
-      />
-
-      {/* Left fang — triangle */}
-      <path
-        d={`M ${cx - hw * 0.5} ${cy - hh + 1}
-            L ${cx - hw * 0.3} ${cy - hh + 1 + fangLen}
-            L ${cx - hw * 0.1} ${cy - hh + 1} Z`}
-        fill="hsl(45, 15%, 95%)" opacity={fangOp}
-      />
-      {/* Right fang */}
-      <path
-        d={`M ${cx + hw * 0.1} ${cy - hh + 1}
-            L ${cx + hw * 0.3} ${cy - hh + 1 + fangLen}
-            L ${cx + hw * 0.5} ${cy - hh + 1} Z`}
-        fill="hsl(45, 15%, 95%)" opacity={fangOp}
-      />
-    </svg>
-  );
+function getMouthState(t: number): { idx: number; blend: number } {
+  for (let i = 0; i < THRESHOLDS.length; i++) {
+    if (t < THRESHOLDS[i]) {
+      if (i === 0) return { idx: 0, blend: t / THRESHOLDS[0] };
+      const prev = THRESHOLDS[i - 1];
+      return { idx: i, blend: (t - prev) / (THRESHOLDS[i] - prev) };
+    }
+  }
+  // Above last threshold
+  const last = THRESHOLDS[THRESHOLDS.length - 1];
+  const blend = Math.min((t - last) / (1 - last), 1);
+  return { idx: THRESHOLDS.length, blend };
 }
 
 export default function AvatarOverlay({
-  landmarks, transformationMatrix, blendshapes,
-  width, height, avatarSrc = babyTigerSrc,
+  landmarks, transformationMatrix,
+  width, height,
 }: AvatarOverlayProps) {
   const smoothRef = useRef(0);
 
-  // Compute mouth openness from landmarks 13 (upper lip), 14 (lower lip), 78 (left), 308 (right)
+  // Mouth openness from landmarks
   const p13 = landmarks[13];
   const p14 = landmarks[14];
   const p78 = landmarks[78];
@@ -134,37 +77,15 @@ export default function AvatarOverlay({
   const mouthWidth = Math.abs(p308.x - p78.x);
   const mouthOpenRaw = mouthWidth > 0.001 ? mouthHeight / mouthWidth : 0;
 
-  // Subtract baseline (closed mouth ratio ~0.05-0.1) and normalize
-  const BASELINE = 0.06;
-  const MAX_RATIO = 0.55; // fully open ratio — lower = more sensitive
   const normalized = Math.max(0, Math.min((mouthOpenRaw - BASELINE) / (MAX_RATIO - BASELINE), 1));
 
-  // Smooth — fast follow for responsiveness
+  // Smooth
   smoothRef.current = lerp(smoothRef.current, normalized, 0.3);
   const t = smoothRef.current;
 
-  // Upper shutter: fixed — only a tiny lift (20% of gap) so upper lip barely moves
-  const gapH = MAX_MOUTH_H * t; // full gap in %
-  const upperLift = gapH * 0.15; // upper lip lifts only 15%
-  const lowerDrop = gapH * 0.85; // lower chin drops 85%
-
-  // Upper shutter — covers from top to just above mouth center
-  const upperShutter = `polygon(0% 0%, 100% 0%, 100% ${MOUTH_CY - upperLift}%, 0% ${MOUTH_CY - upperLift}%)`;
-
-  // Lower shutter — covers from below mouth center to bottom
-  // Use a curved polygon so the chin drops smoothly in the center but stays connected at edges
-  const lEdge = MOUTH_CX - MOUTH_W;
-  const rEdge = MOUTH_CX + MOUTH_W;
-  const dropCenter = MOUTH_CY + lowerDrop;
-  const dropEdge = MOUTH_CY + lowerDrop * 0.25; // edges drop only 25% as much — keeps face connected
-  const lowerShutter = `polygon(0% ${MOUTH_CY}%, ${lEdge}% ${dropEdge}%, ${MOUTH_CX}% ${dropCenter}%, ${rEdge}% ${dropEdge}%, 100% ${MOUTH_CY}%, 100% 100%, 0% 100%)`;
-
-  // Side strips — wide enough to overlap the curved lower shutter edges seamlessly
-  const stripW = MOUTH_W + 4; // extend 4% beyond mouth width for overlap
-  const leftStrip = `polygon(0% ${MOUTH_CY - upperLift}%, ${MOUTH_CX - stripW}% ${MOUTH_CY - upperLift}%, ${MOUTH_CX - stripW}% ${MOUTH_CY + lowerDrop * 0.3}%, 0% ${MOUTH_CY + lowerDrop * 0.15}%)`;
-  const rightStrip = `polygon(${MOUTH_CX + stripW}% ${MOUTH_CY - upperLift}%, 100% ${MOUTH_CY - upperLift}%, 100% ${MOUTH_CY + lowerDrop * 0.15}%, ${MOUTH_CX + stripW}% ${MOUTH_CY + lowerDrop * 0.3}%)`;
-
-  const isOpen = t > 0.01;
+  // Determine which images to show and blend
+  const { idx, blend } = getMouthState(t);
+  const nextIdx = Math.min(idx + 1, MOUTH_STATES.length - 1);
 
   const containerStyle = useMemo(() => {
     const cx = width / 2;
@@ -185,39 +106,40 @@ export default function AvatarOverlay({
     };
   }, [transformationMatrix, width, height]);
 
-  // Debug values
-  const debugGapH = MAX_MOUTH_H * t;
-
   return (
     <div style={containerStyle}>
-      {/* Layer 0: Full unbroken tiger — ALWAYS visible */}
-      <img src={avatarSrc} alt="Avatar" draggable={false}
-        style={{
-          position: "absolute", left: 0, top: 0,
-          width: SZ, height: SZ, display: "block", zIndex: 0,
-        }} />
+      {/* Render all states, controlling opacity for crossfade */}
+      {MOUTH_STATES.map((src, i) => {
+        let opacity = 0;
+        if (i === idx && idx === nextIdx) {
+          opacity = 1; // max state, full opacity
+        } else if (i === idx) {
+          opacity = 1 - blend; // fading out current
+        } else if (i === nextIdx) {
+          opacity = blend; // fading in next
+        }
 
-      {isOpen && (
-        <>
-          {/* Layer 1: Mouth interior SVG — on top of base */}
-          <MouthSVG t={t} />
+        if (opacity <= 0) return null;
 
-          {/* Layer 2: Shutter overlays — tiger image clipped to cover snout,
-              parting to reveal mouth. Edges always covered by side strips. */}
-          {[upperShutter, lowerShutter, leftStrip, rightStrip].map((clip, i) => (
-            <div key={i} style={{
-              position: "absolute", left: 0, top: 0,
+        return (
+          <img
+            key={i}
+            src={src}
+            alt="Avatar"
+            draggable={false}
+            style={{
+              position: "absolute",
+              left: 0, top: 0,
               width: SZ, height: SZ,
-              clipPath: clip, zIndex: 2,
-            }}>
-              <img src={avatarSrc} alt="" draggable={false}
-                style={{ width: SZ, height: SZ, display: "block" }} />
-            </div>
-          ))}
-        </>
-      )}
+              display: "block",
+              opacity,
+              transition: "opacity 0.05s linear",
+            }}
+          />
+        );
+      })}
 
-      {/* DEBUG OVERLAY */}
+      {/* Debug overlay */}
       <div style={{
         position: "absolute", left: 4, bottom: 4, zIndex: 99,
         background: "rgba(0,0,0,0.75)", color: "#3DFF8A",
@@ -228,7 +150,7 @@ export default function AvatarOverlay({
         <div>raw: {mouthOpenRaw.toFixed(3)}</div>
         <div>norm: {normalized.toFixed(3)}</div>
         <div>t: {t.toFixed(3)}</div>
-        <div>gapH: {debugGapH.toFixed(1)}%</div>
+        <div>state: {idx}{idx !== nextIdx ? `→${nextIdx}` : ""} ({(blend * 100).toFixed(0)}%)</div>
       </div>
     </div>
   );
