@@ -4,12 +4,13 @@
  * Mobile: stacks vertically, avatar on top.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useWebcam } from "@/hooks/useWebcam";
 import { useFaceLandmarker } from "@/hooks/useFaceLandmarker";
 import FaceMeshCanvas from "@/components/FaceMeshCanvas";
 import PuppyOverlay from "@/components/PuppyOverlay";
 import CatOverlay from "@/components/CatOverlay";
+import HeartOverlay from "@/components/HeartOverlay";
 import AvatarOverlay from "@/components/AvatarOverlay";
 import CalibrationOverlay from "@/components/CalibrationOverlay";
 import ErrorScreen from "@/components/ErrorScreen";
@@ -24,6 +25,7 @@ const Index = () => {
   const [landmarks, setLandmarks] = useState<NormalizedLandmark[] | null>(null);
   const [transformMatrix, setTransformMatrix] = useState<any>(null);
   const [blendshapes, setBlendshapes] = useState<Record<string, number> | null>(null);
+  const [bothEyesClosed, setBothEyesClosed] = useState(false);
   const [hasEverDetected, setHasEverDetected] = useState(false);
   const [showMesh, setShowMesh] = useState(true);
   const [webcamSize, setWebcamSize] = useState({ width: 640, height: 360 });
@@ -135,8 +137,9 @@ const Index = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
-      {webcamState === "active" && <PuppyOverlay blendshapes={blendshapes} />}
-      {webcamState === "active" && <CatOverlay blendshapes={blendshapes} />}
+      {webcamState === "active" && <HeartOverlay blendshapes={blendshapes} onBothEyesClosed={setBothEyesClosed} />}
+      {webcamState === "active" && !bothEyesClosed && <PuppyOverlay blendshapes={blendshapes} />}
+      {webcamState === "active" && !bothEyesClosed && <CatOverlay blendshapes={blendshapes} />}
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"
