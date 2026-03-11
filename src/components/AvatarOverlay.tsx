@@ -1,9 +1,10 @@
 /**
  * AvatarOverlay
- * 
+ *
  * Renders a character image centered in its container,
  * rotated using the facial transformation matrix,
  * with expression overlays (eyes, mouth) driven by blendshapes.
+ * Jaw uses pure downward translation for rubber-stretch effect.
  */
 
 import { useMemo, useRef, useEffect } from "react";
