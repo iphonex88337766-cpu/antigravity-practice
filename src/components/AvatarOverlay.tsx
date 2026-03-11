@@ -204,8 +204,10 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
 }
 
 /* ── Eye positions on the 500×500 tiger asset ── */
-const LEFT_EYE  = { cx: 190, cy: 222, rx: 38, ry: 22 };
-const RIGHT_EYE = { cx: 310, cy: 222, rx: 38, ry: 22 };
+// LEFT_EYE = avatar's left eye (appears on screen-right due to mirror)
+// Tuned: almond shape, 10-15% oversize to fully cover white area
+const LEFT_EYE  = { cx: 192, cy: 220, rx: 44, ry: 26 };
+const RIGHT_EYE = { cx: 308, cy: 220, rx: 44, ry: 26 };
 
 // Colors sampled from the tiger's fur around the eyes
 const LID_FILL   = "#E89033";  // orange fur
@@ -264,20 +266,29 @@ function EyelidCover({
   blink: number;
 }) {
   const { cx, cy, rx, ry } = eye;
-  // Remap: 0.5→0, 1.0→1
+  // Remap: BLINK_THRESHOLD→0, 1.0→1
   const t = Math.min((blink - BLINK_THRESHOLD) / (1 - BLINK_THRESHOLD), 1);
 
-  const pad = 4; // slight overshoot to fully cover eye edges
+  const pad = 6; // generous overshoot to fully cover eye whites
 
-  // Full eye-covering elliptical path (almond shape via cubic beziers)
+  // Almond-shaped eyelid path using cubic Béziers
+  // Outer corners are pointed (almond tips), top/bottom arcs are curved
+  const lx = cx - rx - pad;  // left tip x
+  const rx2 = cx + rx + pad; // right tip x
+  const topY = cy - ry - pad; // top of eye socket
+  const botY = cy + ry + pad; // bottom of eye socket
+
+  // Almond: pointed at sides, curved top and bottom
   const coverPath = [
-    `M ${cx - rx - pad} ${cy}`,
-    `C ${cx - rx - pad} ${cy - ry - pad}, ${cx + rx + pad} ${cy - ry - pad}, ${cx + rx + pad} ${cy}`,
-    `C ${cx + rx + pad} ${cy + ry + pad}, ${cx - rx - pad} ${cy + ry + pad}, ${cx - rx - pad} ${cy}`,
+    `M ${lx} ${cy}`,
+    // Top arc: left tip → top center → right tip
+    `C ${lx + rx * 0.3} ${topY}, ${rx2 - rx * 0.3} ${topY}, ${rx2} ${cy}`,
+    // Bottom arc: right tip → bottom center → left tip
+    `C ${rx2 - rx * 0.3} ${botY}, ${lx + rx * 0.3} ${botY}, ${lx} ${cy}`,
     `Z`,
   ].join(" ");
 
-  // Closed-eye line — thin curved stroke
+  // Closed-eye crease line — thin curved stroke
   const lineOpacity = t > 0.6 ? Math.min((t - 0.6) / 0.4, 1) * 0.9 : 0;
 
   return (
@@ -290,12 +301,22 @@ function EyelidCover({
         filter="url(#lidBlur)"
       />
 
+      {/* Darker shadow along the upper crease for depth */}
+      <path
+        d={`M ${lx + rx * 0.15} ${cy} C ${lx + rx * 0.45} ${topY + 2}, ${rx2 - rx * 0.45} ${topY + 2}, ${rx2 - rx * 0.15} ${cy}`}
+        stroke={LID_SHADOW}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        fill="none"
+        opacity={t * 0.5}
+      />
+
       {/* Closed-eye crease line */}
       {lineOpacity > 0 && (
         <path
-          d={`M ${cx - rx * 0.85} ${cy} C ${cx - rx * 0.3} ${cy - 3}, ${cx + rx * 0.3} ${cy - 3}, ${cx + rx * 0.85} ${cy}`}
+          d={`M ${cx - rx * 0.9} ${cy} C ${cx - rx * 0.3} ${cy - 4}, ${cx + rx * 0.3} ${cy - 4}, ${cx + rx * 0.9} ${cy}`}
           stroke={LID_LINE}
-          strokeWidth={1.5}
+          strokeWidth={1.8}
           strokeLinecap="round"
           fill="none"
           opacity={lineOpacity}
