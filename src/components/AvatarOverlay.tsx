@@ -7,7 +7,7 @@
  * When closed: single unclipped image, zero seam.
  */
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, memo } from "react";
 import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
 import babyTigerSrc from "@/assets/baby-tiger.png";
 
