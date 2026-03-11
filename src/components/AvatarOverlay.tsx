@@ -278,8 +278,8 @@ export default function AvatarOverlay({
             <rect x="0" y={splitY} width="100" height={100 - splitY} />
           </clipPath>
         </defs>
-        {/* Pure downward translation — jaw drops to reveal cavity behind it */}
-        <g transform={`translate(0, ${jawDrop})`}>
+        {/* ScaleY stretch anchored at splitY — top edge stays connected, bottom stretches down */}
+        <g transform={`translate(0, ${splitY}) scale(1, ${jawStretchY}) translate(0, ${-splitY})`}>
           <image
             href={avatarSrc}
             x="0" y="0" width="100" height="100"
