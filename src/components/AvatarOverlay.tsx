@@ -39,7 +39,7 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 45;
 
 /** Baseline Y% for the W-contour center (philtrum). Offsets are applied dynamically. */
-const BASE_MOUTH_Y = 75;
+const BASE_MOUTH_Y = 70;
 
 /**
  * Feline upper-lip contour — positioned in the MOUTH zone (~59-62% y),
@@ -58,33 +58,33 @@ const W_SHAPE: [number, number][] = [
   [0,   100],
   [10,  100],
   [15,  100],
-  [20,  100],
-  [24,  93],
-  [27,  85],
-  [30,  79],
-  [33,  76],
-  [35,  75],     // left mouth corner
-  [37,  75.3],
-  [39,  75.7],
-  [41,  76],
-  [43,  76.2],   // left lobe
-  [45,  75.9],
-  [47,  75.5],
-  [49,  75.2],
-  [50,  75],     // philtrum center (= BASE_MOUTH_Y)
-  [51,  75.2],
-  [53,  75.5],
-  [55,  75.9],
-  [57,  76.2],   // right lobe
-  [59,  76],
-  [61,  75.7],
-  [63,  75.3],
-  [65,  75],     // right mouth corner
-  [67,  76],
-  [70,  79],
-  [73,  85],
-  [76,  93],
-  [80,  100],
+  [20,  95],
+  [24,  88],
+  [27,  80],
+  [30,  74],
+  [33,  71],
+  [35,  70],     // left mouth corner
+  [37,  70.3],
+  [39,  70.7],
+  [41,  71],
+  [43,  71.2],   // left lobe
+  [45,  70.9],
+  [47,  70.5],
+  [49,  70.2],
+  [50,  70],     // philtrum center (= BASE_MOUTH_Y)
+  [51,  70.2],
+  [53,  70.5],
+  [55,  70.9],
+  [57,  71.2],   // right lobe
+  [59,  71],
+  [61,  70.7],
+  [63,  70.3],
+  [65,  70],     // right mouth corner
+  [67,  71],
+  [70,  74],
+  [73,  80],
+  [76,  88],
+  [80,  95],
   [85,  100],
   [90,  100],
   [100, 100],
@@ -131,9 +131,8 @@ function getMouthYPercent(landmarks: NormalizedLandmark[]): number {
 
   const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
   const faceRelative = (mouthCenterY - faceTop) / faceHeight; // 0-1 within face
-  // Map to avatar image space: tiger face spans ~30% to ~95% of image
-  // Mouth at ~70% of face → 30 + 0.7*65 = 75.5, at ~75% → 30 + 0.75*65 = 78.75
-  const avatarY = 30 + faceRelative * 65;
+  // Map to avatar image space: tiger face spans ~20% to ~85% of image
+  const avatarY = 20 + faceRelative * 65;
   return avatarY;
 }
 
