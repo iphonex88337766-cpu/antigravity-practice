@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useWebcam } from "@/hooks/useWebcam";
 import { useFaceLandmarker } from "@/hooks/useFaceLandmarker";
 import FaceMeshCanvas from "@/components/FaceMeshCanvas";
-// import PuppyOverlay from "@/components/PuppyOverlay"; // disabled until transparent PNG ready
+import PuppyOverlay from "@/components/PuppyOverlay";
 import AvatarOverlay from "@/components/AvatarOverlay";
 import CalibrationOverlay from "@/components/CalibrationOverlay";
 import ErrorScreen from "@/components/ErrorScreen";
@@ -134,7 +134,7 @@ const Index = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
-      {/* PUPPY — disabled, awaiting transparent PNG asset */}
+      {webcamState === "active" && <PuppyOverlay blendshapes={blendshapes} />}
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"

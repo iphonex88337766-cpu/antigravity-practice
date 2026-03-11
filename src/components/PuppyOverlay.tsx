@@ -1,21 +1,17 @@
 /**
  * PuppyOverlay — Transparent puppy triggered by right-eye blink.
- * Appears for 1.5s with pop animation. mix-blend-mode: multiply kills white bg.
+ * Appears for 2s with pop animation. mix-blend-mode: multiply kills white edges.
  */
 
 import { useState, useEffect, useRef } from "react";
-import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
 import puppySrc from "@/assets/puppy.png";
 
 interface PuppyOverlayProps {
-  landmarks: NormalizedLandmark[];
   blendshapes: Record<string, number> | null;
-  width: number;
-  height: number;
 }
 
-const BLINK_THRESHOLD = 0.4;
-const DISPLAY_DURATION = 1500;
+const BLINK_THRESHOLD = 0.6;
+const DISPLAY_DURATION = 2000;
 
 export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   const [visible, setVisible] = useState(false);
@@ -43,10 +39,9 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   return (
     <>
       <div
-        className="puppy-overlay-container"
         style={{
           position: "fixed",
-          right: 80,
+          right: 50,
           top: 120,
           width: 300,
           background: "transparent",
@@ -54,16 +49,16 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
           boxShadow: "none",
           zIndex: 2147483647,
           pointerEvents: "none",
-          animation: "puppyPop 0.25s ease-out both",
+          animation: "puppyPop 0.3s ease-out both",
         }}
       >
         <img
-          className="puppy-overlay-image"
           src={puppySrc}
           alt="puppy"
           style={{
             width: "100%",
             height: "auto",
+            background: "transparent",
             mixBlendMode: "multiply",
             filter: "contrast(1.2) brightness(1.1)",
           }}
@@ -71,7 +66,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
       </div>
       <style>{`
         @keyframes puppyPop {
-          0% { opacity: 0; transform: scale(0.5); }
+          0% { opacity: 0; transform: scale(0.3); }
           100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
