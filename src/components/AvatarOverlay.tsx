@@ -275,17 +275,18 @@ export default function AvatarOverlay({
           {/* Mouth interior — behind clipped layers */}
           <MouthInterior jawDrop={jawDrop} elasticPts={elasticPts} />
 
-          {/* Lower jaw — elastic clip + translateY for physical drop */}
+          {/* Lower jaw — elastic clip only, NO translateY.
+              The clip-path deforms: corners pinned, center drops,
+              revealing mouth interior through the growing gap. */}
           <div
             style={{
               position: "absolute",
               left: 0, top: 0,
               width: SZ, height: SZ,
               clipPath: ELASTIC_LOWER_CLIP,
-              transform: `translateY(${jawDrop}px)`,
               zIndex: 1,
               filter: featherFilter,
-              willChange: "clip-path, transform",
+              willChange: "clip-path",
             }}
           >
             <img src={avatarSrc} alt="" draggable={false}
