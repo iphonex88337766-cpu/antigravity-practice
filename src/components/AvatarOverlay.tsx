@@ -224,130 +224,139 @@ export default function AvatarOverlay({
       >
         <defs>
           <radialGradient id="mouthCavity" cx="50%" cy="30%" rx="55%" ry="65%">
-            <stop offset="0%" stopColor="hsl(350, 25%, 18%)" />
-            <stop offset="70%" stopColor="hsl(345, 40%, 8%)" />
-            <stop offset="100%" stopColor="hsl(340, 45%, 5%)" />
+            <stop offset="0%" stopColor="hsl(350, 20%, 16%)" />
+            <stop offset="60%" stopColor="hsl(345, 35%, 9%)" />
+            <stop offset="100%" stopColor="hsl(340, 40%, 5%)" />
           </radialGradient>
-          {/* Soft blur for lip form shadows */}
-          <filter id="lipSoft" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="1.5" />
+          {/* Soft blur for lip/seam shading */}
+          <filter id="lipSoft" x="-25%" y="-25%" width="150%" height="150%">
+            <feGaussianBlur stdDeviation="2.2" />
           </filter>
-          <filter id="cornerBlend" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" />
+          <filter id="seamSoft" x="-15%" y="-40%" width="130%" height="180%">
+            <feGaussianBlur stdDeviation="1" />
+          </filter>
+          <filter id="cornerBlend" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4.5" />
           </filter>
         </defs>
 
-        {/* ── Dark mouth cavity (innermost, deepest layer) ── */}
+        {/* ── Dark mouth cavity — organic shape with soft edges ── */}
         <path
           d={`
-            M ${lcx} ${cornerY}
-            C ${lcx + size * 0.04} ${cornerY - 1},
-              ${cx - size * 0.08} ${philtrumY},
+            M ${lcx + size * 0.01} ${cornerY}
+            C ${lcx + size * 0.05} ${cornerY - 1.5},
+              ${cx - size * 0.08} ${philtrumY - 0.5},
               ${cx} ${philtrumY}
-            C ${cx + size * 0.08} ${philtrumY},
-              ${rcx - size * 0.04} ${cornerY - 1},
-              ${rcx} ${cornerY}
-            C ${rcx - size * 0.02} ${cornerY + openAmt * 0.3},
-              ${rcx - size * 0.06} ${cornerY + openAmt * 0.7},
-              ${cx + size * 0.06} ${philtrumY + openAmt + 1}
-            C ${cx + size * 0.02} ${philtrumY + openAmt + 1.5},
-              ${cx - size * 0.02} ${philtrumY + openAmt + 1.5},
-              ${cx - size * 0.06} ${philtrumY + openAmt + 1}
-            C ${lcx + size * 0.06} ${cornerY + openAmt * 0.7},
-              ${lcx + size * 0.02} ${cornerY + openAmt * 0.3},
-              ${lcx} ${cornerY}
+            C ${cx + size * 0.08} ${philtrumY - 0.5},
+              ${rcx - size * 0.05} ${cornerY - 1.5},
+              ${rcx - size * 0.01} ${cornerY}
+            C ${rcx - size * 0.025} ${cornerY + openAmt * 0.25},
+              ${rcx - size * 0.07} ${cornerY + openAmt * 0.65},
+              ${cx + size * 0.05} ${philtrumY + openAmt + 1}
+            C ${cx + size * 0.015} ${philtrumY + openAmt + 1.8},
+              ${cx - size * 0.015} ${philtrumY + openAmt + 1.8},
+              ${cx - size * 0.05} ${philtrumY + openAmt + 1}
+            C ${lcx + size * 0.07} ${cornerY + openAmt * 0.65},
+              ${lcx + size * 0.025} ${cornerY + openAmt * 0.25},
+              ${lcx + size * 0.01} ${cornerY}
             Z
           `}
           fill="url(#mouthCavity)"
-          opacity={jawRaw < 0.01 ? 0.5 : Math.min(0.5 + jawRaw * 2, 1)}
+          filter="url(#seamSoft)"
+          opacity={jawRaw < 0.01 ? 0.35 : Math.min(0.35 + jawRaw * 2.5, 1)}
         />
 
-        {/* ── Upper lip thickness — soft shadow band above the seam ── */}
+        {/* ── Upper lip form — broad soft shadow suggesting lip thickness ── */}
         <path
           d={`
-            M ${lcx - size * 0.03} ${cornerY - 3}
-            C ${lcx + size * 0.03} ${cornerY - 5},
-              ${cx - size * 0.10} ${philtrumY - 5},
-              ${cx} ${philtrumY - 4.5}
-            C ${cx + size * 0.10} ${philtrumY - 5},
-              ${rcx - size * 0.03} ${cornerY - 5},
-              ${rcx + size * 0.03} ${cornerY - 3}
-            C ${rcx - size * 0.02} ${cornerY - 1},
-              ${cx + size * 0.08} ${philtrumY},
-              ${cx} ${philtrumY}
-            C ${cx - size * 0.08} ${philtrumY},
-              ${lcx + size * 0.02} ${cornerY - 1},
-              ${lcx - size * 0.03} ${cornerY - 3}
+            M ${lcx - size * 0.04} ${cornerY - 1}
+            C ${lcx + size * 0.02} ${cornerY - 6},
+              ${cx - size * 0.12} ${philtrumY - 7},
+              ${cx} ${philtrumY - 6}
+            C ${cx + size * 0.12} ${philtrumY - 7},
+              ${rcx - size * 0.02} ${cornerY - 6},
+              ${rcx + size * 0.04} ${cornerY - 1}
+            C ${rcx - size * 0.01} ${cornerY - 0.5},
+              ${cx + size * 0.08} ${philtrumY + 0.5},
+              ${cx} ${philtrumY + 0.5}
+            C ${cx - size * 0.08} ${philtrumY + 0.5},
+              ${lcx + size * 0.01} ${cornerY - 0.5},
+              ${lcx - size * 0.04} ${cornerY - 1}
             Z
           `}
-          fill="hsla(25, 30%, 12%, 0.18)"
+          fill="hsla(25, 25%, 10%, 0.12)"
           filter="url(#lipSoft)"
         />
 
-        {/* ── Upper lip edge — crisp seam line ── */}
+        {/* ── Upper lip seam — soft, not crisp ── */}
         <path
           d={`
-            M ${lcx} ${cornerY}
-            C ${lcx + size * 0.04} ${cornerY - 1},
-              ${cx - size * 0.08} ${philtrumY},
+            M ${lcx + size * 0.01} ${cornerY}
+            C ${lcx + size * 0.05} ${cornerY - 1.5},
+              ${cx - size * 0.08} ${philtrumY - 0.5},
               ${cx} ${philtrumY}
-            C ${cx + size * 0.08} ${philtrumY},
-              ${rcx - size * 0.04} ${cornerY - 1},
-              ${rcx} ${cornerY}
+            C ${cx + size * 0.08} ${philtrumY - 0.5},
+              ${rcx - size * 0.05} ${cornerY - 1.5},
+              ${rcx - size * 0.01} ${cornerY}
           `}
           fill="none"
-          stroke="hsla(20, 25%, 10%, 0.35)"
-          strokeWidth="1.2"
+          stroke="hsla(20, 20%, 12%, 0.22)"
+          strokeWidth="0.8"
+          filter="url(#seamSoft)"
           strokeLinecap="round"
         />
 
-        {/* ── Lower jaw edge — softer, slightly lighter ── */}
+        {/* ── Lower jaw edge — very soft highlight ── */}
         <path
           d={`
-            M ${lcx + size * 0.02} ${cornerY + openAmt * 0.35}
-            C ${lcx + size * 0.06} ${cornerY + openAmt * 0.7},
-              ${cx - size * 0.06} ${philtrumY + openAmt + 0.5},
+            M ${lcx + size * 0.03} ${cornerY + openAmt * 0.3}
+            C ${lcx + size * 0.07} ${cornerY + openAmt * 0.65},
+              ${cx - size * 0.05} ${philtrumY + openAmt + 0.5},
               ${cx} ${philtrumY + openAmt + 1.5}
-            C ${cx + size * 0.06} ${philtrumY + openAmt + 0.5},
-              ${rcx - size * 0.06} ${cornerY + openAmt * 0.7},
-              ${rcx - size * 0.02} ${cornerY + openAmt * 0.35}
+            C ${cx + size * 0.05} ${philtrumY + openAmt + 0.5},
+              ${rcx - size * 0.07} ${cornerY + openAmt * 0.65},
+              ${rcx - size * 0.03} ${cornerY + openAmt * 0.3}
           `}
           fill="none"
-          stroke="hsla(30, 25%, 55%, 0.15)"
-          strokeWidth="1"
+          stroke="hsla(30, 20%, 50%, 0.1)"
+          strokeWidth="0.8"
+          filter="url(#seamSoft)"
           strokeLinecap="round"
         />
-        {/* Lower jaw shadow — subtle depth below jaw edge */}
+
+        {/* ── Lower jaw form — soft shadow below jaw edge ── */}
         <path
           d={`
-            M ${lcx + size * 0.03} ${cornerY + openAmt * 0.45 + 2}
-            C ${lcx + size * 0.07} ${cornerY + openAmt * 0.8 + 2},
-              ${cx - size * 0.05} ${philtrumY + openAmt + 3},
-              ${cx} ${philtrumY + openAmt + 3.5}
-            C ${cx + size * 0.05} ${philtrumY + openAmt + 3},
-              ${rcx - size * 0.07} ${cornerY + openAmt * 0.8 + 2},
-              ${rcx - size * 0.03} ${cornerY + openAmt * 0.45 + 2}
+            M ${lcx + size * 0.04} ${cornerY + openAmt * 0.4 + 2}
+            C ${lcx + size * 0.08} ${cornerY + openAmt * 0.75 + 3},
+              ${cx - size * 0.04} ${philtrumY + openAmt + 4},
+              ${cx} ${philtrumY + openAmt + 5}
+            C ${cx + size * 0.04} ${philtrumY + openAmt + 4},
+              ${rcx - size * 0.08} ${cornerY + openAmt * 0.75 + 3},
+              ${rcx - size * 0.04} ${cornerY + openAmt * 0.4 + 2}
           `}
           fill="none"
-          stroke="hsla(25, 20%, 15%, 0.12)"
-          strokeWidth="2"
+          stroke="hsla(25, 18%, 14%, 0.1)"
+          strokeWidth="2.5"
           filter="url(#lipSoft)"
           strokeLinecap="round"
         />
 
-        {/* ── Mouth corner blends — soft radial shadows that merge into cheeks ── */}
-        <circle
-          cx={lcx - size * 0.01}
-          cy={cornerY + openAmt * 0.15}
-          r={size * 0.025 + openAmt * 0.15}
-          fill="hsla(20, 25%, 12%, 0.2)"
+        {/* ── Mouth corners — large soft blurs that fade into cheeks ── */}
+        <ellipse
+          cx={lcx - size * 0.005}
+          cy={cornerY + openAmt * 0.1}
+          rx={size * 0.03 + openAmt * 0.12}
+          ry={size * 0.02 + openAmt * 0.1}
+          fill="hsla(20, 20%, 10%, 0.18)"
           filter="url(#cornerBlend)"
         />
-        <circle
-          cx={rcx + size * 0.01}
-          cy={cornerY + openAmt * 0.15}
-          r={size * 0.025 + openAmt * 0.15}
-          fill="hsla(20, 25%, 12%, 0.2)"
+        <ellipse
+          cx={rcx + size * 0.005}
+          cy={cornerY + openAmt * 0.1}
+          rx={size * 0.03 + openAmt * 0.12}
+          ry={size * 0.02 + openAmt * 0.1}
+          fill="hsla(20, 20%, 10%, 0.18)"
           filter="url(#cornerBlend)"
         />
       </svg>
