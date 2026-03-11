@@ -39,62 +39,48 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 45;
 
 /**
- * Subtle natural feline upper-lip contour.
+ * Feline upper-lip contour — positioned in the MOUTH zone (~59-62% y),
+ * directly under the nose, not on the lower jaw.
  *
- * Soft W-shape with only ~2.5% vertical variation — enough to read
- * as a real tiger cub lip boundary, not a decorative graphic curve.
- * Lip line sits at ~75% y (center of the muzzle-to-chin zone).
- * Corners slightly higher (~74%), lobes slightly lower (~76.5%).
- *
- * Edges at y=100% so face sides are never split.
+ * Small, subtle W-shape. Edges at y=100% so sides never split.
  * Format: [x%, y%]
  */
 const W_POINTS: [number, number][] = [
   [0,   100],
-  [8,   100],
-  // gradual rise into left mouth corner
-  [12,  98],
-  [15,  94],
-  [18,  88],
-  [20,  83],
-  [22,  79],
-  [24,  76.5],
-  [26,  75],
-  [28,  74.2],
-  [30,  73.8],   // left mouth corner
-  // gentle descent into left whisker-pad lobe
-  [32,  74.2],
-  [34,  74.8],
-  [36,  75.3],
-  [38,  75.7],
-  [40,  76],
-  [42,  76.2],   // left lobe bottom
-  [44,  76],
-  [46,  75.6],
-  // subtle philtrum rise
-  [48,  75.2],
-  [50,  75],     // philtrum center
-  [52,  75.2],
-  [54,  75.6],
-  // right whisker-pad lobe
-  [56,  76],
-  [58,  76.2],   // right lobe bottom
-  [60,  76],
-  [62,  75.7],
-  [64,  75.3],
-  [66,  74.8],
-  [68,  74.2],
-  [70,  73.8],   // right mouth corner
-  // gradual descent back to chin
-  [72,  74.2],
-  [74,  75],
-  [76,  76.5],
-  [78,  79],
-  [80,  83],
-  [82,  88],
-  [85,  94],
-  [88,  98],
-  [92,  100],
+  [10,  100],
+  // rise into left mouth corner
+  [15,  95],
+  [20,  85],
+  [24,  75],
+  [27,  68],
+  [30,  64],
+  [33,  61.5],
+  [35,  60.5],   // left mouth corner
+  // subtle W across muzzle
+  [37,  60.8],
+  [39,  61.2],
+  [41,  61.5],
+  [43,  61.7],   // left lobe
+  [45,  61.4],
+  [47,  61],
+  [49,  60.6],
+  [50,  60.4],   // philtrum center
+  [51,  60.6],
+  [53,  61],
+  [55,  61.4],
+  [57,  61.7],   // right lobe
+  [59,  61.5],
+  [61,  61.2],
+  [63,  60.8],
+  [65,  60.5],   // right mouth corner
+  // descent back to chin
+  [67,  61.5],
+  [70,  64],
+  [73,  68],
+  [76,  75],
+  [80,  85],
+  [85,  95],
+  [90,  100],
   [100, 100],
 ];
 
@@ -158,10 +144,10 @@ export default function AvatarOverlay({
   const size = Math.min(width, height) * 0.8;
 
   // Mouth reference positions for the cavity slit
-  const lcx = size * 0.30;      // left corner x
-  const rcx = size * 0.70;      // right corner x
-  const cornerY = size * 0.738; // corner y
-  const lobeY = size * 0.762;   // lobe deepest y
+  const lcx = size * 0.35;      // left corner x
+  const rcx = size * 0.65;      // right corner x
+  const cornerY = size * 0.605; // corner y
+  const lobeY = size * 0.617;   // lobe deepest y
   const cx = size * 0.5;
 
   return (
