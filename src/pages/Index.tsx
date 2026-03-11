@@ -135,7 +135,7 @@ const Index = () => {
           muted
           onLoadedMetadata={updateVideoRect}
           onResize={updateVideoRect}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-right"
           style={{
             transform: "scaleX(-1)",
             filter: "saturate(0.7) brightness(0.9)",
