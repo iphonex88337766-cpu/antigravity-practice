@@ -42,11 +42,6 @@ export default function AvatarOverlay({
   const style = useMemo(() => {
     if (!landmarks || landmarks.length === 0) return { display: "none" as const };
 
-    // Nose tip — landmark 1, mirrored to match CSS-mirrored video
-    const nose = landmarks[1];
-    const cx = (1 - nose.x) * width;
-    const cy = nose.y * height;
-
     // Scale based on distance between outer eye corners (landmarks 33 & 263)
     const leftEye = landmarks[33];
     const rightEye = landmarks[263];
@@ -55,14 +50,17 @@ export default function AvatarOverlay({
       (leftEye.y - rightEye.y) * height
     );
 
-    // Avatar size = ~2.8× eye distance for a good face cover
-    const size = Math.max(eyeDistPx * 2.8, 60);
+    // Avatar size = ~3.2× eye distance for a good face cover
+    const size = Math.max(eyeDistPx * 3.2, 80);
+
+    // Center in container
+    const cx = width / 2;
+    const cy = height / 2;
 
     // Rotation from transformation matrix
     let rotate = "none";
     if (transformationMatrix && transformationMatrix.data?.length >= 16) {
       const { pitch, yaw, roll } = matrixToEuler(transformationMatrix.data);
-      // Mirror yaw and roll to match the mirrored video
       rotate = `rotateX(${pitch}deg) rotateY(${-yaw}deg) rotateZ(${-roll}deg)`;
     }
 
@@ -75,7 +73,7 @@ export default function AvatarOverlay({
       transform: rotate,
       transformStyle: "preserve-3d" as const,
       pointerEvents: "none" as const,
-      willChange: "transform, left, top, width, height",
+      willChange: "transform, width, height",
     };
   }, [landmarks, transformationMatrix, width, height]);
 
