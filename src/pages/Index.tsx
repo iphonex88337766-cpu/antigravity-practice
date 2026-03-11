@@ -130,41 +130,46 @@ const Index = () => {
       >
         {isLoading && <CalibrationOverlay />}
 
-        <video
-          ref={videoRef}
-          playsInline
-          muted
-          onLoadedMetadata={updateVideoRect}
-          onResize={updateVideoRect}
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{
-            objectPosition: "100% 50%",
-            transform: "scaleX(-1)",
-            filter: "saturate(0.7) brightness(0.9)",
-            opacity: webcamState === "active" ? 1 : 0,
-          }}
-        />
-
-        {/* FaceMesh canvas — positioned to match the video area */}
-        {webcamState === "active" && showMesh && (
-          <div
-            className="absolute"
+        {/* Shared wrapper: shifts video + mesh together to the left */}
+        <div
+          className="absolute inset-0"
+          style={{ transform: "translateX(-20%)", width: "140%", left: 0 }}
+        >
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            onLoadedMetadata={updateVideoRect}
+            onResize={updateVideoRect}
+            className="absolute inset-0 h-full w-full object-cover"
             style={{
-              left: videoRect.x,
-              top: videoRect.y,
-              width: videoRect.w,
-              height: videoRect.h,
-              pointerEvents: "none",
+              transform: "scaleX(-1)",
+              filter: "saturate(0.7) brightness(0.9)",
+              opacity: webcamState === "active" ? 1 : 0,
             }}
-          >
-            <FaceMeshCanvas
-              landmarks={landmarks}
-              width={videoRect.w}
-              height={videoRect.h}
-              hasDetected={hasEverDetected && landmarks !== null}
-            />
-          </div>
-        )}
+          />
+
+          {/* FaceMesh canvas — positioned to match the video area */}
+          {webcamState === "active" && showMesh && (
+            <div
+              className="absolute"
+              style={{
+                left: videoRect.x,
+                top: videoRect.y,
+                width: videoRect.w,
+                height: videoRect.h,
+                pointerEvents: "none",
+              }}
+            >
+              <FaceMeshCanvas
+                landmarks={landmarks}
+                width={videoRect.w}
+                height={videoRect.h}
+                hasDetected={hasEverDetected && landmarks !== null}
+              />
+            </div>
+          )}
+        </div>
 
         {webcamState === "active" && !landmarks && (
           <div className="absolute inset-0 flex items-center justify-center">
