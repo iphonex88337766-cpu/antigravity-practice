@@ -157,12 +157,11 @@ export default function AvatarOverlay({
   }, [transformationMatrix, width, height]);
 
   const size = Math.min(width, height) * 0.8;
-  // The W-lip center Y for cavity placement (~67.5% of size)
-  const mouthCenterY = size * 0.675;
-  // Mouth width spans roughly 30–70% of size
-  const mouthWidth = size * 0.42;
-  const mouthLeft = size * 0.29;
+  // Mouth spans ~24–76% of size = 52% wide
+  const mouthWidth = size * 0.54;
+  const mouthLeft = size * 0.23;
   const halfMouth = mouthWidth / 2;
+  const mouthCenterY = size * 0.665;
 
   return (
     <div style={containerStyle}>
