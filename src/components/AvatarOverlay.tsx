@@ -191,27 +191,104 @@ export default function AvatarOverlay({
 
   const size = Math.min(width, height) * 0.8;
 
-  // Mouth cavity position derived from the W-contour
+  // Mouth geometry derived from the W-contour
   const cornerYPct = wPoints.find(([x]) => x === 35)?.[1] ?? 65.5;
   const lobeYPct = wPoints.find(([x]) => x === 43)?.[1] ?? 66.7;
+  const philtrumYPct = wPoints.find(([x]) => x === 50)?.[1] ?? 65.4;
+
+  // Key pixel positions
+  const lcx = size * 0.35;
+  const rcx = size * 0.65;
+  const cx = size * 0.5;
+  const cornerY = size * (cornerYPct / 100);
+  const lobeY = size * (lobeYPct / 100);
+  const philtrumY = size * (philtrumYPct / 100);
+
+  // The mouth opening thickness — thin slit when closed, opens with jaw
+  const openAmt = Math.max(jawDrop, 1.2);
 
   return (
     <div style={containerStyle}>
-      {/* ── Mouth Cavity — dark background visible ONLY through the gap ── */}
-      <div
+      {/* ── Mouth Cavity SVG — shaped to match the seam, sits behind face layers ── */}
+      <svg
         style={{
           position: "absolute",
-          left: size * 0.30,
-          top: size * ((cornerYPct - 2) / 100),
-          width: size * 0.40,
-          height: size * 0.12 + jawDrop,
-          background: "radial-gradient(ellipse at 50% 30%, hsl(340, 30%, 18%), hsl(340, 45%, 8%))",
-          borderRadius: "40%",
-          zIndex: 0,
+          left: 0,
+          top: 0,
+          width: size,
+          height: size + MAX_JAW_PX,
           pointerEvents: "none",
-          opacity: jawRaw < 0.01 ? 0.4 : Math.min(0.4 + jawRaw * 2.5, 1),
+          zIndex: 0,
         }}
-      />
+        viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
+      >
+        <defs>
+          {/* Gradient for depth: darker center, lighter at edges */}
+          <radialGradient id="mouthCavity" cx="50%" cy="35%" rx="50%" ry="60%">
+            <stop offset="0%" stopColor="hsl(340, 30%, 15%)" />
+            <stop offset="100%" stopColor="hsl(340, 45%, 6%)" />
+          </radialGradient>
+        </defs>
+        {/* Upper lip edge (top of cavity) — follows the W-contour exactly */}
+        {/* Lower jaw edge (bottom of cavity) — same curve shifted down by openAmt */}
+        {/* Corner tapers: the cavity narrows to zero width at the mouth corners */}
+        <path
+          d={`
+            M ${lcx} ${cornerY}
+            C ${lcx + size * 0.04} ${cornerY - 1},
+              ${cx - size * 0.08} ${philtrumY},
+              ${cx} ${philtrumY}
+            C ${cx + size * 0.08} ${philtrumY},
+              ${rcx - size * 0.04} ${cornerY - 1},
+              ${rcx} ${cornerY}
+
+            C ${rcx - size * 0.02} ${cornerY + openAmt * 0.3},
+              ${rcx - size * 0.06} ${cornerY + openAmt * 0.7},
+              ${cx + size * 0.06} ${philtrumY + openAmt + 1}
+            C ${cx + size * 0.02} ${philtrumY + openAmt + 1.5},
+              ${cx - size * 0.02} ${philtrumY + openAmt + 1.5},
+              ${cx - size * 0.06} ${philtrumY + openAmt + 1}
+            C ${lcx + size * 0.06} ${cornerY + openAmt * 0.7},
+              ${lcx + size * 0.02} ${cornerY + openAmt * 0.3},
+              ${lcx} ${cornerY}
+            Z
+          `}
+          fill="url(#mouthCavity)"
+          opacity={jawRaw < 0.01 ? 0.5 : Math.min(0.5 + jawRaw * 2, 1)}
+        />
+        {/* Subtle upper-lip shadow line for definition */}
+        <path
+          d={`
+            M ${lcx + 2} ${cornerY}
+            C ${lcx + size * 0.04} ${cornerY - 1},
+              ${cx - size * 0.08} ${philtrumY},
+              ${cx} ${philtrumY}
+            C ${cx + size * 0.08} ${philtrumY},
+              ${rcx - size * 0.04} ${cornerY - 1},
+              ${rcx - 2} ${cornerY}
+          `}
+          fill="none"
+          stroke="hsla(20, 20%, 10%, 0.25)"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+        {/* Subtle lower-jaw highlight line for seam definition */}
+        <path
+          d={`
+            M ${lcx + size * 0.03} ${cornerY + openAmt * 0.4}
+            C ${lcx + size * 0.07} ${cornerY + openAmt * 0.75},
+              ${cx - size * 0.06} ${philtrumY + openAmt + 1},
+              ${cx} ${philtrumY + openAmt + 1.5}
+            C ${cx + size * 0.06} ${philtrumY + openAmt + 1},
+              ${rcx - size * 0.07} ${cornerY + openAmt * 0.75},
+              ${rcx - size * 0.03} ${cornerY + openAmt * 0.4}
+          `}
+          fill="none"
+          stroke="hsla(30, 30%, 60%, 0.12)"
+          strokeWidth="0.8"
+          strokeLinecap="round"
+        />
+      </svg>
 
       {/* ── Lower Jaw (translates down with jawOpen) ── */}
       <div
