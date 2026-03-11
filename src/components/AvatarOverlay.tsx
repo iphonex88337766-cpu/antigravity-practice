@@ -191,51 +191,27 @@ export default function AvatarOverlay({
 
   const size = Math.min(width, height) * 0.8;
 
-  // Mouth reference positions derived from landmark-aligned W
+  // Mouth cavity position derived from the W-contour
   const cornerYPct = wPoints.find(([x]) => x === 35)?.[1] ?? 65.5;
   const lobeYPct = wPoints.find(([x]) => x === 43)?.[1] ?? 66.7;
-  const lcx = size * 0.35;
-  const rcx = size * 0.65;
-  const cornerY = size * (cornerYPct / 100);
-  const lobeY = size * (lobeYPct / 100);
-  const cx = size * 0.5;
 
   return (
     <div style={containerStyle}>
-      {/* ── Thin mouth slit — a narrow dark opening following the W ── */}
-      <svg
+      {/* ── Mouth Cavity — dark background visible ONLY through the gap ── */}
+      <div
         style={{
           position: "absolute",
-          left: 0,
-          top: 0,
-          width: size,
-          height: size + MAX_JAW_PX,
-          pointerEvents: "none",
+          left: size * 0.30,
+          top: size * ((cornerYPct - 2) / 100),
+          width: size * 0.40,
+          height: size * 0.12 + jawDrop,
+          background: "radial-gradient(ellipse at 50% 30%, hsl(340, 30%, 18%), hsl(340, 45%, 8%))",
+          borderRadius: "40%",
           zIndex: 0,
+          pointerEvents: "none",
+          opacity: jawRaw < 0.01 ? 0.4 : Math.min(0.4 + jawRaw * 2.5, 1),
         }}
-        viewBox={`0 0 ${size} ${size + MAX_JAW_PX}`}
-      >
-        {/* Thin dark slit that follows the W-contour.
-            Top edge: the W-contour itself.
-            Bottom edge: same W shifted down by jawDrop (min ~2px for a thin natural line). */}
-        <path
-          d={`
-            M ${lcx} ${cornerY}
-            Q ${(lcx + cx) / 2} ${lobeY},
-              ${cx} ${lobeY - 1}
-            Q ${(cx + rcx) / 2} ${lobeY},
-              ${rcx} ${cornerY}
-            L ${rcx} ${cornerY + Math.max(jawDrop, 1.5)}
-            Q ${(cx + rcx) / 2} ${lobeY + Math.max(jawDrop, 1.5) + 1},
-              ${cx} ${lobeY + Math.max(jawDrop, 1.5) + 2}
-            Q ${(lcx + cx) / 2} ${lobeY + Math.max(jawDrop, 1.5) + 1},
-              ${lcx} ${cornerY + Math.max(jawDrop, 1.5)}
-            Z
-          `}
-          fill="hsl(340, 45%, 10%)"
-          opacity={jawRaw < 0.01 ? 0.35 : Math.min(0.35 + jawRaw * 3, 1)}
-        />
-      </svg>
+      />
 
       {/* ── Lower Jaw (translates down with jawOpen) ── */}
       <div
@@ -259,7 +235,7 @@ export default function AvatarOverlay({
         />
       </div>
 
-      {/* ── Upper Face (fixed) ── */}
+      {/* ── Upper Face (fixed, on top) ── */}
       <div
         style={{
           position: "absolute",
