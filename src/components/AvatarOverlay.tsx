@@ -108,9 +108,14 @@ export default function AvatarOverlay({
   const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
   const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
 
+  // Mouth stretch: scaleY from 1.0 to ~1.6 based on jawOpen
+  const mouthStretchY = 1 + mouthOpen * 0.6;
+  // Split line in viewBox units (just above the static mouth)
+  const splitY = 74;
+
   return (
     <div style={containerStyle}>
-      {/* Layer 1: Dynamic expressions rendered BEHIND the masked base */}
+      {/* Layer 1: Dynamic eyes rendered BEHIND the masked base */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -133,15 +138,9 @@ export default function AvatarOverlay({
         <ellipse cx="65" cy="50" rx="4.5" ry={Math.max(eyeOpenRight * 4.5, 0.4)} fill="#6b4423" />
         <ellipse cx="65" cy="50" rx="2.5" ry={Math.max(eyeOpenRight * 2.5, 0.3)} fill="#1a0e08" />
         <ellipse cx="63" cy={48.5 - eyeOpenRight} rx="1.2" ry={Math.max(eyeOpenRight * 1.5, 0.15)} fill="white" opacity={eyeOpenRight > 0.2 ? 0.85 : 0} />
-
-        {/* Mouth */}
-        <ellipse cx="50" cy={79 + mouthOpen * 2} rx={3.5 + smileAmount * 2} ry={0.6 + mouthOpen * 3.5} fill="#2d1a1a" opacity="0.85" />
-        {mouthOpen > 0.25 && (
-          <ellipse cx="50" cy={80 + mouthOpen * 2} rx={2 + smileAmount * 0.8} ry={mouthOpen * 1.8} fill="#e85d75" opacity="0.6" />
-        )}
       </svg>
 
-      {/* Layer 2: Original tiger PNG with SVG mask punching out eyes & mouth */}
+      {/* Layer 2: Upper tiger (above mouth) with eye masks */}
       <svg
         viewBox="0 0 100 100"
         style={{
@@ -154,26 +153,50 @@ export default function AvatarOverlay({
         }}
       >
         <defs>
-          <mask id="tiger-face-mask">
-            {/* White = visible, Black = hidden */}
+          <clipPath id="upper-clip">
+            <rect x="0" y="0" width="100" height={splitY} />
+          </clipPath>
+          <mask id="eye-mask">
             <rect x="0" y="0" width="100" height="100" fill="white" />
-            {/* Punch out left eye */}
             <ellipse cx="35" cy="50" rx="8" ry="8" fill="black" />
-            {/* Punch out right eye */}
             <ellipse cx="65" cy="50" rx="8" ry="8" fill="black" />
-            {/* Punch out mouth area — always covers static mouth, expands with jaw */}
-            <ellipse cx="50" cy={79 + mouthOpen * 2} rx={10 + smileAmount * 2} ry={Math.max(9, 9 + mouthOpen * 5)} fill="black" />
           </mask>
         </defs>
         <image
           href={avatarSrc}
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          mask="url(#tiger-face-mask)"
+          x="0" y="0" width="100" height="100"
+          clipPath="url(#upper-clip)"
+          mask="url(#eye-mask)"
           preserveAspectRatio="xMidYMid slice"
         />
+      </svg>
+
+      {/* Layer 3: Lower jaw — rubber-stretches downward */}
+      <svg
+        viewBox={`0 0 100 ${100 + mouthOpen * 20}`}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 1,
+          overflow: "visible",
+        }}
+      >
+        <defs>
+          <clipPath id="lower-clip">
+            <rect x="0" y={splitY} width="100" height={100 - splitY} />
+          </clipPath>
+        </defs>
+        <g transform={`translate(0, ${splitY}) scale(1, ${mouthStretchY}) translate(0, ${-splitY})`}>
+          <image
+            href={avatarSrc}
+            x="0" y="0" width="100" height="100"
+            clipPath="url(#lower-clip)"
+            preserveAspectRatio="xMidYMid slice"
+          />
+        </g>
       </svg>
     </div>
   );
