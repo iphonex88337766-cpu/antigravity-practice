@@ -39,7 +39,7 @@ function lerp(a: number, b: number, t: number) {
 const MAX_JAW_PX = 45;
 
 /** Baseline Y% for the W-contour center (philtrum). Offsets are applied dynamically. */
-const BASE_MOUTH_Y = 85;
+const BASE_MOUTH_Y = 84;
 
 /**
  * Feline upper-lip contour — positioned in the MOUTH zone (~59-62% y),
@@ -60,29 +60,29 @@ const W_SHAPE: [number, number][] = [
   [15,  100],
   [20,  100],
   [24,  100],
-  [27,  95],
-  [30,  89],
-  [33,  86],
-  [35,  85],     // left mouth corner
-  [37,  85.3],
-  [39,  85.7],
-  [41,  86],
-  [43,  86.2],   // left lobe
-  [45,  85.9],
-  [47,  85.5],
-  [49,  85.2],
-  [50,  85],     // philtrum center (= BASE_MOUTH_Y)
-  [51,  85.2],
-  [53,  85.5],
-  [55,  85.9],
-  [57,  86.2],   // right lobe
-  [59,  86],
-  [61,  85.7],
-  [63,  85.3],
-  [65,  85],     // right mouth corner
-  [67,  86],
-  [70,  89],
-  [73,  95],
+  [27,  94],
+  [30,  88],
+  [33,  85],
+  [35,  84],     // left mouth corner
+  [37,  84.3],
+  [39,  84.7],
+  [41,  85],
+  [43,  85.2],   // left lobe
+  [45,  84.9],
+  [47,  84.5],
+  [49,  84.2],
+  [50,  84],     // philtrum center (= BASE_MOUTH_Y)
+  [51,  84.2],
+  [53,  84.5],
+  [55,  84.9],
+  [57,  85.2],   // right lobe
+  [59,  85],
+  [61,  84.7],
+  [63,  84.3],
+  [65,  84],     // right mouth corner
+  [67,  85],
+  [70,  88],
+  [73,  94],
   [76,  100],
   [80,  100],
   [85,  100],
