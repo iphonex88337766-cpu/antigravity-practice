@@ -39,7 +39,7 @@ function easeOut(t: number) {
 }
 
 const SZ = 500;
-const MAX_JAW_PX = 40;
+const MAX_JAW_PX = 200;
 const OPEN_THRESHOLD = 0.06;
 
 /**
