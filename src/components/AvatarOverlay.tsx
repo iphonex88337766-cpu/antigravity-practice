@@ -108,8 +108,8 @@ export default function AvatarOverlay({
   const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
   const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
 
-  // Mouth stretch: scaleY from 1.0 to ~1.6 based on jawOpen
-  const mouthStretchY = 1 + mouthOpen * 0.6;
+  // Jaw drop: pure downward translation in viewBox units
+  const jawDrop = mouthOpen * 15;
   // Split line in viewBox units (just above the static mouth)
   const splitY = 74;
 
