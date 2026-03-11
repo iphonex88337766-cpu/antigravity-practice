@@ -222,7 +222,7 @@ export default function AvatarOverlay({
 
   // Compute elastic contour — corners pinned, center drops
   const elasticPts = elasticLowerContour(jawDrop);
-  const ELASTIC_LOWER_CLIP = lowerClip(elasticPts);
+  const ELASTIC_LOWER_CLIP = isOpen ? lowerClip(elasticPts) : "none";
 
   const featherPx = isOpen ? Math.max(0, 1.5 - jawDrop * 0.06) : 0;
 
@@ -241,27 +241,13 @@ export default function AvatarOverlay({
       left: cx - SZ / 2,
       top: cy - SZ / 2,
       width: SZ,
-      height: SZ + (isOpen ? MAX_JAW_PX : 0),
+      height: SZ + MAX_JAW_PX,
       transform: rotate,
       transformStyle: "preserve-3d" as const,
       pointerEvents: "none" as const,
       willChange: "transform",
     };
-  }, [transformationMatrix, width, height, isOpen]);
-
-  // Closed: single clean image
-  if (!isOpen) {
-    return (
-      <div style={containerStyle}>
-        <img
-          src={avatarSrc}
-          alt="Avatar"
-          draggable={false}
-          style={{ width: SZ, height: SZ, display: "block" }}
-        />
-      </div>
-    );
-  }
+  }, [transformationMatrix, width, height]);
 
   const featherFilter = featherPx > 0.1
     ? `drop-shadow(0 0 ${featherPx}px rgba(0,0,0,0.06))`
