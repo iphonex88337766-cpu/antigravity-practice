@@ -147,6 +147,7 @@ export default function AvatarOverlay({
   avatarSrc = babyTigerSrc,
 }: AvatarOverlayProps) {
   const smoothJawRef = useRef(0);
+  const smoothMouthYRef = useRef(BASE_MOUTH_Y);
 
   const jawRaw = useMemo(() => {
     const raw = blendshapes?.["jawOpen"] ?? 0;
@@ -155,6 +156,14 @@ export default function AvatarOverlay({
   }, [blendshapes]);
 
   const jawDrop = jawRaw * MAX_JAW_PX;
+
+  // Derive mouth Y from landmarks, smoothed
+  const mouthYTarget = getMouthYPercent(landmarks);
+  smoothMouthYRef.current = lerp(smoothMouthYRef.current, mouthYTarget, 0.15);
+  const dy = smoothMouthYRef.current - BASE_MOUTH_Y;
+  const wPoints = shiftedWPoints(dy);
+  const UPPER_CLIP = upperClipPath(wPoints);
+  const LOWER_CLIP = lowerClipPath(wPoints);
 
   const containerStyle = useMemo(() => {
     const sz = Math.min(width, height) * 0.8;
@@ -182,11 +191,13 @@ export default function AvatarOverlay({
 
   const size = Math.min(width, height) * 0.8;
 
-  // Mouth reference positions for the cavity slit
-  const lcx = size * 0.35;      // left corner x
-  const rcx = size * 0.65;      // right corner x
-  const cornerY = size * 0.655; // corner y
-  const lobeY = size * 0.667;   // lobe deepest y
+  // Mouth reference positions derived from landmark-aligned W
+  const cornerYPct = wPoints.find(([x]) => x === 35)?.[1] ?? 65.5;
+  const lobeYPct = wPoints.find(([x]) => x === 43)?.[1] ?? 66.7;
+  const lcx = size * 0.35;
+  const rcx = size * 0.65;
+  const cornerY = size * (cornerYPct / 100);
+  const lobeY = size * (lobeYPct / 100);
   const cx = size * 0.5;
 
   return (
