@@ -54,7 +54,7 @@ function MouthSVG({ t }: { t: number }) {
   const baseCy = SZ * (MOUTH_CY / 100);
   const hw = SZ * (MOUTH_W / 100);
   const totalH = SZ * (MAX_MOUTH_H / 100) * t;
-  // Asymmetric: upper edge barely lifts, lower edge drops more
+  const hh = totalH * 0.5; // half-height for ellipse rendering
   const upperH = totalH * 0.15;
   const lowerH = totalH * 0.85;
   const cy = baseCy - upperH + totalH * 0.5; // shifted center
