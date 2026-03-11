@@ -303,6 +303,7 @@ function EyelidPair({
   );
 }
 
+export default function AvatarOverlay({
   landmarks,
   transformationMatrix,
   blendshapes,
