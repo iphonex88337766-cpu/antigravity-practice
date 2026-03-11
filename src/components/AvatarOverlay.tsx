@@ -336,29 +336,27 @@ export default function AvatarOverlay({
 
       </svg>
 
-      {/* ── Lower Jaw (translates down with jawOpen, hidden when closed) ── */}
-      {jawDrop > 1.5 && (
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: size,
-            height: size,
-            clipPath: LOWER_CLIP,
-            zIndex: 1,
-            transform: `translateY(${jawDrop}px)`,
-            willChange: "transform",
-          }}
-        >
-          <img
-            src={avatarSrc}
-            alt=""
-            draggable={false}
-            style={{ width: size, height: size, display: "block" }}
-          />
-        </div>
-      )}
+      {/* ── Lower Jaw (translates down with jawOpen) ── */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: size,
+          height: size,
+          clipPath: LOWER_CLIP,
+          zIndex: 1,
+          transform: `translateY(${jawDrop}px)`,
+          willChange: "transform",
+        }}
+      >
+        <img
+          src={avatarSrc}
+          alt=""
+          draggable={false}
+          style={{ width: size, height: size, display: "block" }}
+        />
+      </div>
 
       {/* ── Upper Face (fixed, on top) ── */}
       <div
@@ -368,7 +366,7 @@ export default function AvatarOverlay({
           top: 0,
           width: size,
           height: size,
-          clipPath: jawDrop > 1.5 ? UPPER_CLIP : undefined,
+          clipPath: UPPER_CLIP,
           zIndex: 2,
         }}
       >
