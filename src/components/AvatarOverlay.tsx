@@ -1,10 +1,9 @@
 /**
- * AvatarOverlay — Seamless flower-bloom mouth.
+ * AvatarOverlay — Seamless flower-bloom mouth with layered reveal.
  *
- * Key insight: When jawOpen=0, ONLY render the full unclipped image.
- * The W-contour split only activates when jaw begins opening,
- * with the lower jaw starting at 0px offset and smoothly parting.
- * No gap, no seam, no dark line — the split emerges from nothing.
+ * When closed: single unclipped image, zero seam.
+ * Opening: fangs/tongue appear first, dark cavity fades in gradually.
+ * W-contour edges are feathered during transition for soft petal parting.
  */
 
 import { useMemo, useRef } from "react";
@@ -34,41 +33,33 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-/** Ease-out cubic for smooth bloom feel */
 function easeOut(t: number) {
   return 1 - Math.pow(1 - t, 3);
 }
 
 const SZ = 500;
 const MAX_JAW_PX = 40;
-/** Threshold below which we render the full unbroken image */
 const OPEN_THRESHOLD = 0.012;
 
-/**
- * W-contour points [x%, y%] — sits at the tiger's upper lip line.
- * Edges pinned to 100% so sides never split.
- */
 const W_CONTOUR: [number, number][] = [
   [0, 100], [12, 100], [18, 100],
   [22, 95], [26, 87], [29, 80], [32, 76],
-  [34, 74],      // left corner
+  [34, 74],
   [36, 73.5], [39, 73.2], [42, 73], [44, 72.8],
   [46, 72.5], [48, 72.2],
-  [50, 72],      // philtrum center
+  [50, 72],
   [52, 72.2], [54, 72.5],
   [56, 72.8], [58, 73], [61, 73.2], [64, 73.5],
-  [66, 74],      // right corner
+  [66, 74],
   [68, 76], [71, 80], [74, 87], [78, 95],
   [82, 100], [88, 100], [100, 100],
 ];
 
-/** Upper face clip: everything above the W-contour */
 function upperClip(pts: [number, number][]): string {
   const rev = [...pts].reverse().map(([x, y]) => `${x}% ${y}%`).join(", ");
   return `polygon(0% 0%, 100% 0%, 100% 100%, ${rev}, 0% 100%)`;
 }
 
-/** Lower jaw clip: everything below the W-contour */
 function lowerClip(pts: [number, number][]): string {
   const fwd = pts.map(([x, y]) => `${x}% ${y}%`).join(", ");
   return `polygon(${fwd}, 100% 100%, 0% 100%)`;
@@ -77,16 +68,27 @@ function lowerClip(pts: [number, number][]): string {
 const UPPER_CLIP = upperClip(W_CONTOUR);
 const LOWER_CLIP = lowerClip(W_CONTOUR);
 
-/** Mouth interior — teeth + tongue, only when visibly open */
+/**
+ * Mouth interior — layered so fangs/tongue appear BEFORE dark cavity.
+ * Dark cavity fades in very gradually (delayed opacity).
+ */
 function MouthInterior({ jawDrop }: { jawDrop: number }) {
-  if (jawDrop < 2) return null;
+  if (jawDrop < 0.5) return null;
 
-  const bloom = easeOut(Math.min(jawDrop / MAX_JAW_PX, 1));
-  const cavityOpacity = Math.min(bloom * 1.5, 1);
-
-  // Cavity center Y in pixels — right at the contour line
+  const bloom = Math.min(jawDrop / MAX_JAW_PX, 1);
   const contourY = SZ * 0.72;
   const cavityCY = contourY + jawDrop * 0.35;
+
+  // Cavity: very delayed — only visible after significant opening
+  // Starts at 0 opacity, reaches full only at ~70% open
+  const cavityOpacity = Math.max(0, (bloom - 0.15) * 0.9);
+
+  // Fangs: appear early (almost immediately)
+  const fangOpacity = Math.min(bloom * 3, 0.92);
+  const fangLength = Math.min(jawDrop * 0.5, 15);
+
+  // Tongue: appears early but subtle, grows with opening
+  const tongueOpacity = Math.min(bloom * 2, 0.75);
 
   return (
     <svg
@@ -95,59 +97,64 @@ function MouthInterior({ jawDrop }: { jawDrop: number }) {
         left: 0, top: 0,
         width: SZ, height: SZ + MAX_JAW_PX,
         pointerEvents: "none",
-        zIndex: 0,
       }}
       viewBox={`0 0 ${SZ} ${SZ + MAX_JAW_PX}`}
     >
       <defs>
         <radialGradient id="cavG" cx="50%" cy="30%" r="60%">
-          <stop offset="0%" stopColor="hsl(350, 20%, 12%)" />
-          <stop offset="100%" stopColor="hsl(340, 30%, 5%)" />
+          <stop offset="0%" stopColor="hsl(350, 18%, 15%)" />
+          <stop offset="100%" stopColor="hsl(340, 25%, 8%)" />
         </radialGradient>
         <filter id="mSoft">
-          <feGaussianBlur stdDeviation="2" />
+          <feGaussianBlur stdDeviation="2.5" />
+        </filter>
+        <filter id="fangSoft">
+          <feGaussianBlur stdDeviation="0.4" />
         </filter>
       </defs>
 
-      {/* Dark cavity — grows with bloom */}
+      {/* Layer 1 (back): Dark cavity — fades in LAST, very gradually */}
       <ellipse
         cx={SZ * 0.5}
         cy={cavityCY}
-        rx={SZ * 0.10 * bloom + jawDrop * 0.25}
-        ry={jawDrop * 0.42}
+        rx={SZ * 0.08 * bloom + jawDrop * 0.2}
+        ry={jawDrop * 0.38}
         fill="url(#cavG)"
         opacity={cavityOpacity}
+        filter="url(#mSoft)"
       />
 
-      {/* Tongue */}
-      {jawDrop > 6 && (
+      {/* Layer 2 (mid): Tongue — appears early as a hint of pink */}
+      {jawDrop > 1.5 && (
         <ellipse
           cx={SZ * 0.5}
-          cy={cavityCY + jawDrop * 0.12}
-          rx={SZ * 0.06 + jawDrop * 0.12}
-          ry={jawDrop * 0.18}
-          fill="hsl(350, 55%, 55%)"
-          opacity={Math.min((jawDrop - 6) / 15, 0.8)}
+          cy={contourY + jawDrop * 0.25}
+          rx={SZ * 0.05 + jawDrop * 0.1}
+          ry={Math.max(jawDrop * 0.15, 1.5)}
+          fill="hsl(350, 50%, 58%)"
+          opacity={tongueOpacity}
           filter="url(#mSoft)"
         />
       )}
 
-      {/* Fangs — small triangles that emerge */}
-      {jawDrop > 3 && (
+      {/* Layer 3 (front): Fangs — appear FIRST, closest to viewer */}
+      {jawDrop > 0.8 && (
         <>
           <path
-            d={`M ${SZ * 0.43} ${contourY}
-                L ${SZ * 0.445} ${contourY + Math.min(jawDrop * 0.45, 14)}
-                L ${SZ * 0.46} ${contourY} Z`}
-            fill="hsl(45, 10%, 95%)"
-            opacity={Math.min((jawDrop - 3) / 10, 0.9)}
+            d={`M ${SZ * 0.43} ${contourY - 0.5}
+                L ${SZ * 0.445} ${contourY + fangLength}
+                L ${SZ * 0.46} ${contourY - 0.5} Z`}
+            fill="hsl(40, 15%, 96%)"
+            opacity={fangOpacity}
+            filter="url(#fangSoft)"
           />
           <path
-            d={`M ${SZ * 0.54} ${contourY}
-                L ${SZ * 0.555} ${contourY + Math.min(jawDrop * 0.45, 14)}
-                L ${SZ * 0.57} ${contourY} Z`}
-            fill="hsl(45, 10%, 95%)"
-            opacity={Math.min((jawDrop - 3) / 10, 0.9)}
+            d={`M ${SZ * 0.54} ${contourY - 0.5}
+                L ${SZ * 0.555} ${contourY + fangLength}
+                L ${SZ * 0.57} ${contourY - 0.5} Z`}
+            fill="hsl(40, 15%, 96%)"
+            opacity={fangOpacity}
+            filter="url(#fangSoft)"
           />
         </>
       )}
@@ -166,13 +173,14 @@ export default function AvatarOverlay({
   const smoothJawRef = useRef(0);
 
   const jawRaw = blendshapes?.["jawOpen"] ?? 0;
-  // Smooth with non-linear interpolation for bloom feel
   smoothJawRef.current = lerp(smoothJawRef.current, jawRaw, 0.18);
   const jawNorm = smoothJawRef.current;
   const jawDrop = easeOut(Math.min(jawNorm, 1)) * MAX_JAW_PX;
 
-  // Below threshold = render single unbroken image (zero seam)
   const isOpen = jawNorm > OPEN_THRESHOLD;
+
+  // Feather amount: strongest during early transition, fades as mouth opens fully
+  const featherPx = isOpen ? Math.max(0, 2 - jawDrop * 0.08) : 0;
 
   const containerStyle = useMemo(() => {
     const cx = width / 2;
@@ -197,7 +205,7 @@ export default function AvatarOverlay({
     };
   }, [transformationMatrix, width, height, isOpen]);
 
-  // When closed: single clean image, no clips, no seam
+  // Closed: single clean image
   if (!isOpen) {
     return (
       <div style={containerStyle}>
@@ -211,13 +219,17 @@ export default function AvatarOverlay({
     );
   }
 
-  // When open: bloom split
+  // Feathered edge filter style for soft petal parting
+  const featherFilter = featherPx > 0.1
+    ? `drop-shadow(0 0 ${featherPx}px rgba(0,0,0,0.08))`
+    : "none";
+
   return (
     <div style={containerStyle}>
-      {/* Mouth interior behind both layers */}
+      {/* Mouth interior — fangs on top, cavity in back */}
       <MouthInterior jawDrop={jawDrop} />
 
-      {/* Lower jaw — parts downward */}
+      {/* Lower jaw */}
       <div
         style={{
           position: "absolute",
@@ -226,6 +238,7 @@ export default function AvatarOverlay({
           clipPath: LOWER_CLIP,
           zIndex: 1,
           transform: `translateY(${jawDrop}px)`,
+          filter: featherFilter,
           willChange: "transform",
         }}
       >
@@ -233,7 +246,7 @@ export default function AvatarOverlay({
           style={{ width: SZ, height: SZ, display: "block" }} />
       </div>
 
-      {/* Upper face — fixed, nose stays locked */}
+      {/* Upper face — fixed */}
       <div
         style={{
           position: "absolute",
@@ -241,6 +254,7 @@ export default function AvatarOverlay({
           width: SZ, height: SZ,
           clipPath: UPPER_CLIP,
           zIndex: 2,
+          filter: featherFilter,
         }}
       >
         <img src={avatarSrc} alt="" draggable={false}
