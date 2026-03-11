@@ -213,6 +213,7 @@ const Index = () => {
           <AvatarOverlay
             landmarks={landmarks}
             transformationMatrix={transformMatrix}
+            blendshapes={blendshapes}
             width={600}
             height={600}
           />
