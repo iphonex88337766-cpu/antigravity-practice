@@ -212,8 +212,8 @@ const LID_FILL   = "#E89033";  // orange fur
 const LID_SHADOW = "#C47428";  // darker crease
 const LID_LINE   = "#8B5E2B";  // closed-eye line
 
-/** Eyelid overlay — completely invisible below threshold, solid cover above */
-const BLINK_THRESHOLD = 0.5;
+/** Eyelid overlay — invisible when open, solid cover when blinking */
+const BLINK_THRESHOLD = 0.15;
 
 const EyelidOverlay = memo(function EyelidOverlay({
   leftBlink,
