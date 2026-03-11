@@ -212,7 +212,9 @@ const LID_FILL   = "#E89033";  // orange fur
 const LID_SHADOW = "#C47428";  // darker crease
 const LID_LINE   = "#8B5E2B";  // closed-eye line
 
-/** Eyelid overlay — curved arcs that match the tiger's eye shape */
+/** Eyelid overlay — completely invisible below threshold, solid cover above */
+const BLINK_THRESHOLD = 0.5;
+
 const EyelidOverlay = memo(function EyelidOverlay({
   leftBlink,
   rightBlink,
@@ -220,7 +222,8 @@ const EyelidOverlay = memo(function EyelidOverlay({
   leftBlink: number;
   rightBlink: number;
 }) {
-  if (leftBlink < 0.03 && rightBlink < 0.03) return null;
+  // 100% invisible when eyes are open
+  if (leftBlink < BLINK_THRESHOLD && rightBlink < BLINK_THRESHOLD) return null;
 
   return (
     <svg
@@ -235,168 +238,72 @@ const EyelidOverlay = memo(function EyelidOverlay({
     >
       <defs>
         <filter id="lidBlur">
-          <feGaussianBlur stdDeviation="0.8" />
-        </filter>
-        <filter id="lidShadow">
-          <feGaussianBlur stdDeviation="2" />
+          <feGaussianBlur stdDeviation="1" />
         </filter>
       </defs>
-      <EyelidPair eye={LEFT_EYE} blink={leftBlink} />
-      <EyelidPair eye={RIGHT_EYE} blink={rightBlink} />
+      {leftBlink >= BLINK_THRESHOLD && (
+        <EyelidCover eye={LEFT_EYE} blink={leftBlink} />
+      )}
+      {rightBlink >= BLINK_THRESHOLD && (
+        <EyelidCover eye={RIGHT_EYE} blink={rightBlink} />
+      )}
     </svg>
   );
 });
 
 /**
- * Single eye — upper lid sweeps down as a concave arc,
- * lower lid sweeps up. Both use cubic beziers to match
- * the almond/oval shape of the tiger's illustrated eyes.
+ * Solid fur-colored cover that mutes the entire eye.
+ * Remap blink from [0.5..1] → [0..1] for the active range.
+ * Draws a filled almond/ellipse that completely covers the pupil.
  */
-function EyelidPair({
+function EyelidCover({
   eye,
   blink,
 }: {
   eye: { cx: number; cy: number; rx: number; ry: number };
   blink: number;
 }) {
-  if (blink < 0.03) return null;
-
   const { cx, cy, rx, ry } = eye;
-  const t = Math.min(blink, 1);
+  // Remap: 0.5→0, 1.0→1
+  const t = Math.min((blink - BLINK_THRESHOLD) / (1 - BLINK_THRESHOLD), 1);
 
-  // Eye corner anchor points (almond shape)
-  const lx = cx - rx;       // left corner x
-  const rx2 = cx + rx;      // right corner x
-  const cornerY = cy + 1;   // corners sit just below center
+  const pad = 4; // slight overshoot to fully cover eye edges
 
-  // ── UPPER LID ──
-  // At t=0: lid sits at top of eye socket (invisible above eye)
-  // At t=1: lid arc sweeps down to the center line
-  const upperRestY = cy - ry - 4;            // hidden above eye
-  const upperClosedY = cy + 1;               // meets center when closed
-  const upperPeakY = lerp(upperRestY, upperClosedY, t);
-
-  // Cubic bezier control points for a smooth concave arc
-  // The lid curves DOWN from corners, deepest at center
-  const upperPath = [
-    `M ${lx} ${cornerY}`,
-    `C ${lx + rx * 0.3} ${upperPeakY - ry * 0.15},`,
-    `  ${rx2 - rx * 0.3} ${upperPeakY - ry * 0.15},`,
-    `  ${rx2} ${cornerY}`,
-    // Close upward through the socket top (fills the lid area)
-    `L ${rx2} ${cy - ry - 6}`,
-    `C ${rx2 - rx * 0.4} ${cy - ry - 8},`,
-    `  ${lx + rx * 0.4} ${cy - ry - 8},`,
-    `  ${lx} ${cy - ry - 6}`,
+  // Full eye-covering elliptical path (almond shape via cubic beziers)
+  const coverPath = [
+    `M ${cx - rx - pad} ${cy}`,
+    `C ${cx - rx - pad} ${cy - ry - pad}, ${cx + rx + pad} ${cy - ry - pad}, ${cx + rx + pad} ${cy}`,
+    `C ${cx + rx + pad} ${cy + ry + pad}, ${cx - rx - pad} ${cy + ry + pad}, ${cx - rx - pad} ${cy}`,
     `Z`,
   ].join(" ");
 
-  // ── LOWER LID ──
-  const lowerRestY = cy + ry + 4;
-  const lowerClosedY = cy - 1;
-  const lowerPeakY = lerp(lowerRestY, lowerClosedY, t);
-
-  const lowerPath = [
-    `M ${lx} ${cornerY}`,
-    `C ${lx + rx * 0.3} ${lowerPeakY + ry * 0.15},`,
-    `  ${rx2 - rx * 0.3} ${lowerPeakY + ry * 0.15},`,
-    `  ${rx2} ${cornerY}`,
-    `L ${rx2} ${cy + ry + 6}`,
-    `C ${rx2 - rx * 0.4} ${cy + ry + 8},`,
-    `  ${lx + rx * 0.4} ${cy + ry + 8},`,
-    `  ${lx} ${cy + ry + 6}`,
-    `Z`,
-  ].join(" ");
-
-  // Crease shadow above upper lid — subtle depth
-  const creaseOpacity = t * 0.4;
-
-  // Thin closed-eye curve when nearly shut
-  const showClosedLine = t > 0.8;
-  const closedLineOpacity = Math.min((t - 0.8) / 0.2, 1) * 0.85;
+  // Closed-eye line — thin curved stroke
+  const lineOpacity = t > 0.6 ? Math.min((t - 0.6) / 0.4, 1) * 0.9 : 0;
 
   return (
     <g>
-      {/* Subtle shadow/crease above the upper lid */}
+      {/* Solid fur cover — completely mutes the eye */}
       <path
-        d={upperPath}
-        fill={LID_SHADOW}
-        opacity={creaseOpacity}
-        filter="url(#lidShadow)"
-        transform={`translate(0, -2)`}
-      />
-
-      {/* Upper eyelid */}
-      <path
-        d={upperPath}
+        d={coverPath}
         fill={LID_FILL}
-        opacity={Math.min(t * 1.3, 1)}
+        opacity={t}
         filter="url(#lidBlur)"
       />
 
-      {/* Lower eyelid — subtler, follows less aggressively */}
-      <path
-        d={lowerPath}
-        fill={LID_FILL}
-        opacity={Math.min(t * 0.9, 0.85)}
-        filter="url(#lidBlur)"
-      />
-
-      {/* Closed-eye line — thin curved stroke when fully shut */}
-      {showClosedLine && (
+      {/* Closed-eye crease line */}
+      {lineOpacity > 0 && (
         <path
-          d={`M ${lx + 4} ${cy} C ${lx + rx * 0.4} ${cy - 3}, ${rx2 - rx * 0.4} ${cy - 3}, ${rx2 - 4} ${cy}`}
+          d={`M ${cx - rx * 0.85} ${cy} C ${cx - rx * 0.3} ${cy - 3}, ${cx + rx * 0.3} ${cy - 3}, ${cx + rx * 0.85} ${cy}`}
           stroke={LID_LINE}
           strokeWidth={1.5}
           strokeLinecap="round"
           fill="none"
-          opacity={closedLineOpacity}
+          opacity={lineOpacity}
         />
       )}
     </g>
   );
 }
-export default function AvatarOverlay({
-  landmarks,
-  transformationMatrix,
-  blendshapes,
-  width,
-  height,
-  avatarSrc = babyTigerSrc,
-}: AvatarOverlayProps) {
-  const smoothJawRef = useRef(0);
-  const smoothLeftEyeRef = useRef(0);
-  const smoothRightEyeRef = useRef(0);
-
-  const jawRaw = blendshapes?.["jawOpen"] ?? 0;
-  smoothJawRef.current = lerp(smoothJawRef.current, jawRaw, 0.18);
-  const jawNorm = smoothJawRef.current;
-  const jawDrop = easeOut(Math.min(jawNorm, 1)) * MAX_JAW_PX;
-
-  // Eye blink: blendshape gives 0=open, 1=closed
-  const leftBlinkRaw = blendshapes?.["eyeBlinkLeft"] ?? 0;
-  const rightBlinkRaw = blendshapes?.["eyeBlinkRight"] ?? 0;
-  smoothLeftEyeRef.current = lerp(smoothLeftEyeRef.current, leftBlinkRaw, 0.25);
-  smoothRightEyeRef.current = lerp(smoothRightEyeRef.current, rightBlinkRaw, 0.25);
-
-  const isOpen = jawNorm > OPEN_THRESHOLD;
-
-  // Compute elastic contour — corners pinned, center drops
-  const elasticPts = elasticLowerContour(jawDrop);
-  const ELASTIC_LOWER_CLIP = isOpen ? lowerClip(elasticPts) : "none";
-
-  const featherPx = isOpen ? Math.max(0, 1.5 - jawDrop * 0.06) : 0;
-
-  const containerStyle = useMemo(() => {
-    const cx = width / 2;
-    const cy = height / 2;
-
-    let rotate = "none";
-    if (transformationMatrix && transformationMatrix.data?.length >= 16) {
-      const { pitch, yaw, roll } = matrixToEuler(transformationMatrix.data);
-      rotate = `rotateX(${pitch}deg) rotateY(${-yaw}deg) rotateZ(${-roll}deg)`;
-    }
-
     return {
       position: "absolute" as const,
       left: cx - SZ / 2,
