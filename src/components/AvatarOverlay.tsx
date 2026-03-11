@@ -261,7 +261,7 @@ export default function AvatarOverlay({
         ))}
       </svg>
 
-      {/* ── LAYER 2: Lower Jaw (W-contour, translates down) ── */}
+      {/* ── LAYER 2: Lower Jaw (W-contour, scaleY stretch from top edge) ── */}
       <div
         style={{
           position: "absolute",
@@ -270,7 +270,8 @@ export default function AvatarOverlay({
           width: size,
           height: size,
           clipPath: LOWER_CLIP,
-          transform: `translateY(${jawDrop}px)`,
+          transformOrigin: `50% ${(W_POINTS.reduce((s, [, y]) => Math.min(s, y), 100))}%`,
+          transform: `scaleY(${1 + jawDrop / size})`,
           zIndex: 1,
           willChange: "transform",
         }}
