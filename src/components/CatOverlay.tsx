@@ -12,7 +12,7 @@ interface CatOverlayProps {
 }
 
 const CLOSED_THRESHOLD = 0.32;
-const OPEN_THRESHOLD = 0.28;
+const OPEN_THRESHOLD = 0.32;
 const RIGHT_OPEN_MAX = 0.40;
 const CLOSED_FRAMES_NEEDED = 1;
 const DISPLAY_DURATION = 2000;
