@@ -211,13 +211,13 @@ const Index = () => {
         )}
       </div>
 
-      {/* ── AVATAR OVERLAY — fixed right-top companion ── */}
+      {/* ── AVATAR OVERLAY — transparent, no visible box ── */}
       <div
         ref={avatarContainerRef}
         className="absolute z-10"
-        style={{ right: 15, top: "12%", width: 600, height: 600 }}
+        style={{ right: 15, top: "12%", width: 600, height: 600, background: "transparent", pointerEvents: "none" }}
       >
-        {webcamState === "active" && landmarks ? (
+        {webcamState === "active" && landmarks && (
           <AvatarOverlay
             landmarks={landmarks}
             transformationMatrix={transformMatrix}
@@ -225,15 +225,6 @@ const Index = () => {
             width={600}
             height={600}
           />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-3">
-            <div className="h-16 w-16 border-2 border-dashed border-primary/30 flex items-center justify-center rounded-lg">
-              <span className="text-primary/40 text-2xl">🐯</span>
-            </div>
-            <p className="font-syne text-sm tracking-widest text-primary/50 uppercase">
-              {isLoading ? "Calibrating…" : "Awaiting signal"}
-            </p>
-          </div>
         )}
       </div>
     </div>
