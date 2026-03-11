@@ -108,8 +108,8 @@ export default function AvatarOverlay({
   const mouthOpen = Math.min(expressions.jawOpen * 1.8, 1);
   const smileAmount = (expressions.mouthSmileLeft + expressions.mouthSmileRight) / 2;
 
-  // Mouth stretch: scaleY from 1.0 to ~1.6 based on jawOpen
-  const mouthStretchY = 1 + mouthOpen * 0.6;
+  // Jaw drop: pure downward translation in viewBox units
+  const jawDrop = mouthOpen * 15;
   // Split line in viewBox units (just above the static mouth)
   const splitY = 74;
 
@@ -231,16 +231,14 @@ export default function AvatarOverlay({
             <rect x="0" y={splitY} width="100" height={100 - splitY} />
           </clipPath>
         </defs>
-        {/* Translate the jaw down by mouthOpen amount, then scaleY anchored at splitY top edge */}
-        <g transform={`translate(0, ${mouthOpen * 12})`}>
-          <g transform={`translate(0, ${splitY}) scale(1, ${mouthStretchY}) translate(0, ${-splitY})`}>
-            <image
-              href={avatarSrc}
-              x="0" y="0" width="100" height="100"
-              clipPath="url(#lower-clip)"
-              preserveAspectRatio="xMidYMid slice"
-            />
-          </g>
+        {/* Pure downward translation — top edge stays anchored at splitY */}
+        <g transform={`translate(0, ${jawDrop})`}>
+          <image
+            href={avatarSrc}
+            x="0" y="0" width="100" height="100"
+            clipPath="url(#lower-clip)"
+            preserveAspectRatio="xMidYMid slice"
+          />
         </g>
       </svg>
     </div>
