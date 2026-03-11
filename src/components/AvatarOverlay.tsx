@@ -156,7 +156,7 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
         </filter>
       </defs>
 
-      {/* Dark cavity — delayed, follows elastic shape */}
+      {/* Layer 1: Dark cavity — renders BEHIND, opacity tied to bloom */}
       <ellipse
         cx={SZ * 0.5}
         cy={cavityCY}
@@ -167,8 +167,8 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
         filter="url(#mSoft)"
       />
 
-      {/* Tongue — early hint */}
-      {openingHeight > 2 && (
+      {/* Layer 2: Tongue — on top of cavity */}
+      {openingHeight > 1 && (
         <ellipse
           cx={SZ * 0.5}
           cy={cavityCY + openingHeight * 0.1}
@@ -176,12 +176,11 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
           ry={Math.max(openingHeight * 0.25, 1.5)}
           fill="hsl(350, 50%, 58%)"
           opacity={tongueOpacity}
-          filter="url(#mSoft)"
         />
       )}
 
-      {/* Fangs — appear first */}
-      {openingHeight > 1 && (
+      {/* Layer 3: Fangs — rendered LAST = topmost, appear immediately */}
+      {openingHeight > 0.5 && (
         <>
           <path
             d={`M ${SZ * 0.43} ${contourY - 0.5}
