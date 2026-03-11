@@ -119,10 +119,12 @@ function MouthInterior({ jawDrop, elasticPts }: { jawDrop: number; elasticPts: [
   // The visible opening height is the distance between static upper and elastic lower center
   const openingHeight = cavityCenterY - contourY;
 
-  const cavityOpacity = Math.max(0, (bloom - 0.15) * 0.85);
-  const fangOpacity = Math.min(bloom * 3, 0.92);
+  // Cavity opacity tied directly to bloom — delayed and gradual
+  const cavityOpacity = Math.min(bloom * 1.5, 1.0) * 0.7;
+  // Fangs and tongue appear FIRST — immediate visibility
+  const fangOpacity = Math.min(bloom * 4, 1.0);
   const fangLength = Math.min(openingHeight * 0.7, 15);
-  const tongueOpacity = Math.min(bloom * 2, 0.75);
+  const tongueOpacity = Math.min(bloom * 3, 0.9);
 
   // Cavity width follows the elastic spread — narrower than the corner span
   const leftCorner = elasticPts.find(([x]) => x === 34);
