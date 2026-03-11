@@ -13,8 +13,8 @@ export default function CatOverlay() {
       <div
         style={{
           position: "fixed",
-          left: 50,
-          top: 120,
+          right: 50,
+          top: 440,
           width: 300,
           height: 300,
           background: "transparent",
