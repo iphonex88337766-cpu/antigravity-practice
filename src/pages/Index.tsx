@@ -134,6 +134,13 @@ const Index = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-transparent">
+      {/* PUPPY — rendered OUTSIDE all containers, fixed position */}
+      <PuppyOverlay
+        landmarks={landmarks ?? []}
+        blendshapes={blendshapes}
+        width={0}
+        height={0}
+      />
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"
