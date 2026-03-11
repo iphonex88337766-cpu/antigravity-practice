@@ -368,7 +368,7 @@ export default function AvatarOverlay({
           top: 0,
           width: size,
           height: size,
-          clipPath: UPPER_CLIP,
+          clipPath: jawDrop > 1.5 ? UPPER_CLIP : undefined,
           zIndex: 2,
         }}
       >
