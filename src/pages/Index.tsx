@@ -21,6 +21,7 @@ const Index = () => {
 
   const [landmarks, setLandmarks] = useState<NormalizedLandmark[] | null>(null);
   const [transformMatrix, setTransformMatrix] = useState<any>(null);
+  const [blendshapes, setBlendshapes] = useState<Record<string, number> | null>(null);
   const [hasEverDetected, setHasEverDetected] = useState(false);
   const [showMesh, setShowMesh] = useState(true);
   const [webcamSize, setWebcamSize] = useState({ width: 640, height: 360 });
@@ -103,10 +104,20 @@ const Index = () => {
       if (result && result.faceLandmarks && result.faceLandmarks.length > 0) {
         setLandmarks(result.faceLandmarks[0]);
         setTransformMatrix(result.facialTransformationMatrixes?.[0] ?? null);
+        // Extract blendshapes into a simple map
+        const bs = result.faceBlendshapes?.[0]?.categories;
+        if (bs) {
+          const map: Record<string, number> = {};
+          for (const c of bs) map[c.categoryName] = c.score;
+          setBlendshapes(map);
+        } else {
+          setBlendshapes(null);
+        }
         if (!hasEverDetected) setHasEverDetected(true);
       } else {
         setLandmarks(null);
         setTransformMatrix(null);
+        setBlendshapes(null);
       }
       animFrameRef.current = requestAnimationFrame(loop);
     }
@@ -202,6 +213,7 @@ const Index = () => {
           <AvatarOverlay
             landmarks={landmarks}
             transformationMatrix={transformMatrix}
+            blendshapes={blendshapes}
             width={600}
             height={600}
           />
