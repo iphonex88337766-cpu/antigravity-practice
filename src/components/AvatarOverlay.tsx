@@ -367,22 +367,22 @@ export default function AvatarOverlay({
         >
           {/* Left mouth corner connector */}
           <path
-            d={`M ${size * 0.33} ${size * 0.648}
-                Q ${size * 0.30} ${size * 0.648 + jawDrop * 0.5}
-                  ${size * 0.33} ${size * 0.648 + jawDrop}`}
+            d={`M ${size * 0.27} ${size * 0.67}
+                Q ${size * 0.24} ${size * 0.67 + jawDrop * 0.5}
+                  ${size * 0.27} ${size * 0.67 + jawDrop}`}
             stroke="hsl(28, 45%, 60%)"
-            strokeWidth="2"
+            strokeWidth="2.5"
             fill="none"
             opacity={Math.min(jawDrop / 12, 0.4)}
             strokeLinecap="round"
           />
           {/* Right mouth corner connector */}
           <path
-            d={`M ${size * 0.67} ${size * 0.648}
-                Q ${size * 0.70} ${size * 0.648 + jawDrop * 0.5}
-                  ${size * 0.67} ${size * 0.648 + jawDrop}`}
+            d={`M ${size * 0.73} ${size * 0.67}
+                Q ${size * 0.76} ${size * 0.67 + jawDrop * 0.5}
+                  ${size * 0.73} ${size * 0.67 + jawDrop}`}
             stroke="hsl(28, 45%, 60%)"
-            strokeWidth="2"
+            strokeWidth="2.5"
             fill="none"
             opacity={Math.min(jawDrop / 12, 0.4)}
             strokeLinecap="round"
