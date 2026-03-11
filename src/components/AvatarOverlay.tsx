@@ -390,6 +390,40 @@ export default function AvatarOverlay({
           fill="hsla(20, 18%, 10%, 0.14)"
           filter="url(#cornerBlend)"
         />
+
+        {/* ── Lower jaw to chin connection — soft shadows anchoring mouth to face ── */}
+        <ellipse
+          cx={cx}
+          cy={philtrumY + openAmt + size * 0.06}
+          rx={size * 0.08}
+          ry={size * 0.045 + openAmt * 0.15}
+          fill="hsla(25, 15%, 10%, 0.06)"
+          filter="url(#chinBlend)"
+        />
+        <path
+          d={`
+            M ${lcx - size * 0.01} ${cornerY + openAmt * 0.15}
+            Q ${lcx + size * 0.02} ${cornerY + openAmt * 0.5 + size * 0.04},
+              ${cx - size * 0.04} ${philtrumY + openAmt + size * 0.07}
+          `}
+          fill="none"
+          stroke="hsla(20, 15%, 10%, 0.05)"
+          strokeWidth="4"
+          filter="url(#chinBlend)"
+          strokeLinecap="round"
+        />
+        <path
+          d={`
+            M ${rcx + size * 0.01} ${cornerY + openAmt * 0.15}
+            Q ${rcx - size * 0.02} ${cornerY + openAmt * 0.5 + size * 0.04},
+              ${cx + size * 0.04} ${philtrumY + openAmt + size * 0.07}
+          `}
+          fill="none"
+          stroke="hsla(20, 15%, 10%, 0.05)"
+          strokeWidth="4"
+          filter="url(#chinBlend)"
+          strokeLinecap="round"
+        />
       </svg>
 
       {/* ── Lower Jaw (translates down with jawOpen) ── */}
