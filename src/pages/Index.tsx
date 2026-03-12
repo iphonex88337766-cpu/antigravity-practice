@@ -4,7 +4,7 @@
  * Mobile: stacks vertically, avatar on top.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWebcam } from "@/hooks/useWebcam";
 import { useFaceLandmarker } from "@/hooks/useFaceLandmarker";
 import FaceMeshCanvas from "@/components/FaceMeshCanvas";
@@ -18,6 +18,17 @@ import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+type ReactionWinner = "heart" | "dog" | "cat";
+
+const HEART_LOCK_THRESHOLD = 0.58;
+const HEART_LOCK_MAX_DELTA = 0.1;
+const DOG_LOCK_THRESHOLD = 0.38;
+const DOG_OTHER_EYE_MAX = 0.35;
+const CAT_LOCK_THRESHOLD = 0.3;
+const CAT_OTHER_EYE_MAX = 0.42;
+const SINGLE_EYE_DOMINANCE_DELTA = 0.08;
+const CYCLE_RESET_OPEN_THRESHOLD = 0.25;
+
 const Index = () => {
   const { videoRef, state: webcamState, error: webcamError, start: startWebcam } = useWebcam();
   const { state: modelState, error: modelError, detect } = useFaceLandmarker();
@@ -25,7 +36,7 @@ const Index = () => {
   const [landmarks, setLandmarks] = useState<NormalizedLandmark[] | null>(null);
   const [transformMatrix, setTransformMatrix] = useState<any>(null);
   const [blendshapes, setBlendshapes] = useState<Record<string, number> | null>(null);
-  const [bothEyesClosed, setBothEyesClosed] = useState(false);
+  const [cycleWinner, setCycleWinner] = useState<ReactionWinner | null>(null);
   const [hasEverDetected, setHasEverDetected] = useState(false);
   const [showMesh, setShowMesh] = useState(true);
   const [webcamSize, setWebcamSize] = useState({ width: 640, height: 360 });
