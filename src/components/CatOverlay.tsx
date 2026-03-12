@@ -11,9 +11,9 @@ interface CatOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const CLOSED_THRESHOLD = 0.32;
-const OPEN_THRESHOLD = 0.28;
-const RIGHT_OPEN_MAX = 0.40;
+const CLOSED_THRESHOLD = 0.35;
+const OPEN_THRESHOLD = 0.30;
+const OTHER_EYE_OPEN_MAX = 0.25;
 const CLOSED_FRAMES_NEEDED = 1;
 const DISPLAY_DURATION = 2000;
 const COOLDOWN_AFTER_HIDE = 800;
@@ -40,7 +40,7 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
 
     const leftClosed = leftBlink >= CLOSED_THRESHOLD;
     const leftOpen = leftBlink < OPEN_THRESHOLD;
-    const rightOpen = rightBlink < RIGHT_OPEN_MAX;
+    const rightOpen = rightBlink < OTHER_EYE_OPEN_MAX;
 
     if (phaseRef.current === "idle") {
       if (leftClosed && rightOpen) {
