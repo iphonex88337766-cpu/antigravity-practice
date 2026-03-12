@@ -191,9 +191,15 @@ const Index = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
-      {webcamState === "active" && <HeartOverlay blendshapes={blendshapes} onBothEyesClosed={setBothEyesClosed} />}
-      {webcamState === "active" && !bothEyesClosed && <PuppyOverlay blendshapes={blendshapes} />}
-      {webcamState === "active" && !bothEyesClosed && <CatOverlay blendshapes={blendshapes} />}
+      {webcamState === "active" && (
+        <HeartOverlay blendshapes={cycleWinner === "heart" ? blendshapes : null} />
+      )}
+      {webcamState === "active" && (
+        <PuppyOverlay blendshapes={cycleWinner === "dog" ? blendshapes : null} />
+      )}
+      {webcamState === "active" && (
+        <CatOverlay blendshapes={cycleWinner === "cat" ? blendshapes : null} />
+      )}
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"
