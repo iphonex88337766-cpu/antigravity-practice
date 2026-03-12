@@ -11,11 +11,9 @@ interface HeartOverlayProps {
   onBothEyesClosed?: (closed: boolean) => void;
 }
 
-const BOTH_CLOSED_THRESHOLD = 0.58;
-const BOTH_CLOSED_MAX_DELTA = 0.12; // require both eyes to be similarly closed
-const SUPPRESS_THRESHOLD = 0.45; // suppress dog/cat only when both eyes are clearly closing
+const BOTH_CLOSED_THRESHOLD = 0.38;
 const OPEN_THRESHOLD = 0.32;
-const CLOSED_FRAMES_NEEDED = 4; // stricter confirmation for both-eyes closure
+const CLOSED_FRAMES_NEEDED = 2; // require 2 frames to avoid accidental squints
 const DISPLAY_DURATION = 2000;
 const COOLDOWN_AFTER_HIDE = 800;
 
@@ -29,20 +27,12 @@ export default function HeartOverlay({ blendshapes, onBothEyesClosed }: HeartOve
   const leftBlink = blendshapes?.["eyeBlinkLeft"] ?? 0;
   const rightBlink = blendshapes?.["eyeBlinkRight"] ?? 0;
 
-  const bothClosed =
-    leftBlink >= BOTH_CLOSED_THRESHOLD &&
-    rightBlink >= BOTH_CLOSED_THRESHOLD &&
-    Math.abs(leftBlink - rightBlink) <= BOTH_CLOSED_MAX_DELTA;
-  // Suppress dog/cat only when both eyes are closing symmetrically (not a single-eye wink)
-  const bothClosing =
-    leftBlink >= SUPPRESS_THRESHOLD &&
-    rightBlink >= SUPPRESS_THRESHOLD &&
-    Math.abs(leftBlink - rightBlink) <= 0.20;
+  const bothClosed = leftBlink >= BOTH_CLOSED_THRESHOLD && rightBlink >= BOTH_CLOSED_THRESHOLD;
 
-  // Suppress dog/cat as soon as both eyes start closing together
+  // Report both-eyes-closed state upstream to suppress dog/cat
   useEffect(() => {
-    onBothEyesClosed?.(bothClosing || visible);
-  }, [bothClosing, visible, onBothEyesClosed]);
+    onBothEyesClosed?.(bothClosed);
+  }, [bothClosed, onBothEyesClosed]);
 
   useEffect(() => {
     if (cooldownRef.current || !blendshapes) return;
