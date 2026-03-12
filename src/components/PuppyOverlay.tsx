@@ -10,9 +10,9 @@ interface PuppyOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const CLOSED_THRESHOLD = 0.35;
-const OPEN_THRESHOLD = 0.30;
-const OTHER_EYE_OPEN_MAX = 0.25;
+const CLOSED_THRESHOLD = 0.38;
+const OPEN_THRESHOLD = 0.32;
+const LEFT_OPEN_MAX = 0.35;
 const CLOSED_FRAMES_NEEDED = 1;
 const DISPLAY_DURATION = 2000;
 const COOLDOWN_AFTER_HIDE = 800;
@@ -41,7 +41,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
 
     const rightClosed = rightBlink >= CLOSED_THRESHOLD;
     const rightOpen = rightBlink < OPEN_THRESHOLD;
-    const leftOpen = leftBlink < OTHER_EYE_OPEN_MAX;
+    const leftOpen = leftBlink < LEFT_OPEN_MAX;
 
     if (phaseRef.current === "idle") {
       if (rightClosed && leftOpen) {
