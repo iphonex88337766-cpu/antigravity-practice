@@ -33,8 +33,11 @@ export default function HeartOverlay({ blendshapes, onBothEyesClosed }: HeartOve
     leftBlink >= BOTH_CLOSED_THRESHOLD &&
     rightBlink >= BOTH_CLOSED_THRESHOLD &&
     Math.abs(leftBlink - rightBlink) <= BOTH_CLOSED_MAX_DELTA;
-  // Suppress dog/cat early when both eyes are closing together
-  const bothClosing = leftBlink >= SUPPRESS_THRESHOLD && rightBlink >= SUPPRESS_THRESHOLD;
+  // Suppress dog/cat only when both eyes are closing symmetrically (not a single-eye wink)
+  const bothClosing =
+    leftBlink >= SUPPRESS_THRESHOLD &&
+    rightBlink >= SUPPRESS_THRESHOLD &&
+    Math.abs(leftBlink - rightBlink) <= 0.20;
 
   // Suppress dog/cat as soon as both eyes start closing together
   useEffect(() => {
