@@ -10,7 +10,7 @@ interface PuppyOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const CLOSED_THRESHOLD = 0.45;
+const CLOSED_THRESHOLD = 0.40;
 const OPEN_THRESHOLD = 0.35;
 const LEFT_OPEN_MAX = 0.35;
 const CLOSED_FRAMES_NEEDED = 1;
