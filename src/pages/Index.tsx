@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import hamsterSrc from "@/assets/hamster.png";
 import { useWebcam } from "@/hooks/useWebcam";
 import { useFaceLandmarker } from "@/hooks/useFaceLandmarker";
 import FaceMeshCanvas from "@/components/FaceMeshCanvas";
