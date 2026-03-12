@@ -138,6 +138,35 @@ const Index = () => {
     <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
       {webcamState === "active" && <PuppyOverlay blendshapes={blendshapes} />}
       {webcamState === "active" && <CatOverlay blendshapes={blendshapes} />}
+      {/* Hamster sticker — static, between dog and cat */}
+      <div
+        style={{
+          position: "fixed",
+          right: 50,
+          top: 340,
+          width: 300,
+          height: 300,
+          background: "white",
+          borderRadius: "50%",
+          overflow: "hidden",
+          zIndex: 2147483647,
+          pointerEvents: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <img
+          src={hamsterSrc}
+          alt="hamster"
+          style={{
+            width: "85%",
+            height: "85%",
+            objectFit: "contain",
+            display: "block",
+          }}
+        />
+      </div>
       {/* ── FULL-SCREEN WEBCAM ── */}
       <div
         className="absolute inset-0"
