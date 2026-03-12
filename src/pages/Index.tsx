@@ -142,7 +142,7 @@ const Index = () => {
       <div
         style={{
           position: "fixed",
-          right: 270,
+          right: 305,
           top: 440,
           width: 300,
           height: 300,
