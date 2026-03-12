@@ -12,7 +12,7 @@ interface HeartOverlayProps {
 }
 
 const BOTH_CLOSED_THRESHOLD = 0.50;
-const SUPPRESS_THRESHOLD = 0.34; // lower threshold to suppress dog/cat early
+const SUPPRESS_THRESHOLD = 0.45; // suppress dog/cat only when both eyes are clearly closing
 const OPEN_THRESHOLD = 0.32;
 const CLOSED_FRAMES_NEEDED = 3; // require 3 frames to avoid accidental squints
 const DISPLAY_DURATION = 2000;
