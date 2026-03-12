@@ -103,16 +103,17 @@ const Index = () => {
       rightBlink <= CAT_OTHER_EYE_MAX &&
       leftBlink - rightBlink >= SINGLE_EYE_DOMINANCE_DELTA;
 
-    if (bothClosedConfirmed) {
-      setCycleWinner("heart");
-      return;
-    }
+    // Check single-eye winks FIRST so heart only wins for true symmetric closure
     if (rightOnlyConfirmed) {
       setCycleWinner("dog");
       return;
     }
     if (leftOnlyConfirmed) {
       setCycleWinner("cat");
+      return;
+    }
+    if (bothClosedConfirmed) {
+      setCycleWinner("heart");
     }
   }, [blendshapes, cycleWinner]);
 
