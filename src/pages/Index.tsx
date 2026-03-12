@@ -138,12 +138,12 @@ const Index = () => {
     <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
       {webcamState === "active" && <PuppyOverlay blendshapes={blendshapes} />}
       {webcamState === "active" && <CatOverlay blendshapes={blendshapes} />}
-      {/* Hamster sticker — static, between dog and cat */}
+      {/* Hamster sticker — positioned near user's left shoulder */}
       <div
         style={{
           position: "fixed",
-          right: 50,
-          top: 340,
+          right: 120,
+          top: 520,
           width: 300,
           height: 300,
           background: "white",
