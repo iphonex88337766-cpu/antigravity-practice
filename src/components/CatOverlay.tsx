@@ -40,7 +40,7 @@ export default function CatOverlay({ blendshapes }: CatOverlayProps) {
 
     const leftClosed = leftBlink >= CLOSED_THRESHOLD;
     const leftOpen = leftBlink < OPEN_THRESHOLD;
-    const rightOpen = rightBlink < RIGHT_OPEN_MAX;
+    const rightOpen = rightBlink < OTHER_EYE_OPEN_MAX;
 
     if (phaseRef.current === "idle") {
       if (leftClosed && rightOpen) {

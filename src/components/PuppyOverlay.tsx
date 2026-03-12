@@ -41,7 +41,7 @@ export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
 
     const rightClosed = rightBlink >= CLOSED_THRESHOLD;
     const rightOpen = rightBlink < OPEN_THRESHOLD;
-    const leftOpen = leftBlink < LEFT_OPEN_MAX;
+    const leftOpen = leftBlink < OTHER_EYE_OPEN_MAX;
 
     if (phaseRef.current === "idle") {
       if (rightClosed && leftOpen) {
