@@ -11,7 +11,7 @@ interface CatOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const CLOSED_THRESHOLD = 0.30;
+const CLOSED_THRESHOLD = 0.65;
 const OPEN_THRESHOLD = 0.35;
 const RIGHT_OPEN_MAX = 0.40;
 const CLOSED_FRAMES_NEEDED = 1;
