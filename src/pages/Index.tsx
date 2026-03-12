@@ -73,6 +73,49 @@ const Index = () => {
     if (modelState === "ready") startWebcam();
   }, [modelState, startWebcam]);
 
+  useEffect(() => {
+    if (!blendshapes) {
+      if (cycleWinner !== null) setCycleWinner(null);
+      return;
+    }
+
+    const leftBlink = blendshapes["eyeBlinkLeft"] ?? 0;
+    const rightBlink = blendshapes["eyeBlinkRight"] ?? 0;
+    const bothOpen = leftBlink < CYCLE_RESET_OPEN_THRESHOLD && rightBlink < CYCLE_RESET_OPEN_THRESHOLD;
+
+    if (cycleWinner) {
+      if (bothOpen) setCycleWinner(null);
+      return;
+    }
+
+    const bothClosedConfirmed =
+      leftBlink >= HEART_LOCK_THRESHOLD &&
+      rightBlink >= HEART_LOCK_THRESHOLD &&
+      Math.abs(leftBlink - rightBlink) <= HEART_LOCK_MAX_DELTA;
+
+    const rightOnlyConfirmed =
+      rightBlink >= DOG_LOCK_THRESHOLD &&
+      leftBlink <= DOG_OTHER_EYE_MAX &&
+      rightBlink - leftBlink >= SINGLE_EYE_DOMINANCE_DELTA;
+
+    const leftOnlyConfirmed =
+      leftBlink >= CAT_LOCK_THRESHOLD &&
+      rightBlink <= CAT_OTHER_EYE_MAX &&
+      leftBlink - rightBlink >= SINGLE_EYE_DOMINANCE_DELTA;
+
+    if (bothClosedConfirmed) {
+      setCycleWinner("heart");
+      return;
+    }
+    if (rightOnlyConfirmed) {
+      setCycleWinner("dog");
+      return;
+    }
+    if (leftOnlyConfirmed) {
+      setCycleWinner("cat");
+    }
+  }, [blendshapes, cycleWinner]);
+
   // Track both containers
   useEffect(() => {
     const wcEl = webcamContainerRef.current;
