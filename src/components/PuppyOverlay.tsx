@@ -10,12 +10,12 @@ interface PuppyOverlayProps {
   blendshapes: Record<string, number> | null;
 }
 
-const CLOSED_THRESHOLD = 0.38;
-const OPEN_THRESHOLD = 0.32;
+const CLOSED_THRESHOLD = 0.30;
+const OPEN_THRESHOLD = 0.35;
 const LEFT_OPEN_MAX = 0.35;
 const CLOSED_FRAMES_NEEDED = 1;
 const DISPLAY_DURATION = 2000;
-const COOLDOWN_AFTER_HIDE = 800;
+const COOLDOWN_AFTER_HIDE = 600;
 
 export default function PuppyOverlay({ blendshapes }: PuppyOverlayProps) {
   const [visible, setVisible] = useState(false);
