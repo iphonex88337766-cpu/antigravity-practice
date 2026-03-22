@@ -137,8 +137,8 @@ const Index = () => {
 
       {/* ── WEBCAM SECTION (MAIN - Full screen on PC, Top on Mobile) ── */}
       <div className="order-1 flex-1 relative w-full h-full min-h-0 flex flex-col items-center justify-center z-20 lg:absolute lg:inset-0 lg:z-10">
-        <div 
-          ref={webcamContainerRef} 
+        <div
+          ref={webcamContainerRef}
           className="relative w-full h-full rounded-[2rem] lg:rounded-none overflow-hidden bg-black flex items-center justify-center"
         >
           <video
@@ -193,12 +193,12 @@ const Index = () => {
 
       {/* ── AVATAR SECTION (Bottom-Right Overlay on PC, Bottom on Mobile) ── */}
       {/* Position absolute with right/bottom and transform translate, plus massive dimensions to prevent clipping */}
-      <div 
+      <div
         className="order-2 shrink-0 h-[35vh] lg:h-auto w-full lg:absolute lg:right-0 lg:bottom-0 lg:translate-x-32 lg:-translate-y-8 lg:w-[800px] lg:h-[800px] relative flex items-center justify-center z-30 lg:z-50 pointer-events-none transition-transform duration-300 overflow-visible"
       >
-        
+
         {/* Constrain avatar size to purely match the floating zone */}
-        <div 
+        <div
           ref={avatarContainerRef}
           className="relative w-full h-full max-w-full max-h-full flex items-center justify-center overflow-visible"
         >
