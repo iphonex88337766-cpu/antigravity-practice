@@ -194,7 +194,7 @@ const Index = () => {
       {/* ── AVATAR SECTION (Bottom-Right Overlay on PC, Bottom on Mobile) ── */}
       {/* Position absolute with right/bottom and transform translate, plus massive dimensions to prevent clipping */}
       <div
-        className="order-2 shrink-0 h-[35vh] lg:h-auto w-full lg:absolute lg:right-0 lg:bottom-0 lg:translate-x-32 lg:-translate-y-8 lg:w-[800px] lg:h-[800px] relative flex items-center justify-center z-30 lg:z-50 pointer-events-none transition-transform duration-300 overflow-visible"
+        className="order-2 shrink-0 h-[35vh] lg:h-auto w-full lg:absolute z-50 lg:right-0 lg:bottom-0 lg:translate-x-32 lg:-translate-y-8 lg:w-[800px] lg:h-[800px] relative flex items-center justify-center z-30 lg:z-50 pointer-events-none transition-transform duration-300 overflow-visible"
       >
 
         {/* Constrain avatar size to purely match the floating zone */}
