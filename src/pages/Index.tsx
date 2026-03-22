@@ -136,7 +136,7 @@ const Index = () => {
       {isLoading && <CalibrationOverlay />}
 
       {/* ── WEBCAM SECTION (MAIN - Full screen on PC, Top on Mobile) ── */}
-      <div className="order-1 flex-1 relative w-full h-full min-h-0 flex flex-col items-center justify-center z-20 lg:absolute lg:inset-0 lg:z-10">
+      <div className="order-2 lg:order-1 flex-0.7 relative w-full h-full min-h-0 flex flex-col items-center justify-center z-20 lg:absolute lg:inset-0 lg:z-10">
         <div
           ref={webcamContainerRef}
           className="relative w-full h-full rounded-[2rem] lg:rounded-none overflow-hidden bg-black flex items-center justify-center"
@@ -194,7 +194,7 @@ const Index = () => {
       {/* ── AVATAR SECTION (Bottom-Right Overlay on PC, Bottom on Mobile) ── */}
       {/* Position absolute with right/bottom and transform translate, plus massive dimensions to prevent clipping */}
       <div
-        className="order-2 shrink-0 h-[35vh] w-full lg:w-[320x] lg:h-[320px]  lg:absolute z-50 lg:right-12 lg:bottom-0 lg:translate-x-32 lg:-translate-y-8 lg:w-[800px] lg:h-[800px] relative flex items-center justify-center z-30 lg:z-50 pointer-events-none transition-transform duration-300 overflow-visible"
+        className="order-1 shrink-0 h-[55vh] w-full lg:w-[320x] lg:h-[320px]  lg:absolute z-50 lg:right-12 lg:bottom-0 lg:translate-x-32 lg:-translate-y-8 lg:w-[800px] lg:h-[800px] relative flex items-center justify-center z-30 lg:z-50 pointer-events-none transition-transform duration-300 overflow-visible"
       >
 
         {/* Constrain avatar size to purely match the floating zone */}
