@@ -5,13 +5,10 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import hamsterSrc from "@/assets/hamster.png";
 import { useWebcam } from "@/hooks/useWebcam";
 import { useFaceLandmarker } from "@/hooks/useFaceLandmarker";
 import FaceMeshCanvas from "@/components/FaceMeshCanvas";
-import PuppyOverlay from "@/components/PuppyOverlay";
-import CatOverlay from "@/components/CatOverlay";
-import AvatarOverlay from "@/components/AvatarOverlay";
+import MinecraftAvatar from "@/components/MinecraftAvatar";
 import CalibrationOverlay from "@/components/CalibrationOverlay";
 import ErrorScreen from "@/components/ErrorScreen";
 import { type NormalizedLandmark } from "@mediapipe/tasks-vision";
@@ -135,49 +132,14 @@ const Index = () => {
   const isLoading = modelState === "loading" || webcamState === "requesting";
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden" style={{ background: "transparent" }}>
-      {webcamState === "active" && <PuppyOverlay blendshapes={blendshapes} />}
-      {webcamState === "active" && <CatOverlay blendshapes={blendshapes} />}
-      {/* Hamster sticker — positioned near user's left shoulder */}
-      <div
-        style={{
-          position: "fixed",
-          right: 305,
-          top: 440,
-          width: 300,
-          height: 300,
-          background: "white",
-          borderRadius: "50%",
-          overflow: "hidden",
-          zIndex: 2147483647,
-          pointerEvents: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <img
-          src={hamsterSrc}
-          alt="hamster"
-          style={{
-            width: "85%",
-            height: "85%",
-            objectFit: "contain",
-            display: "block",
-          }}
-        />
-      </div>
-      {/* ── FULL-SCREEN WEBCAM ── */}
-      <div
-        className="absolute inset-0"
-      >
-        {isLoading && <CalibrationOverlay />}
+    <div className="relative flex h-[100dvh] w-screen flex-col lg:block bg-black overflow-hidden text-white pattern-dots pattern-slate-900 pattern-size-4 pattern-opacity-20 p-4 lg:p-0 gap-4 lg:gap-0">
+      {isLoading && <CalibrationOverlay />}
 
-        {/* Shared wrapper: shifts video + mesh together to the left */}
-        <div
-          ref={webcamContainerRef}
-          className="absolute inset-0"
-          style={{ transform: "translateX(-20%)", width: "140%", left: 0 }}
+      {/* ── WEBCAM SECTION (MAIN - Full screen on PC, Top on Mobile) ── */}
+      <div className="order-1 flex-1 relative w-full h-full min-h-0 flex flex-col items-center justify-center z-20 lg:absolute lg:inset-0 lg:z-10">
+        <div 
+          ref={webcamContainerRef} 
+          className="relative w-full h-full rounded-[2rem] lg:rounded-none overflow-hidden bg-black flex items-center justify-center"
         >
           <video
             ref={videoRef}
@@ -188,7 +150,7 @@ const Index = () => {
             className="absolute inset-0 h-full w-full object-cover"
             style={{
               transform: "scaleX(-1)",
-              filter: "saturate(0.7) brightness(0.9)",
+              filter: "saturate(0.8) brightness(0.9)",
               opacity: webcamState === "active" ? 1 : 0,
             }}
           />
@@ -213,45 +175,49 @@ const Index = () => {
               />
             </div>
           )}
+
+          {/* Mesh toggle */}
+          {webcamState === "active" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowMesh((v) => !v)}
+              className="absolute bottom-4 left-4 lg:bottom-8 lg:left-8 z-30 bg-black/40 text-white hover:bg-black/80 hover:text-white rounded-full backdrop-blur-md transition-all scale-110"
+              title={showMesh ? "Hide mesh" : "Show mesh"}
+            >
+              {showMesh ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+            </Button>
+          )}
         </div>
-
-        {webcamState === "active" && !landmarks && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="font-syne text-lg font-bold tracking-widest text-primary opacity-70">
-              SEARCHING
-            </p>
-          </div>
-        )}
-
-        {/* Mesh toggle */}
-        {webcamState === "active" && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowMesh((v) => !v)}
-            className="absolute bottom-3 left-3 z-20 bg-transparent text-primary hover:bg-white/10 hover:text-primary"
-            title={showMesh ? "Hide mesh" : "Show mesh"}
-          >
-            {showMesh ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          </Button>
-        )}
       </div>
 
-      {/* ── AVATAR OVERLAY — transparent, no visible box ── */}
-      <div
-        ref={avatarContainerRef}
-        className="absolute z-10"
-        style={{ right: 15, top: "12%", width: 600, height: 600, background: "transparent", pointerEvents: "none" }}
+      {/* ── AVATAR SECTION (Bottom-Right Overlay on PC, Bottom on Mobile) ── */}
+      {/* Position absolute with right/bottom and transform translate, plus massive dimensions to prevent clipping */}
+      <div 
+        className="order-2 shrink-0 h-[35vh] lg:h-auto w-full lg:absolute lg:right-0 lg:bottom-0 lg:translate-x-32 lg:-translate-y-8 lg:w-[800px] lg:h-[800px] relative flex items-center justify-center z-30 lg:z-50 pointer-events-none transition-transform duration-300 overflow-visible"
       >
-        {webcamState === "active" && landmarks && (
-          <AvatarOverlay
-            landmarks={landmarks}
-            transformationMatrix={transformMatrix}
-            blendshapes={blendshapes}
-            width={600}
-            height={600}
-          />
-        )}
+        
+        {/* Constrain avatar size to purely match the floating zone */}
+        <div 
+          ref={avatarContainerRef}
+          className="relative w-full h-full max-w-full max-h-full flex items-center justify-center overflow-visible"
+        >
+          {webcamState === "active" && landmarks ? (
+            <MinecraftAvatar
+              landmarks={landmarks}
+              transformationMatrix={transformMatrix}
+              blendshapes={blendshapes}
+              width={avatarSize.width || 800}
+              height={avatarSize.height || 800}
+            />
+          ) : webcamState === "active" ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="font-syne text-lg font-bold tracking-widest text-[#fcd5b4] opacity-70 animate-pulse text-center leading-tight drop-shadow-md">
+                SEARCHING FACE
+              </p>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
